@@ -8,17 +8,18 @@ class Partner(models.Model):
  
     parent_account_number = fields.Char('Parent Account Number', required=True)
     
+    @api.multi
     def name_get(self):
-        TYPES = {
-            'out_invoice': _('Invoice'),
-            'in_invoice': _('Supplier Invoice'),
-            'out_refund': _('Refund'),
-            'in_refund': _('Supplier Refund'),
-        }
-        result = []
-        for inv in self:
-            result.append((inv.id, "%s %s" % (inv.number or TYPES[inv.type], inv.name or '')))
-        return result
+        res = []
+
+        for partner in self:
+            result = partner.name
+            if partner.parent_account_number:
+                result = str(partner.name) + " " + str(partner.parent_account_number)
+                print(str(partner.name))
+                print(str(partner.parent_account_number))
+            res.append((partner.id, result))
+        return res
 
     
     
