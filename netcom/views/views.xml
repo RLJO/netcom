@@ -38,6 +38,23 @@
         </field>
     </record>
     
+    <record model="ir.actions.act_window" id="brands_action_window">
+      <field name="name">Brand Types</field>
+      <field name="res_model">brand.type</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    
+    <record model="ir.actions.act_window" id="equipment_action_window">
+      <field name="name">Equipment Type</field>
+      <field name="res_model">brand.type</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+    
+    <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
+              action="brands_action_window"/>
+    <menuitem name="Equipment Types" id="equipment_list" parent="stock.menu_product_in_config_stock"
+              action="equipment_action_window"/>
+    
     
     
     
