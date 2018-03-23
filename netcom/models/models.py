@@ -6,7 +6,7 @@ class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
  
-    parent_account_number = fields.Char('Parent Account Number', required=True)
+    parent_account_number = fields.Char('Parent Account Number')
     
     @api.multi
     def name_get(self):
