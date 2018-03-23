@@ -46,7 +46,7 @@
     
     <record model="ir.actions.act_window" id="equipment_action_window">
       <field name="name">Equipment Type</field>
-      <field name="res_model">brand.type</field>
+      <field name="res_model">equipment.type</field>
       <field name="view_mode">tree,form</field>
     </record>
     
