@@ -11,6 +11,32 @@
 		</field>
 	    </field>
 	</record>
+	
+	<record id="pipeline_netcom_form" model="ir.ui.view">
+	    <field name="name">pipeline.netcom.form</field>
+	    <field name="model">crm.lead</field>
+	    <field name="inherit_id" ref="crm.crm_case_form_view_oppor"/>
+	    <field name="arch" type="xml">
+	    <field name="user_id" position="after">
+    		<field name="nrc"/>
+    		<field name="mrc"/>
+		</field>
+	    </field>
+	</record>
+	
+	<record id="netcom_product_form_view" model="ir.ui.view">
+        <field name="name">netcom.product.form</field>
+        <field name="model">product.template</field>
+        <field name="priority" eval="7" />
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="brand"/>
+                <field name="equipment_type"/>
+                <field name="desc"/>
+            </field>
+        </field>
+    </record>
     
     
     
