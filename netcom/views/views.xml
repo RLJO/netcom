@@ -1,6 +1,6 @@
 <odoo>
   <data>
-  
+
   	<record id="partner_netcom" model="ir.ui.view">
 	    <field name="name">partner.netcom</field>
 	    <field name="model">res.partner</field>
@@ -11,7 +11,7 @@
 		</field>
 	    </field>
 	</record>
-	
+
 	<record id="pipeline_netcom_form" model="ir.ui.view">
 	    <field name="name">pipeline.netcom.form</field>
 	    <field name="model">crm.lead</field>
@@ -23,7 +23,7 @@
 		</field>
 	    </field>
 	</record>
-	
+
 	<record id="netcom_product_form_view" model="ir.ui.view">
         <field name="name">netcom.product.form</field>
         <field name="model">product.template</field>
@@ -37,33 +37,104 @@
             </field>
         </field>
     </record>
-    
+
     <record model="ir.actions.act_window" id="brands_action_window">
       <field name="name">Brand Types</field>
       <field name="res_model">brand.type</field>
       <field name="view_mode">tree,form</field>
     </record>
-    
+
     <record model="ir.actions.act_window" id="equipment_action_window">
       <field name="name">Equipment Type</field>
       <field name="res_model">equipment.type</field>
       <field name="view_mode">tree,form</field>
     </record>
-    
+
+    <record model="ir.actions.act_window" id="CustomerRequest_action_window">
+      <field name="name">Customer Request</field>
+      <field name="res_model">customer.request</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
     <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
               action="brands_action_window"/>
     <menuitem name="Equipment Types" id="equipment_list" parent="stock.menu_product_in_config_stock"
               action="equipment_action_window"/>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    <menuitem name="Customer Request" id="customer_request" parent="sales.sale_order_menu"
+              action="CustomerRequest_action_window"/>
+
+
+    <record id="customer_request_form" model="ir.ui.view">
+    <field name="name">customer.request.form</field>
+    <field name="model">customer.request</field>
+    <field name="priority" eval="2"/>
+    <field name="arch" type="xml">
+        <form string="Partners">
+        <sheet>
+            <field name="image" widget='image' class="oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
+            <div class="oe_title">
+                <field name="is_company" invisible="1"/>
+                <field name="commercial_partner_id" invisible="1"/>
+                <field name="company_type" widget="radio"
+                    class="oe_edit_only"
+                    options="{'horizontal': true}"/>
+                <h1>
+                    <field name="name" default_focus="1" placeholder="Name" attrs="{'required' : [('type', '=', 'contact')]}"/>
+                </h1>
+                <div class="o_row">
+                    <field name="parent_id"
+                        placeholder="Company"
+                        domain="[('is_company', '=', True)]" context="{'default_is_company': True, 'default_supplier': supplier, 'default_customer': customer}"
+                        attrs="{'invisible': ['|', '&amp;', ('is_company','=', True),('parent_id', '=', False),('company_name', '!=', False),('company_name', '!=', '')]}"/>
+                        <field name="company_name" attrs="{'invisible': ['|', '|', ('company_name', '=', False), ('company_name', '=', ''), ('is_company', '=', True)]}"/>
+                        <button name="create_company" type="object" string="Create company" class="btn btn-sm oe_edit_only fa fa-external-link btn btn-link " attrs="{'invisible': ['|', '|', ('is_company','=', True), ('company_name', '=', ''), ('company_name', '=', False)]}"/>
+                </div>
+            </div>
+            <group>
+                <group>
+                    <field name="type" attrs="{'invisible': [('parent_id','=', False)]}" groups="base.group_no_one"/>
+                    <label for="street" string="Address"/>
+                    <div class="o_address_format">
+                        <div class="oe_edit_only">
+                            <button name="open_parent" type="object" string="(edit)" class="oe_link"
+                                attrs="{'invisible': ['|', ('parent_id', '=', False), ('type', '!=', 'contact')]}"/>
+                        </div>
+                        <field name="street" placeholder="Street..." class="o_address_street"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="street2" placeholder="Street 2..." class="o_address_street"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="city" placeholder="City" class="o_address_city"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="state_id" class="o_address_state" placeholder="State" options='{"no_open": True}'
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" context="{'country_id': country_id, 'zip': zip}"/>
+                        <field name="zip" placeholder="ZIP" class="o_address_zip"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                    </div>
+                    <field name="vat" placeholder="e.g. BE0477472701"/>
+                </group>
+                <group>
+                    <field name="function" placeholder="e.g. Sales Director"
+                        attrs="{'invisible': [('is_company','=', True)]}"/>
+                    <field name="phone" widget="phone"/>
+                    <field name="mobile" widget="phone"/>
+                    <field name="email" widget="email" context="{'gravatar_image': True}"/>
+                    <field name="customer" invisible="1"/>
+                    <field name="supplier" invisible="1"/>
+                </group>
+            </group>
+        </sheet>
+        </form>
+    </field>
+    </record>
+
+
+
+
+
+
     <!-- explicit list view definition -->
     <!--
     <record model="ir.ui.view" id="netcom.list">
