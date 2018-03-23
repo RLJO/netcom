@@ -34,7 +34,7 @@ class EquipmentType(models.Model):
     
     name = fields.Char('Name', required=True, track_visibility='onchange')
     code = fields.Char('Code', required=True, track_visibility='onchange')
-    active = fields.Boolean('Active', )
+    active = fields.Boolean('Active', default='True')
     
 class BrandType(models.Model):
     _name = "brand.type"
@@ -44,7 +44,7 @@ class BrandType(models.Model):
     
     name = fields.Char('Name', required=True, track_visibility='onchange')
     code = fields.Char('Code', required=True, track_visibility='onchange')
-    active = fields.Boolean('Active', )
+    active = fields.Boolean('Active', default='True')
     
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
