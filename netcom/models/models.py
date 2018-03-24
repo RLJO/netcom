@@ -47,18 +47,75 @@ class BrandType(models.Model):
     active = fields.Boolean('Active', default='True')
 
 class CustomerRequest(models.Model):
+    
+    
     _name = "customer.request"
     _description = "customer request form"
     _order = "name"
     _inherit = ['res.partner']
+    
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('submit', 'Submitted'),
+        ('approve', 'Approved'),
+        ('reject', 'Rejected'),
+        ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
 
-
+    @api.depends('is_company', 'parent_id.commercial_partner_id')
+    def _compute_commercial_partner(self):
+        return {}
+            
+          
+    @api.multi
+    def button_reset(self):
+        self.write({'state': 'draft'})
+        return {}
+    
+    @api.multi
+    def button_submit(self):
+        self.write({'state': 'submit'})
+        return {}
+    
+    @api.multi
+    def button_approve(self):
+        self.write({'state': 'approve'})
+        vals = {
+            'name' : self.name,
+            'company_type' : self.company_type,
+            'image' : self.image,
+            'parent_id' : self.parent_id,
+            'street' : self.street,
+            'street2' : self.street2,
+            'city' : self.city,
+            'state_id' : self.state_id,
+            'zip' : self.zip,
+            'country_id' : self.country_id,            
+            'vat' : self.vat,
+            'function' : self.function,
+            'phone' : self.phone,
+            'mobile' : self.mobile,
+            'email' : self.email
+        }
+        self.env['res.partner'].create(vals)
+        return {}
+    
+    @api.multi
+    def button_reject(self):
+        self.write({'state': 'reject'})
+        return {}
+    
+    
+    
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
+
+
+
+      
 
 
 #     name = fields.Char()
