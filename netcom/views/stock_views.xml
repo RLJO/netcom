@@ -1,0 +1,31 @@
+<odoo>
+  <data>
+
+	<record id="netcom_stock_form_view" model="ir.ui.view">
+        <field name="name">netcom.stock.form</field>
+        <field name="model">stock.picking</field>
+        <field name="priority" eval="14" />
+        <field name="arch" type="xml">
+            <field name="location_id" position="after">
+<!--                 <field name="brand"/>
+                <field name="equipment_type"/>
+                <field name="desc"/> -->
+            </field>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="store_req_action_window">
+      <field name="name">Store Request</field>
+      <field name="res_model">stock.picking</field>
+      <field name="view_mode">tree,form</field>
+      <field name="context">{"default_is_locked":'False'}</field>
+      <field name="view_id" ref="netcom_stock_form_view"/>
+    </record>
+
+
+
+    <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_warehouse_mgmt"
+              action="store_req_action_window"/>
+
+  </data>
+</odoo>
