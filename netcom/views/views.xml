@@ -55,6 +55,12 @@
       <field name="res_model">customer.request</field>
       <field name="view_mode">tree,form</field>
     </record>
+    
+    <record model="ir.actions.act_window" id="VendorRequest_action_window">
+      <field name="name">Vendor Request</field>
+      <field name="res_model">customer.request</field>
+      <field name="view_mode">tree,form</field>
+    </record>
 
     <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
               action="brands_action_window"/>
@@ -63,14 +69,23 @@
 
     <menuitem name="Customer Request" id="customer_request" parent="sale.sale_order_menu"
               action="CustomerRequest_action_window"/>
-
-
+              
+    <menuitem name="Vendor Request" id="Vendor_request" parent="purchase.menu_procurement_management"
+              action="VendorRequest_action_window"/>
+	
     <record id="customer_request_form" model="ir.ui.view">
     <field name="name">customer.request.form</field>
     <field name="model">customer.request</field>
     <field name="priority" eval="2"/>
     <field name="arch" type="xml">
         <form string="Partners">
+   	<header>
+		<button name="button_submit" states="draft" string="Submit" type="object" />
+		<button name="button_approve" states="submit" string="Approve" type="object" />
+		<button name="button_reject" states="submit" string="Reject" type="object" />
+		<button name="button_reset" states="reject" string="Set to Draft" type="object" />
+		<field name="state" widget="statusbar" statusbar_visible="draft,submit,approve" readonly="1"/>
+    </header>
         <sheet>
             <field name="image" widget='image' class="oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
             <div class="oe_title">
