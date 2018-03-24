@@ -50,7 +50,7 @@ class CustomerRequest(models.Model):
     _name = "customer.request"
     _description = "customer request form"
     _order = "name"
-    _inherits = ['res.partner']
+    _inherit = ['res.partner']
 
 
 class ProductTemplate(models.Model):

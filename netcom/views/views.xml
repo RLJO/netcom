@@ -61,7 +61,7 @@
     <menuitem name="Equipment Types" id="equipment_list" parent="stock.menu_product_in_config_stock"
               action="equipment_action_window"/>
 
-    <menuitem name="Customer Request" id="customer_request" parent="sales.sale_order_menu"
+    <menuitem name="Customer Request" id="customer_request" parent="sale.sale_order_menu"
               action="CustomerRequest_action_window"/>
 
 
@@ -75,7 +75,6 @@
             <field name="image" widget='image' class="oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
             <div class="oe_title">
                 <field name="is_company" invisible="1"/>
-                <field name="commercial_partner_id" invisible="1"/>
                 <field name="company_type" widget="radio"
                     class="oe_edit_only"
                     options="{'horizontal': true}"/>
