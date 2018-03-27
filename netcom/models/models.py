@@ -48,7 +48,6 @@ class BrandType(models.Model):
 
 class CustomerRequest(models.Model):
     
-    
     _name = "customer.request"
     _description = "customer request form"
     _order = "name"
@@ -104,8 +103,131 @@ class CustomerRequest(models.Model):
         self.write({'state': 'reject'})
         return {}
     
+class SubAccount(models.Model):
+        
+    _name = "sub.account"
+    _description = "sub account form"
+    _order = "parent_id"
+    
+               
+    def _default_category(self):
+        return self.env['res.partner.category'].browse(self._context.get('category_id'))
+
+    def _default_company(self):
+        return self.env['res.company']._company_default_get('res.partner')
+    
+    def _write_company_type(self):
+        for partner in self:
+            partner.is_company = partner.company_type == 'company'
+
+    name = fields.Char(index=True)
+    
+    parent_id = fields.Many2one('res.partner.category', string='Parent Category', index=True, ondelete='cascade')
+        
+    function = fields.Char(string='Description')
+    
+    comment = fields.Text(string='Desription')
+    
+    addinfo = fields.Text(string='Additional Information')
+    
+    child_account = fields.Char(string='Child Account Number')
+    
+    website = fields.Char(help="Website of Partner or Company")
+    
+    fax = fields.Char(help="fax")
+    
+    date = fields.Date(string='Create Date', index=True)
+    
+    contact_person = fields.Many2one('res.partner.title')
+    
+    company_name = fields.Many2many('Company Name')
+
+    category_id = fields.Many2many('res.partner.category', column1='partner_id',
+                                    column2='category_id', string='Tags', default=_default_category)
+    
+    employee = fields.Boolean(help="Check this box if this contact is an Employee.")
+      
+    type = fields.Selection(
+        [('contact', 'Contact'),
+         ('invoice', 'Invoice address'),
+         ('delivery', 'Shipping address'),
+         ('other', 'Other address')], string='Address Type',
+        default='contact',
+        help="Used to select automatically the right address according to the context in sales and purchases documents.")
+    street = fields.Char()
+    street2 = fields.Char()
+    zip = fields.Char(change_default=True)
+    city = fields.Char()
+    state_id = fields.Many2one("res.country.state", string='State', ondelete='restrict')
+    country_id = fields.Many2one('res.country', string='Country', ondelete='restrict')
+    email = fields.Char()
+    
+    phone = fields.Char()
+    mobile = fields.Char()
+    
+    company_type = fields.Selection(string='Company Type',
+        selection=[('person', 'Individual'), ('company', 'Company')],
+        compute='_compute_company_type', inverse='_write_company_type')
+    company_id = fields.Many2one('res.company', 'Company', index=True, default=_default_company)
+    
+    contact_address = fields.Char(compute='_compute_contact_address', string='Complete Address')
+    company_name = fields.Char('Company Name') 
+    
+    state = fields.Selection([
+        ('new', 'New'),
+        ('activate', 'Activated'),
+        ('suspend', 'Suspended'),
+        ('terminate', 'Terminated'),
+        ('cancel', 'Canceled'),
+        ], string='Status', readonly=True, index=True, copy=False, default='new', track_visibility='onchange')
+    
+    @api.multi
+    def button_new(self):
+        self.write({'state': 'new'})
+        return {}
+    
+    @api.multi
+    def button_activate(self):
+        self.write({'state': 'activate'})
+        return {}
+    
+    @api.multi
+    def button_suspend(self):
+        self.write({'state': 'suspend'})
+        return {}
+    
+    @api.multi
+    def button_terminate(self):
+        self.write({'state': 'terminate'})
+        return {}
+    
+    @api.multi
+    def button_cancel(self):
+        self.write({'state': 'cancel'})
+        return {}
+    
+class PensionManager(models.Model):
+    _name = 'pen.type'
+    
+    name = fields.Char(string='Name')
+    contact_person = fields.Char(string='Contact person')
+    phone = fields.Char(string='Phone Number')
+    contact_address = fields.Text(string='Contact Address')
+    pfa_id = fields.Char(string='PFA ID')
+    email = fields.Char(string='Email')
+    notes = fields.Text(string='Notes')
+    expiry_date = fields.Date(string='Expiry Date', index=True)
+    renewal_date = fields.Date(string='Renewal Date', index=True)
+    probation_period = fields.Integer(string='Probation Period',  index=True)
+    serpac = fields.Char(string='SERPAC')
     
     
+    
+class Employee(models.Model):
+    _inherit = 'hr.employee'
+    
+    pfa_id = fields.Many2one('pen.type', string='PFA ID')
+        
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 

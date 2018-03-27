@@ -40,6 +40,18 @@
             </field>
         </field>
     </record>
+    
+    <record id="netcom_hr_form_view" model="ir.ui.view">
+        <field name="name">netcom.hr.form</field>
+        <field name="model">hr.employee</field>
+        <field name="priority" eval="7" />
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="job_id" position="after">
+                <field name="pfa_id"/>
+            </field>
+        </field>
+    </record>
 
     <record model="ir.actions.act_window" id="brands_action_window">
       <field name="name">Brand Types</field>
@@ -67,6 +79,12 @@
       <field name="domain">[('supplier', '=', True)]</field>
       <field name="view_mode">tree,form</field>
     </record>
+    
+    <record model="ir.actions.act_window" id="SubAccount_action_window">
+      <field name="name">Sub Account</field>
+      <field name="res_model">sub.account</field>
+      <field name="view_mode">tree,form</field>
+    </record>
 
     <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
               action="brands_action_window"/>
@@ -78,6 +96,9 @@
               
     <menuitem name="Vendor Request" id="Vendor_request" parent="purchase.menu_procurement_management"
               action="VendorRequest_action_window"/>
+              
+    <menuitem name="Sub Account" id="sub_account" parent="sale.sale_order_menu"
+              action="SubAccount_action_window"/>
 	
     <record id="customer_request_form" model="ir.ui.view">
     <field name="name">customer.request.form</field>
@@ -112,6 +133,7 @@
                 </div>
             </div>
             <group>
+            
                 <group>
                     <field name="type" attrs="{'invisible': [('parent_id','=', False)]}" groups="base.group_no_one"/>
                     <label for="street" string="Address"/>
@@ -149,10 +171,89 @@
         </form>
     </field>
     </record>
-
-
-
-
+    
+    <record id="sub_account_form" model="ir.ui.view">
+    <field name="name">sub.account.form</field>
+    <field name="model">sub.account</field>
+    <field name="priority" eval="2"/>
+    <field name="arch" type="xml">
+        <form string="Partners">
+			 <header>
+				<button name="button_new" states="cancel" string="Renew" type="object" />
+				<button name="button_activate" states="new" string="Activate" type="object" />
+				<button name="button_activate" states="suspend" string="Activate" type="object" />
+				<button name="button_suspend" states="activate" string="Suspend" type="object" />
+				<button name="button_terminate" states="new" string="Terminate" type="object" />
+				<button name="button_terminate" states="suspend" string="Terminate" type="object" />
+				<button name="button_cancel" states="new" string="Cancel" type="object" />
+				<button name="button_terminate" states="activate" string="Terminate" type="object" />
+				<button name="button_cancel" states="activate" string="Cancel" type="object" />
+				<button name="button_cancel" states="terminate" string="cancel" type="object" />
+				<field name="state" widget="statusbar" statusbar_visible="new,cancel,activate,suspend,terminate" readonly="1"/>
+			  </header>
+        <sheet>
+          <div class="oe_title">
+                
+                <h1>
+                    <field name="name" placeholder="Name" default_focus="1" 
+                            attrs="{'required' : [('parent_id', '!=', True), ('type', '=', 'contact')]}" /> 
+                </h1>
+                <div class="o_row">
+                    
+                    <field name="parent_id" placeholder="Sub-Account Name" />
+                     </div>
+                     <group>
+                     
+                     <field name="function" placeholder="DESCRIPTION"/>
+                     
+                     <field name="date" widget="date"/>
+                     <field name="child_account" placeholder=""/>
+                     <field name="addinfo" placeholder="Additional Information"/>
+                     <field name="company_name" placeholder="Company Name"/>
+                     
+                     <field name="contact_person" placeholder="Contact"/>
+                     
+                     </group>
+                                          
+            </div>
+            <group>
+                <group>
+                    <field name="type" attrs="{'invisible': [('parent_id','=', False)]}" groups="base.group_no_one"/>
+                    <label for="street" string="Address"/>
+                    <div class="o_address_format">
+                        <div class="oe_edit_only">
+                            <button name="open_parent" type="object" string="(edit)" class="oe_link"
+                                attrs="{'invisible': ['|', ('parent_id', '=', False), ('type', '!=', 'contact')]}"/>
+                        </div>
+                        <field name="street" placeholder="Street..." class="o_address_street"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="street2" placeholder="Street 2..." class="o_address_street"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="city" placeholder="City" class="o_address_city"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="state_id" class="o_address_state" placeholder="State" options='{"no_open": True}'
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" context="{'country_id': country_id, 'zip': zip}"/>
+                        <field name="zip" placeholder="ZIP" class="o_address_zip"
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                        <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'
+                            attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                    </div>
+                    
+                </group>
+                <group>
+                    <field name="website" placeholder="Enter Website"/>
+                    <field name="phone" widget="phone"/>
+                    <field name="mobile" widget="phone"/>
+                    <field name="fax" placeholder=""/>
+                    <field name="email" widget="email" context="{'gravatar_image': True}"/>
+                    
+                    
+                </group>
+            </group>
+        </sheet>
+        </form>
+    </field>
+    </record>
 
 
     <!-- explicit list view definition -->
