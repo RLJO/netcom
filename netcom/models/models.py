@@ -234,6 +234,8 @@ class ProductTemplate(models.Model):
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
+    lease_price = fields.Float('Lease Price')
+    
 
 
 

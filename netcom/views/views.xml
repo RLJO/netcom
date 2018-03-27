@@ -35,6 +35,9 @@
                 <field name="equipment_type"/>
                 <field name="desc"/>
             </field>
+            <field name="list_price" position="after">
+                <field name="lease_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+            </field>
         </field>
     </record>
     
