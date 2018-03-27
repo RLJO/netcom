@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Netcom',
-    'version': '0.1199',
+    'version': '0.11999',
 
     # any module necessary for this one to work correctly
     'depends': ['base','crm','product','stock','sale'],

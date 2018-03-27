@@ -27,10 +27,10 @@ class SaleOrderLine(models.Model):
     @api.one
     @api.depends('product_id')
     def _compute_mrc_nrc(self):
-        if self.product_id.recurring_invoice == True:
-            self.nrc_mrc = "MRC"
-        else:
-            self.nrc_mrc = "NRC"
+#         if self.product_id.recurring_invoice == True:
+        self.nrc_mrc = "MRC"
+#         else:
+#             self.nrc_mrc = "NRC"
             
     @api.multi
     @api.onchange('type')
