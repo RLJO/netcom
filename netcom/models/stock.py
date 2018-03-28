@@ -7,6 +7,15 @@ from odoo import models, fields, api
 class Picking(models.Model):
     _name = "stock.picking"
     _inherit = 'stock.picking'
+    
+    def _default_owner(self):
+        return self.env.context.get('default_employee_id') or self.env['res.users'].browse(self.env.uid).partner_id
+    
+    owner_id = fields.Many2one('res.partner', 'Owner',
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
+        help="Default Owner")
+    
+
 
 class SaleOrder(models.Model):
     _name = "sale.order"

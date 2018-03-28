@@ -389,7 +389,7 @@
       <field name="name">Store Request</field>
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
-      <field name="context">{"default_is_locked":False}</field>
+      <field name="context" eval='{"default_is_locked":False,"default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/>
     </record>
     
     <record id="store_req_action_form" model="ir.actions.act_window.view">

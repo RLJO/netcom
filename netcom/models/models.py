@@ -22,10 +22,17 @@ class Partner(models.Model):
 class Lead(models.Model):
     _name = "crm.lead"
     _inherit = 'crm.lead'
+    
 
     nrc = fields.Float('NRC', track_visibility='onchange')
     mrc = fields.Float('MRC', track_visibility='onchange')
-
+    planned_revenue = fields.Float('Expected Revenue',compute='_compute_planned_revenue', track_visibility='always')
+    
+    @api.one
+    @api.depends('nrc','mrc')    
+    def _compute_planned_revenue(self):
+        self.planned_revenue = self.nrc + self.mrc
+        
 class EquipmentType(models.Model):
     _name = "equipment.type"
     _description = "Equipment Types"

@@ -1,0 +1,47 @@
+<odoo>
+    <data>
+    
+        <record id="stock_location_employee" model="stock.location">
+            <field name="name">Employees</field>
+            <field name="location_id" ref="stock.stock_location_locations_partner"/>
+            <field name="usage">customer</field>
+            <field name="company_id"></field>
+        </record>   
+        
+       <record id="stock_picking_type_emp" model="stock.picking.type">
+            <field name="name">Staff Store Requests</field>
+            <field name="code">internal</field>
+            <field name="use_create_lots">0</field>
+            <field name="use_existing_lots">1</field>
+            <field name="default_location_src_id" ref="stock_location_employee"/>
+            <field name="default_location_dest_id" ref="stock_location_employee"/>
+            <field name="sequence_id">20</field>
+        </record> 	
+        <!--  -->
+        <!--   <record id="object0" model="netcom.netcom"> -->
+        <!--     <field name="name">Object 0</field> -->
+        <!--     <field name="value">0</field> -->
+        <!--   </record> -->
+        <!--  -->
+        <!--   <record id="object1" model="netcom.netcom"> -->
+        <!--     <field name="name">Object 1</field> -->
+        <!--     <field name="value">10</field> -->
+        <!--   </record> -->
+        <!--  -->
+        <!--   <record id="object2" model="netcom.netcom"> -->
+        <!--     <field name="name">Object 2</field> -->
+        <!--     <field name="value">20</field> -->
+        <!--   </record> -->
+        <!--  -->
+        <!--   <record id="object3" model="netcom.netcom"> -->
+        <!--     <field name="name">Object 3</field> -->
+        <!--     <field name="value">30</field> -->
+        <!--   </record> -->
+        <!--  -->
+        <!--   <record id="object4" model="netcom.netcom"> -->
+        <!--     <field name="name">Object 4</field> -->
+        <!--     <field name="value">40</field> -->
+        <!--   </record> -->
+        <!--  -->
+    </data>
+</odoo>
