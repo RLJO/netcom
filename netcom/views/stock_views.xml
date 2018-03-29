@@ -1,5 +1,62 @@
 <odoo>
   <data>
+  
+  	<record id="netcom_purchase_form_view" model="ir.ui.view">
+        <field name="name">netcom.purchase.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//button[@name='action_rfq_send']" position="before">
+        		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
+        	</xpath>
+        	<xpath expr="//button[@name='button_confirm']" position="replace">
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm"/>
+        	</xpath>
+        	<xpath expr="//button[@name='button_approve']" position="replace">
+        		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+        	</xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
+            	<field name="account_id"/>
+            </xpath>
+            
+        </field>
+    </record>
+    
+    <record model="ir.ui.view" id="netcom_budget_view_form">
+	    <field name="name">netcom.budget.view.form</field>
+	    <field name="model">crossovered.budget</field>
+	    <field name="inherit_id" ref="account_budget.crossovered_budget_view_form"/>
+	    <field name="arch" type="xml">
+        	<xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
+            	<field name="commitments" sum="Commitments" widget="monetary"/>
+            	<field name="allowed_amount" sum="Allowed Amount" widget="monetary"/>
+            </xpath>	    
+	    </field>
+	</record>
+	    
+	
+    
+    <record id="purchase_rfq" model="ir.actions.act_window">
+        <field name="name">Requests for Quotation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="context">{'search_default_todo':1, 'show_purchase': False}</field>
+        <field name="domain">[('state','in',('draft','sent','bid','cancel', 'submit','confirmed'))]</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
+        <field name="search_view_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a request for quotation.
+          </p><p>
+            The quotation contains the history of the discussion/negotiation
+            you had with your vendor. Once confirmed, a request for
+            quotation is converted into a purchase order.
+          </p><p>
+            Most propositions of purchase orders are created automatically
+            by Odoo based on inventory needs.
+          </p>
+        </field>
+    </record>
 
    
     <record id="netcom_stock_form_view" model="ir.ui.view">
@@ -275,7 +332,7 @@
                                 <field name="sequence" widget="handle"/>
                                 <field name="product_updatable" invisible="1"/>
                                 <field name="type"/>
-                                <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id)]"/>
+                                <field name="sub_account_id" required="1" domain="[('parent_id','=',parent.partner_id)]"/>
                                 <field name="product_id"
                                     attrs="{'readonly': [('product_updatable', '=', False)]}"
                                     force_save="1"

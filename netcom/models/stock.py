@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, AccessError
 
 
 class Picking(models.Model):
@@ -14,7 +14,91 @@ class Picking(models.Model):
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
         help="Default Owner")
+
+class CrossoveredBudgetLines(models.Model):
+    _name = "crossovered.budget.lines"
+    _inherit = ['crossovered.budget.lines']
     
+    allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
+    commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
+    
+    @api.multi
+    def _compute_allowed_amount(self):
+        for line in self:
+            line.allowed_amount = line.theoritical_amount + float((line.practical_amount or 0.0)) + float((line.commitments or 0.0))
+    
+    @api.multi
+    def _compute_commitments(self):
+        for line in self:
+            result = 0.0
+            acc_ids = line.general_budget_id.account_ids.ids
+            date_to = self.env.context.get('wizard_date_to') or line.date_to
+            date_from = self.env.context.get('wizard_date_from') or line.date_from
+            if line.analytic_account_id.id:
+                self.env.cr.execute("""
+                    SELECT sum(price_total) 
+                    from purchase_order_line 
+                    WHERE account_analytic_id=%s
+                    AND account_id=ANY(%s)
+                    AND order_id in (SELECT id FROM purchase_order WHERE state in ('done','purchase') 
+                    and invoice_status != 'invoiced'
+                    and date_order between to_date(%s,'yyyy-mm-dd') AND to_date(%s,'yyyy-mm-dd'))""",
+                        (line.analytic_account_id.id, acc_ids, date_from, date_to,))
+                result = self.env.cr.fetchone()[0] or 0.0
+
+            line.commitments = -(result)
+
+
+class PurchaseOrder(models.Model):
+    _name = "purchase.order"
+    _inherit = ['purchase.order']
+    
+    state = fields.Selection([
+        ('draft', 'RFQ'),
+        ('sent', 'RFQ Sent'),
+        ('to approve', 'To Approve'),
+        ('submit', 'Manager Approval'),
+        ('purchase', 'Purchase Order'),
+        ('done', 'Locked'),
+        ('cancel', 'Cancelled')
+        ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    
+    @api.multi
+    def button_submit(self):
+        self.write({'state': 'submit'})
+        return {}
+    
+    @api.multi
+    def _check_budget(self):
+        for line in self.order_line:
+            budget_line = self.env['crossovered.budget.lines'].search([('analytic_account_id', '=', line.account_analytic_id.id)],limit=1)
+            if line.price_total > budget_line.allowed_amount:
+                raise UserError(_(line.product_id.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
+        return True
+    
+    @api.multi
+    def button_confirm(self):
+        for order in self:
+            if order.state not in ['draft','submit', 'sent']:
+                continue
+            order._add_supplier_to_product()
+            self._check_budget()
+            # Deal with double validation process
+            if order.company_id.po_double_validation == 'one_step'\
+                    or (order.company_id.po_double_validation == 'two_step'\
+                        and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
+                    or order.user_has_groups('purchase.group_purchase_manager'):
+                order.button_approve()
+            else:
+                order.write({'state': 'to approve'})
+        return True
+
+    
+class PurchaseOrderLine(models.Model):
+    _name = "purchase.order.line"
+    _inherit = ['purchase.order.line']
+    
+    account_id = fields.Many2one('account.account', related='product_id.property_account_expense_id', string='Account', required=False, store=True, readonly=True)
 
 
 class SaleOrder(models.Model):
@@ -56,7 +140,7 @@ class SaleOrderLine(models.Model):
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
-    sub_account_id = fields.Many2one('sub.account', string='Child Account', required=True, index=True, ondelete='cascade')
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     @api.one
     @api.depends('product_id')
