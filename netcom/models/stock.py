@@ -22,8 +22,32 @@ class SaleOrder(models.Model):
     _inherit = ['sale.order']
     _description = "Quotation"
     
+    @api.depends('order_line.price_total')
+    def _amount_all(self):
+        """
+        Compute the total amounts of the SO.
+        """
+        for order in self:
+            amount_untaxed = amount_tax = amount_nrc = amount_mrc = 0.0
+            for line in order.order_line:
+                if line.nrc_mrc == "MRC":
+                    amount_mrc += line.price_subtotal
+                else:
+                    amount_nrc += line.price_subtotal
+                amount_untaxed += line.price_subtotal
+                amount_tax += line.price_tax
+            order.update({
+                'amount_untaxed': order.pricelist_id.currency_id.round(amount_untaxed),
+                'amount_mrc': order.pricelist_id.currency_id.round(amount_mrc),
+                'amount_nrc': order.pricelist_id.currency_id.round(amount_nrc),
+                'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
+                'amount_total': amount_untaxed + amount_tax,
+            })
+    
     remarks = fields.Char('Remarks', track_visibility='onchange')
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
+    amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
+    amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -32,7 +56,7 @@ class SaleOrderLine(models.Model):
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
-    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', required=True, index=True, ondelete='cascade')
     
     @api.one
     @api.depends('product_id')
