@@ -200,13 +200,13 @@
                 </h1>
                 <div class="o_row">
                     
-                    <field name="parent_id" placeholder="Sub-Account Name" />
+                    <field name="parent_id" placeholder="Customer" />
                      </div>
                      <group>
                      
                      <field name="function" placeholder="DESCRIPTION"/>
                      
-                     <field name="date" widget="date"/>
+                     <field name="create_date" widget="date"/>
                      <field name="child_account" placeholder=""/>
                      <field name="addinfo" placeholder="Additional Information"/>
                      <field name="company_name" placeholder="Company Name"/>

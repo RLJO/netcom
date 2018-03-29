@@ -17,6 +17,13 @@
             <field name="default_location_dest_id" ref="stock_location_employee"/>
             <field name="sequence_id">20</field>
         </record> 	
+        
+       <record model="mail.channel" id="channel_all_bom">
+            <field name="name">BOM Creation for Engineers</field>
+            <field name="public">private</field>
+            <field name="group_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="description">BOM Creation Group for Engineers.</field>
+        </record>
         <!--  -->
         <!--   <record id="object0" model="netcom.netcom"> -->
         <!--     <field name="name">Object 0</field> -->

@@ -115,10 +115,7 @@ class SubAccount(models.Model):
     _name = "sub.account"
     _description = "sub account form"
     _order = "parent_id"
-    
-               
-    def _default_category(self):
-        return self.env['res.partner.category'].browse(self._context.get('category_id'))
+
 
     def _default_company(self):
         return self.env['res.company']._company_default_get('res.partner')
@@ -129,7 +126,7 @@ class SubAccount(models.Model):
 
     name = fields.Char(index=True)
     
-    parent_id = fields.Many2one('res.partner.category', string='Parent Category', index=True, ondelete='cascade')
+    parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade')
         
     function = fields.Char(string='Description')
     
@@ -143,14 +140,11 @@ class SubAccount(models.Model):
     
     fax = fields.Char(help="fax")
     
-    date = fields.Date(string='Create Date', index=True)
+    create_date = fields.Date(string='Create Date', readonly=True)
     
     contact_person = fields.Many2one('res.partner.title')
     
     company_name = fields.Many2many('Company Name')
-
-    category_id = fields.Many2many('res.partner.category', column1='partner_id',
-                                    column2='category_id', string='Tags', default=_default_category)
     
     employee = fields.Boolean(help="Check this box if this contact is an Employee.")
       

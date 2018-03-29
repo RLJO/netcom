@@ -32,15 +32,16 @@ class SaleOrderLine(models.Model):
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     @api.one
     @api.depends('product_id')
     def _compute_mrc_nrc(self):
-#         if self.product_id.recurring_invoice == True:
-        self.nrc_mrc = "MRC"
-#         else:
-#             self.nrc_mrc = "NRC"
-            
+        if self.product_id.recurring_invoice == True:
+            self.nrc_mrc = "MRC"
+        else:
+            self.nrc_mrc = "NRC"
+             
     @api.multi
     @api.onchange('type')
     def type_change(self):
