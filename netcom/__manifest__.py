@@ -19,11 +19,12 @@
     'version': '0.12000',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','crm','product','stock','sale'],
+    'depends': ['base','account_budget','crm','purchase','sale_subscription','product','stock','sale','mail'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'data/data.xml',
         'views/views.xml',
         'views/stock_views.xml',
         'views/templates.xml',
