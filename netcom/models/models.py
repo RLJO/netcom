@@ -213,7 +213,7 @@ class PensionManager(models.Model):
     contact_person = fields.Char(string='Contact person')
     phone = fields.Char(string='Phone Number')
     contact_address = fields.Text(string='Contact Address')
-    pfa_id = fields.Char(string='PFA ID')
+    pfa_id = fields.Char(string='PFA ID', required=True)
     email = fields.Char(string='Email')
     notes = fields.Text(string='Notes')
     expiry_date = fields.Date(string='Expiry Date', index=True)
@@ -221,13 +221,34 @@ class PensionManager(models.Model):
     probation_period = fields.Integer(string='Probation Period',  index=True)
     serpac = fields.Char(string='SERPAC')
     
+class NextofKin(models.Model):
+    _name = 'kin.type'
+        
+    name = fields.Char(string='First Name', required=True)
+    lname = fields.Char(string='Last Name', required=True)
+    gender = fields.Selection(
+        [('male', 'Male'),
+         ('Female', 'Female')], string='Gender',
+        default='male')
+    mstatus= fields.Selection(
+        [('single', 'Single'),
+         ('married', 'Married'),
+         ('legal', 'Legal Cohabitant'),
+         ('divorced', 'Divorced'),
+         ('widower', 'Widower')], string='Marital Status',
+        default='single')
+    email = fields.Char(string='Email')
+    telphone = fields.Char(string='Telephone Number 1',required=True)
+    phone_id = fields.Char(string='Telephone Number 2')  
     
-    
+                    
 class Employee(models.Model):
     _inherit = 'hr.employee'
+
+    pfa_id = fields.Many2one('pen.type', string='PFA ID', index=True)
+    next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
-    pfa_id = fields.Many2one('pen.type', string='PFA ID')
-        
+           
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
@@ -236,8 +257,6 @@ class ProductTemplate(models.Model):
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
     
-
-
 
       
 

@@ -52,6 +52,21 @@
             </field>
         </field>
     </record>
+    
+    <record id="netcom_kin_form_view" model="ir.ui.view">
+        <field name="name">netcom.kin.form</field>
+        <field name="model">hr.employee</field>
+        <field name="priority" eval="7" />
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+           <page name="personal_information" string="Private Information">
+           <group >
+                <field name="next_ofkin"/>
+           </group>
+            </page>
+        
+        </field>
+    </record>    
 
     <record model="ir.actions.act_window" id="brands_action_window">
       <field name="name">Brand Types</field>
