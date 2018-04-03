@@ -205,6 +205,7 @@ class SubAccount(models.Model):
         self.write({'state': 'cancel'})
         return {}
 
+
 class PensionManager(models.Model):
     _name = 'pen.type'
     
@@ -215,11 +216,7 @@ class PensionManager(models.Model):
     pfa_id = fields.Char(string='PFA ID', required=True)
     email = fields.Char(string='Email')
     notes = fields.Text(string='Notes')
-    expiry_date = fields.Date(string='Expiry Date', index=True)
-    renewal_date = fields.Date(string='Renewal Date', index=True)
-    probation_period = fields.Integer(string='Probation Period',  index=True)
-    serpac = fields.Char(string='SERPAC')
-    
+        
 class NextofKin(models.Model):
     _name = 'kin.type'
         
@@ -244,7 +241,12 @@ class NextofKin(models.Model):
 class Employee(models.Model):
     _inherit = 'hr.employee'
 
-    pfa_id = fields.Many2one('pen.type', string='PFA ID', index=True)
+    pfa_id = fields.Char(string='PFA ID')
+    pf_id = fields.Many2one('pen.type', string='Penson Fund Administrator', index=True)
+    expiry_date = fields.Date(string='Passport Expiry Date', index=True)
+    renewal_date = fields.Date(string='Visa Renewal Date', index=True)
+    probation_period = fields.Integer(string='Probation Period',  index=True)
+    serpac = fields.Char(string='SERPAC REnewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
            

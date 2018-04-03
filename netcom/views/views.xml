@@ -49,6 +49,13 @@
         <field name="arch" type="xml">
             <field name="job_id" position="after">
                 <field name="pfa_id"/>
+                <field name="pf_id"/>
+            </field>
+            <field name="passport_id" position="after">
+                <field name="expiry_date"/>
+                <field name="renewal_date"/>
+                <field name="probation_period"/>
+                <field name="serpac"/>
             </field>
         </field>
     </record>
