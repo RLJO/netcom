@@ -1,6 +1,12 @@
 <odoo>
     <data>
     
+    	<record model="crm.stage" id="stage_lead5">
+	        <field name="name">Awaiting Engineering</field>
+	        <field name="probability">75</field>
+	        <field name="on_change">1</field>
+	        <field name="sequence">4</field>
+	    </record>
         <record id="stock_location_employee" model="stock.location">
             <field name="name">Employees</field>
             <field name="location_id" ref="stock.stock_location_locations_partner"/>

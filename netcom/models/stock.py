@@ -2,7 +2,190 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
+from odoo.tools import float_is_zero
 
+
+
+class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
+    _name = "hr.expense.sheet.register.payment.wizard"
+    _inherit = 'hr.expense.sheet.register.payment.wizard'
+    
+    @api.model
+    def _default_partner_id(self):
+        context = dict(self._context or {})
+        active_ids = context.get('active_ids', [])
+        expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
+        if expense_sheet.payment_mode == 'company_account':
+            return expense_sheet.vendor_id.id
+        else:
+            return expense_sheet.address_id.id or expense_sheet.employee_id.id and expense_sheet.employee_id.address_home_id.id
+        
+    partner_id = fields.Many2one('res.partner', string='Partner', required=True, default=_default_partner_id)
+
+class HrExpense(models.Model):
+
+    _name = "hr.expense"
+    _inherit = 'hr.expense'
+    
+    vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
+
+    @api.multi
+    def submit_expenses(self):
+        if any(expense.state != 'draft' for expense in self):
+            raise UserError(_("You cannot report twice the same line!"))
+        if len(self.mapped('employee_id')) != 1:
+            raise UserError(_("You cannot report expenses for different employees in the same report!"))
+        return {
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'hr.expense.sheet',
+            'target': 'current',
+            'context': {
+                'default_expense_line_ids': [line.id for line in self],
+                'default_employee_id': self[0].employee_id.id,
+                'default_name': self[0].name if len(self.ids) == 1 else '',
+                'default_vendor_id' :  self[0].vendor_id.id if self[0].vendor_id else ''
+            }
+        }
+    
+    def _prepare_move_line(self, line):
+        '''
+        This function prepares move line of account.move related to an expense
+        '''
+        if self.payment_mode == 'company_account':
+            partner_id = self.vendor_id.id
+        else:
+            partner_id = self.employee_id.address_home_id.commercial_partner_id.id
+        return {
+            'date_maturity': line.get('date_maturity'),
+            'partner_id': partner_id,
+            'name': line['name'][:64],
+            'debit': line['price'] > 0 and line['price'],
+            'credit': line['price'] < 0 and - line['price'],
+            'account_id': line['account_id'],
+            'analytic_line_ids': line.get('analytic_line_ids'),
+            'amount_currency': line['price'] > 0 and abs(line.get('amount_currency')) or - abs(line.get('amount_currency')),
+            'currency_id': line.get('currency_id'),
+            'tax_line_id': line.get('tax_line_id'),
+            'tax_ids': line.get('tax_ids'),
+            'quantity': line.get('quantity', 1.00),
+            'product_id': line.get('product_id'),
+            'product_uom_id': line.get('uom_id'),
+            'analytic_account_id': line.get('analytic_account_id'),
+            'payment_id': line.get('payment_id'),
+            'expense_id': line.get('expense_id'),
+        }
+    
+    def action_move_create(self):
+        '''
+        main function that is called when trying to create the accounting entries related to an expense
+        '''
+        move_group_by_sheet = {}
+        for expense in self:
+            #journal = expense.sheet_id.bank_journal_id if expense.payment_mode == 'company_account' else expense.sheet_id.journal_id
+            journal = expense.sheet_id.journal_id
+            #create the move that will contain the accounting entries
+            acc_date = expense.sheet_id.accounting_date or expense.date
+            if not expense.sheet_id.id in move_group_by_sheet:
+                move = self.env['account.move'].create({
+                    'journal_id': journal.id,
+                    'company_id': self.env.user.company_id.id,
+                    'date': acc_date,
+                    'ref': expense.sheet_id.name,
+                    # force the name to the default value, to avoid an eventual 'default_name' in the context
+                    # to set it to '' which cause no number to be given to the account.move when posted.
+                    'name': '/',
+                })
+                move_group_by_sheet[expense.sheet_id.id] = move
+            else:
+                move = move_group_by_sheet[expense.sheet_id.id]
+            company_currency = expense.company_id.currency_id
+            diff_currency_p = expense.currency_id != company_currency
+            #one account.move.line per expense (+taxes..)
+            move_lines = expense._move_line_get()
+
+            #create one more move line, a counterline for the total on payable account
+            payment_id = False
+            total, total_currency, move_lines = expense._compute_expense_totals(company_currency, move_lines, acc_date)
+#             if expense.payment_mode == 'company_account':
+#                 if not expense.sheet_id.bank_journal_id.default_credit_account_id:
+#                     raise UserError(_("No credit account found for the %s journal, please configure one.") % (expense.sheet_id.bank_journal_id.name))
+#                 emp_account = expense.sheet_id.bank_journal_id.default_credit_account_id.id
+#                 journal = expense.sheet_id.bank_journal_id
+#                 #create payment
+#                 payment_methods = (total < 0) and journal.outbound_payment_method_ids or journal.inbound_payment_method_ids
+#                 journal_currency = journal.currency_id or journal.company_id.currency_id
+#                 payment = self.env['account.payment'].create({
+#                     'payment_method_id': payment_methods and payment_methods[0].id or False,
+#                     'payment_type': total < 0 and 'outbound' or 'inbound',
+#                     'partner_id': expense.employee_id.address_home_id.commercial_partner_id.id,
+#                     'partner_type': 'supplier',
+#                     'journal_id': journal.id,
+#                     'payment_date': expense.date,
+#                     'state': 'reconciled',
+#                     'currency_id': diff_currency_p and expense.currency_id.id or journal_currency.id,
+#                     'amount': diff_currency_p and abs(total_currency) or abs(total),
+#                     'name': expense.name,
+#                 })
+#                 payment_id = payment.id
+#             else:
+            if expense.payment_mode == 'company_account':
+                emp_account = expense.vendor_id.property_account_payable_id.id
+            else:
+                if not expense.employee_id.address_home_id:
+                    raise UserError(_("No Home Address found for the employee %s, please configure one.") % (expense.employee_id.name))
+                emp_account = expense.employee_id.address_home_id.property_account_payable_id.id
+
+            aml_name = expense.employee_id.name + ': ' + expense.name.split('\n')[0][:64]
+            move_lines.append({
+                    'type': 'dest',
+                    'name': aml_name,
+                    'price': total,
+                    'account_id': emp_account,
+                    'date_maturity': acc_date,
+                    'amount_currency': diff_currency_p and total_currency or False,
+                    'currency_id': diff_currency_p and expense.currency_id.id or False,
+                    'payment_id': payment_id,
+                    'expense_id': expense.id,
+                    })
+
+            #convert eml into an osv-valid format
+            lines = [(0, 0, expense._prepare_move_line(x)) for x in move_lines]
+            move.with_context(dont_create_taxes=True).write({'line_ids': lines})
+            expense.sheet_id.write({'account_move_id': move.id})
+#             if expense.payment_mode == 'company_account':
+#                 expense.sheet_id.paid_expense_sheets()
+        for move in move_group_by_sheet.values():
+            move.post()
+        return True
+    
+class HrExpenseSheet(models.Model):
+    _name = "hr.expense.sheet"
+    _inherit = 'hr.expense.sheet'
+    
+    vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
+    @api.multi
+    def action_sheet_move_create(self):
+        if any(sheet.state != 'approve' for sheet in self):
+            raise UserError(_("You can only generate accounting entry for approved expense(s)."))
+
+        if any(not sheet.journal_id for sheet in self):
+            raise UserError(_("Expenses must have an expense journal specified to generate accounting entries."))
+
+        expense_line_ids = self.mapped('expense_line_ids')\
+            .filtered(lambda r: not float_is_zero(r.total_amount, precision_rounding=(r.currency_id or self.env.user.company_id.currency_id).rounding))
+        res = expense_line_ids.action_move_create()
+
+        if not self.accounting_date:
+            self.accounting_date = self.account_move_id.date
+ 
+        if expense_line_ids:
+            self.write({'state': 'post'})
+        else:
+            self.write({'state': 'done'})
+        return res
+    
+    
 
 class Picking(models.Model):
     _name = "stock.picking"
