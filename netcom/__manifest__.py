@@ -16,14 +16,15 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Netcom',
-    'version': '0.12004',
+    'version': '0.119999',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','crm','product','stock','sale'],
+    'depends': ['base','account_budget','crm','hr_expense', 'purchase','sale_subscription','product','stock','sale','mail'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'data/data.xml',
         'views/views.xml',
         'views/stock_views.xml',
         'views/templates.xml',
