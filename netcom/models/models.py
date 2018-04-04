@@ -144,7 +144,9 @@ class SubAccount(models.Model):
     _name = "sub.account"
     _description = "sub account form"
     _order = "parent_id"
-
+    
+    def _default_category(self):
+        return self.env['res.partner.category'].browse(self._context.get('category_id'))
 
     def _default_company(self):
         return self.env['res.company']._company_default_get('res.partner')
@@ -235,7 +237,8 @@ class SubAccount(models.Model):
     def button_cancel(self):
         self.write({'state': 'cancel'})
         return {}
-    
+
+
 class PensionManager(models.Model):
     _name = 'pen.type'
     
@@ -243,21 +246,43 @@ class PensionManager(models.Model):
     contact_person = fields.Char(string='Contact person')
     phone = fields.Char(string='Phone Number')
     contact_address = fields.Text(string='Contact Address')
-    pfa_id = fields.Char(string='PFA ID')
+    pfa_id = fields.Char(string='PFA ID', required=True)
     email = fields.Char(string='Email')
     notes = fields.Text(string='Notes')
-    expiry_date = fields.Date(string='Expiry Date', index=True)
-    renewal_date = fields.Date(string='Renewal Date', index=True)
-    probation_period = fields.Integer(string='Probation Period',  index=True)
-    serpac = fields.Char(string='SERPAC')
+        
+class NextofKin(models.Model):
+    _name = 'kin.type'
+        
+    name = fields.Char(string='First Name', required=True)
+    lname = fields.Char(string='Last Name', required=True)
+    gender = fields.Selection(
+        [('male', 'Male'),
+         ('Female', 'Female')], string='Gender',
+        default='male')
+    mstatus= fields.Selection(
+        [('single', 'Single'),
+         ('married', 'Married'),
+         ('legal', 'Legal Cohabitant'),
+         ('divorced', 'Divorced'),
+         ('widower', 'Widower')], string='Marital Status',
+        default='single')
+    email = fields.Char(string='Email')
+    telphone = fields.Char(string='Telephone Number 1',required=True)
+    phone_id = fields.Char(string='Telephone Number 2')  
     
-    
-    
+                    
 class Employee(models.Model):
     _inherit = 'hr.employee'
+
+    pfa_id = fields.Char(string='PFA ID')
+    pf_id = fields.Many2one('pen.type', string='Penson Fund Administrator', index=True)
+    expiry_date = fields.Date(string='Passport Expiry Date', index=True)
+    renewal_date = fields.Date(string='Visa Renewal Date', index=True)
+    probation_period = fields.Integer(string='Probation Period',  index=True)
+    serpac = fields.Char(string='SERPAC REnewal Date')
+    next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
-    pfa_id = fields.Many2one('pen.type', string='PFA ID')
-        
+           
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
@@ -266,8 +291,6 @@ class ProductTemplate(models.Model):
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
     
-
-
 
       
 
