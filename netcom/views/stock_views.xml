@@ -1,5 +1,74 @@
 <odoo>
   <data>
+  
+  	<record id="netcom_purchase_form_view" model="ir.ui.view">
+        <field name="name">netcom.purchase.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+        	<xpath expr="//button[@name='action_rfq_send']" position="before">
+        		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
+        	</xpath>
+        	<xpath expr="//button[@name='button_confirm']" position="replace">
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm"/>
+        	</xpath>
+        	<xpath expr="//button[@name='button_approve']" position="replace">
+        		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+        	</xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
+            	<field name="account_id"/>
+            </xpath>
+            
+        </field>
+    </record>
+    
+    <record id="netcom_expense_form_view" model="ir.ui.view">
+            <field name="name">netcom.expense.form</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_form_view"/>
+            <field name="arch" type="xml">
+            	<field name="employee_id" position="replace">
+	                <field name="employee_id" attrs="{'invisible': [('payment_mode', '!=', 'own_account')]}" groups="hr_expense.group_hr_expense_user"/>
+	                <field name="vendor_id" attrs="{'invisible': [('payment_mode', '=', 'own_account')],'required': [('payment_mode', '!=', 'own_account')]}"/>
+	            </field>
+	        </field>
+	 </record>
+    
+    <record model="ir.ui.view" id="netcom_budget_view_form">
+	    <field name="name">netcom.budget.view.form</field>
+	    <field name="model">crossovered.budget</field>
+	    <field name="inherit_id" ref="account_budget.crossovered_budget_view_form"/>
+	    <field name="arch" type="xml">
+        	<xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
+            	<field name="commitments" sum="Commitments" widget="monetary"/>
+            	<field name="allowed_amount" sum="Allowed Amount" widget="monetary"/>
+            </xpath>	    
+	    </field>
+	</record>
+	    
+	
+    
+    <record id="purchase_rfq" model="ir.actions.act_window">
+        <field name="name">Requests for Quotation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.order</field>
+        <field name="context">{'search_default_todo':1, 'show_purchase': False}</field>
+        <field name="domain">[('state','in',('draft','sent','bid','cancel', 'submit','confirmed'))]</field>
+        <field name="view_mode">tree,kanban,form,pivot,graph,calendar</field>
+        <field name="search_view_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to create a request for quotation.
+          </p><p>
+            The quotation contains the history of the discussion/negotiation
+            you had with your vendor. Once confirmed, a request for
+            quotation is converted into a purchase order.
+          </p><p>
+            Most propositions of purchase orders are created automatically
+            by Odoo based on inventory needs.
+          </p>
+        </field>
+    </record>
 
    
     <record id="netcom_stock_form_view" model="ir.ui.view">
@@ -223,6 +292,7 @@
                                            />
                                         <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                         <field name="nrc_mrc"/>
+                                        <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id)]"/>
                                         <field name="invoice_status" invisible="1"/>
                                         <field name="qty_to_invoice" invisible="1"/>
                                         <field name="qty_delivered_updateable" invisible="1"/>
@@ -274,6 +344,7 @@
                                 <field name="sequence" widget="handle"/>
                                 <field name="product_updatable" invisible="1"/>
                                 <field name="type"/>
+                                <field name="sub_account_id" required="1" domain="[('parent_id','=',parent.partner_id)]"/>
                                 <field name="product_id"
                                     attrs="{'readonly': [('product_updatable', '=', False)]}"
                                     force_save="1"
@@ -344,6 +415,8 @@
                             </kanban>
                         </field>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                        	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        	<field name="amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             <field name="amount_untaxed" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             <field name="amount_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             <div class="oe_subtotal_footer_separator oe_inline o_td_label">
@@ -389,7 +462,7 @@
       <field name="name">Store Request</field>
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
-      <field name="context">{"default_is_locked":False}</field>
+      <field name="context" eval='{"default_is_locked":False,"default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/>
     </record>
     
     <record id="store_req_action_form" model="ir.actions.act_window.view">

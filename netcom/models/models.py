@@ -22,10 +22,46 @@ class Partner(models.Model):
 class Lead(models.Model):
     _name = "crm.lead"
     _inherit = 'crm.lead'
+    
 
     nrc = fields.Float('NRC', track_visibility='onchange')
     mrc = fields.Float('MRC', track_visibility='onchange')
+    planned_revenue = fields.Float('Expected Revenue',compute='_compute_planned_revenue', track_visibility='always')
+    name = fields.Char('Services', required=True, index=True)
+    acc_executive = fields.Many2one('res.users', string='Account Executive', index=True, track_visibility='onchange')
+    
+    @api.one
+    @api.depends('nrc','mrc')    
+    def _compute_planned_revenue(self):
+        self.planned_revenue = self.nrc + self.mrc
+    
+    @api.multi    
+    def write(self, vals):
+        # stage change: update date_last_stage_update
+        if 'acc_executive' in vals:
+            self.message_subscribe_users(vals['acc_executive'])
+            subject = "Oppurtunity {} has been assigned to you".format(self.name)
+            body = "Please Create the Quotation"
+            partner_ids = self.env['res.users'].search([('id','=',vals['acc_executive'])]).partner_id.id
+            self.message_post(subject=subject,body=body,partner_ids=[(4, partner_ids)])
+            stage_id = self._stage_find(domain=[('probability', '=', 70.0), ('on_change', '=', True)])
+            vals['stage_id'] = stage_id.id
+        return super(Lead, self).write(vals)
+    
+    @api.multi
+    def assign_engineer(self):
+        channel_id = self.env['ir.model.data'].xmlid_to_object('netcom.channel_all_bom')
+        print(channel_id)
+        self.message_subscribe(channel_ids=[channel_id.id])
+        subject = "Oppurtunity {} has been assigned to Engineering".format(self.name)
+        body = "Please Create the Quotation"
+#         channel_id.message_post(subject=subject,body=body)
+        self.message_post(subject=subject,body=subject,channel_ids=[(4, channel_id.id)])
+        stage_id = self._stage_find(domain=[('probability', '=', 75.0), ('on_change', '=', True)])
+        self.write({'stage_id': stage_id.id})
+        return {}
 
+        
 class EquipmentType(models.Model):
     _name = "equipment.type"
     _description = "Equipment Types"
@@ -107,8 +143,8 @@ class SubAccount(models.Model):
         
     _name = "sub.account"
     _description = "sub account form"
+    _order = "parent_id"
     
-               
     def _default_category(self):
         return self.env['res.partner.category'].browse(self._context.get('category_id'))
 
@@ -121,7 +157,7 @@ class SubAccount(models.Model):
 
     name = fields.Char(index=True)
     
-    parent_id = fields.Many2one('res.partner.category', string='Parent Category', index=True, ondelete='cascade')
+    parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade')
         
     function = fields.Char(string='Description')
     
@@ -135,14 +171,11 @@ class SubAccount(models.Model):
     
     fax = fields.Char(help="fax")
     
-    date = fields.Date(string='Create Date', index=True)
+    create_date = fields.Date(string='Create Date', readonly=True)
     
     contact_person = fields.Many2one('res.partner.title')
     
     company_name = fields.Many2many('Company Name')
-
-    category_id = fields.Many2many('res.partner.category', column1='partner_id',
-                                    column2='category_id', string='Tags', default=_default_category)
     
     employee = fields.Boolean(help="Check this box if this contact is an Employee.")
       
