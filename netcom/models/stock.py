@@ -243,6 +243,60 @@ class CrossoveredBudgetLines(models.Model):
     commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
     
     @api.multi
+    def _compute_theoritical_amount(self):
+        today = fields.Datetime.now()
+        for line in self:
+            # Used for the report
+
+            if self.env.context.get('wizard_date_from') and self.env.context.get('wizard_date_to'):
+                date_from = fields.Datetime.from_string(self.env.context.get('wizard_date_from'))
+                date_to = fields.Datetime.from_string(self.env.context.get('wizard_date_to'))
+                if date_from < fields.Datetime.from_string(line.date_from):
+                    date_from = fields.Datetime.from_string(line.date_from)
+                elif date_from > fields.Datetime.from_string(line.date_to):
+                    date_from = False
+
+                if date_to > fields.Datetime.from_string(line.date_to):
+                    date_to = fields.Datetime.from_string(line.date_to)
+                elif date_to < fields.Datetime.from_string(line.date_from):
+                    date_to = False
+
+                theo_amt = 0.00
+                if date_from and date_to:
+                    line_timedelta = fields.Datetime.from_string(line.date_to) - fields.Datetime.from_string(line.date_from)
+                    elapsed_timedelta = date_to - date_from
+                    if elapsed_timedelta.days > 0:
+                        theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
+            else:
+                if line.paid_date:
+                    if fields.Datetime.from_string(line.date_to) <= fields.Datetime.from_string(line.paid_date):
+                        theo_amt = 0.00
+                    else:
+                        theo_amt = line.planned_amount
+                else:
+                    line_timedelta = fields.Datetime.from_string(line.date_to) - fields.Datetime.from_string(line.date_from)
+                    elapsed_timedelta = fields.Datetime.from_string(today) - (fields.Datetime.from_string(line.date_from))
+
+                    if elapsed_timedelta.days < 0:
+                        # If the budget line has not started yet, theoretical amount should be zero
+                        theo_amt = 0.00
+                    elif line_timedelta.days > 0 and fields.Datetime.from_string(today) < fields.Datetime.from_string(line.date_to):
+                        # If today is between the budget line date_from and date_to
+                        if elapsed_timedelta.days < 30:
+                            time = 1
+                        elif elapsed_timedelta.days > 30 and elapsed_timedelta.days < 60:
+                            time = 2
+                        elif elapsed_timedelta.days > 60 and elapsed_timedelta.days < 90:
+                            time = 3
+                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days < 120:
+                            time = 4
+                        theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
+                    else:
+                        theo_amt = line.planned_amount
+
+            line.theoritical_amount = theo_amt
+    
+    @api.multi
     def _compute_allowed_amount(self):
         for line in self:
             line.allowed_amount = line.theoritical_amount + float((line.practical_amount or 0.0)) + float((line.commitments or 0.0))
