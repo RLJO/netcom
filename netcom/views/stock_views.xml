@@ -10,7 +10,7 @@
         		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
         	</xpath>
         	<xpath expr="//button[@name='button_confirm']" position="replace">
-        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm"/>
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager"/>
         	</xpath>
         	<xpath expr="//button[@name='button_approve']" position="replace">
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
