@@ -194,8 +194,16 @@ class Picking(models.Model):
     def _default_owner(self):
         return self.env.context.get('default_employee_id') or self.env['res.users'].browse(self.env.uid).partner_id
     
+    def _default_employee(self):
+        self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+        return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+    
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
+        help="Default Owner")
+    
+    employee_id = fields.Many2one('hr.employee', 'Employee',
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee,
         help="Default Owner")
 
 class CrossoveredBudgetLines(models.Model):
@@ -235,6 +243,13 @@ class CrossoveredBudgetLines(models.Model):
 class PurchaseOrder(models.Model):
     _name = "purchase.order"
     _inherit = ['purchase.order']
+    
+    def _default_employee(self):
+        self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+        return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+    
+    employee_id = fields.Many2one('hr.employee', 'Employee',
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
     
     state = fields.Selection([
         ('draft', 'RFQ'),
