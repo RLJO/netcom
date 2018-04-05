@@ -27,6 +27,10 @@ class HrExpense(models.Model):
     _name = "hr.expense"
     _inherit = 'hr.expense'
     
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
 
     @api.multi
@@ -296,7 +300,20 @@ class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
     _inherit = ['purchase.order.line']
     
-    account_id = fields.Many2one('account.account', related='product_id.property_account_expense_id', string='Account', required=False, store=True, readonly=True)
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    def _default_account(self):
+        return self.product_id.property_account_expense_id
+#     
+#     @api.multi
+#     @api.onchange('type')
+#     def type_change(self):
+#         self.product_id = False
+    
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic)
+    account_id = fields.Many2one('account.account', string='Account', domain = "[('user_type_id', '=', 'Expenses')]")
+    
 
 
 class SaleOrder(models.Model):

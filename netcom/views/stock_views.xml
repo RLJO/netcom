@@ -6,6 +6,25 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
+        	<button name="print_quotation" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
+        	<button name="action_rfq_send" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
+        	<xpath expr="//button[@name='action_view_picking']" position="replace">
+        		<button type="object"
+                            name="action_view_picking"
+                            class="oe_stat_button"
+                            icon="fa-truck" attrs="{'invisible':[('state', 'in', ('submit','draft','sent','to approve')),('picking_ids','=',[])]}">
+                            <field name="picking_count" widget="statinfo" string="Shipment" help="Incoming Shipments"/>
+                            <field name="picking_ids" invisible="1"/>
+                        </button>
+        	</xpath>
+        	<xpath expr="//button[@name='action_view_invoice']" position="replace">
+        		<button type="object"  name="action_view_invoice"
+                     class="oe_stat_button" groups="account.group_account_invoice"
+                     icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('submit','draft','sent','to approve')),('invoice_ids','=',[])]}">
+                     <field name="invoice_count" widget="statinfo" string="Vendor Bills"/>
+                     <field name='invoice_ids' invisible="1"/>
+                 </button>
+        	</xpath>
         	<xpath expr="//button[@name='action_rfq_send']" position="before">
         		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
         	</xpath>
@@ -16,7 +35,13 @@
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
         	<xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
-            	<field name="account_id"/>
+            	<field name="account_id" required = "1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='account_analytic_id']" position="replace">
+            	<field name="account_analytic_id" invisible = "1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='analytic_tag_ids']" position="replace">
+            	<field name="analytic_tag_ids" groups="purchase.group_analytic_accounting" invisible = "1" widget="many2many_tags" options="{'color_field': 'color'}"/>
             </xpath>
             <field name="partner_id" position="after">
             	<field name="employee_id" groups="netcom.group_hr_line_manager"/>
@@ -32,6 +57,12 @@
             	<field name="employee_id" position="replace">
 	                <field name="employee_id" attrs="{'invisible': [('payment_mode', '!=', 'own_account')]}" groups="hr_expense.group_hr_expense_user"/>
 	                <field name="vendor_id" attrs="{'invisible': [('payment_mode', '=', 'own_account')],'required': [('payment_mode', '!=', 'own_account')]}"/>
+	            </field>
+	            <field name="analytic_account_id" position="replace">
+	            	<field name="analytic_account_id" invisible="1" required="1"/>
+	            </field>
+	            <field name="account_id" position="replace">
+	            	<field name="account_id" domain="[('user_type_id', '=', 'Expenses')]" required="1"/>
 	            </field>
 	        </field>
 	 </record>

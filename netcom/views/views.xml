@@ -156,8 +156,8 @@
         <form string="Partners">
    	<header>
 		<button name="button_submit" states="draft" string="Submit" type="object" />
-		<button name="button_approve" states="submit" string="Approve" type="object" groups="account.group_account_manager"/>
-		<button name="button_reject" states="submit" string="Reject" type="object" groups="account.group_account_manager"/>
+		<button name="button_approve" states="submit" string="Approve" type="object" groups="account.group_account_invoice"/>
+		<button name="button_reject" states="submit" string="Reject" type="object" groups="account.group_account_invoice"/>
 		<button name="button_reset" states="reject" string="Set to Draft" type="object" />
 		<field name="state" widget="statusbar" statusbar_visible="draft,submit,approve" readonly="1"/>
     </header>
