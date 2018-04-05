@@ -189,6 +189,31 @@ class HrExpenseSheet(models.Model):
             self.write({'state': 'done'})
         return res
     
+    @api.multi
+    def approve_expense_sheets(self):
+        if not self.user_has_groups('hr_expense.group_hr_expense_user'):
+            raise UserError(_("Only Line Managers can approve expenses"))
+        self._check_budget()
+        self.write({'state': 'approve', 'responsible_id': self.env.user.id})
+        
+    @api.multi
+    def _check_budget(self):
+        for line in self.expense_line_ids:
+            self.env.cr.execute("""
+                    SELECT * FROM crossovered_budget_lines WHERE
+                    general_budget_id in (SELECT budget_id FROM account_budget_rel WHERE account_id=%s) AND
+                    analytic_account_id = %s AND 
+                    to_date(%s,'yyyy-mm-dd') between date_from and date_to""",
+                    (line.account_id.id,line.analytic_account_id.id, line.date))
+            result = self.env.cr.fetchone()
+            if result:
+                result = self.env['crossovered.budget.lines'].browse(result[0]) 
+                if line.total_amount > result.allowed_amount:
+                    raise UserError(_(line.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
+            else:
+                raise UserError(_(line.name + ' has no budget lines, Please notify Finance to create budget'))
+        return True
+
     
 
 class Picking(models.Model):
@@ -222,6 +247,7 @@ class CrossoveredBudgetLines(models.Model):
         for line in self:
             line.allowed_amount = line.theoritical_amount + float((line.practical_amount or 0.0)) + float((line.commitments or 0.0))
     
+    
     @api.multi
     def _compute_commitments(self):
         for line in self:
@@ -240,8 +266,18 @@ class CrossoveredBudgetLines(models.Model):
                     and date_order between to_date(%s,'yyyy-mm-dd') AND to_date(%s,'yyyy-mm-dd'))""",
                         (line.analytic_account_id.id, acc_ids, date_from, date_to,))
                 result = self.env.cr.fetchone()[0] or 0.0
-
-            line.commitments = -(result)
+                
+                self.env.cr.execute("""
+                    SELECT sum(total_amount) 
+                    from hr_expense 
+                    WHERE analytic_account_id=%s
+                    AND account_id=ANY(%s)
+                    AND sheet_id in (SELECT id FROM hr_expense_sheet WHERE state = 'approve') 
+                    and date between to_date(%s,'yyyy-mm-dd') AND to_date(%s,'yyyy-mm-dd')""",
+                        (line.analytic_account_id.id, acc_ids, date_from, date_to,))
+                result2 = self.env.cr.fetchone()[0] or 0.0
+                
+            line.commitments = -(result+result2)
 
 
 class PurchaseOrder(models.Model):
@@ -273,9 +309,19 @@ class PurchaseOrder(models.Model):
     @api.multi
     def _check_budget(self):
         for line in self.order_line:
-            budget_line = self.env['crossovered.budget.lines'].search([('analytic_account_id', '=', line.account_analytic_id.id)],limit=1)
-            if line.price_total > budget_line.allowed_amount:
-                raise UserError(_(line.product_id.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
+            self.env.cr.execute("""
+                    SELECT * FROM crossovered_budget_lines WHERE
+                    general_budget_id in (SELECT budget_id FROM account_budget_rel WHERE account_id=%s) AND
+                    analytic_account_id = %s AND 
+                    to_date(%s,'yyyy-mm-dd') between date_from and date_to""",
+                    (line.account_id.id,line.account_analytic_id.id, line.order_id.date_order))
+            result = self.env.cr.fetchone()
+            if result:
+                result = self.env['crossovered.budget.lines'].browse(result[0]) 
+                if line.price_total > result.allowed_amount:
+                    raise UserError(_(line.product_id.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
+            else:
+                raise UserError(_(line.product_id.name + ' has no budget lines, Please notify Finance to create budget'))
         return True
     
     @api.multi
