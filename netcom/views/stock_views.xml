@@ -1,6 +1,17 @@
 <odoo>
   <data>
   
+  	<record id="netcom_purchase_tree_view" model="ir.ui.view">
+        <field name="name">netcom.purchase.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+	        <field name="state" position="before">
+	        	<field name="need_override"/>
+	        </field>	
+        </field>
+    </record>
+  
   	<record id="netcom_purchase_form_view" model="ir.ui.view">
         <field name="name">netcom.purchase.form</field>
         <field name="model">purchase.order</field>
@@ -8,6 +19,10 @@
         <field name="arch" type="xml">
         	<button name="print_quotation" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
         	<button name="action_rfq_send" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
+        	<field name="name" position="before">
+            	<field name= "need_override" invisible = "1"/>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+            </field>
         	<xpath expr="//button[@name='action_view_picking']" position="replace">
         		<button type="object"
                             name="action_view_picking"
@@ -25,11 +40,16 @@
                      <field name='invoice_ids' invisible="1"/>
                  </button>
         	</xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+            </xpath>
         	<xpath expr="//button[@name='action_rfq_send']" position="before">
         		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
         	</xpath>
         	<xpath expr="//button[@name='button_confirm']" position="replace">
-        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager"/>
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
         	</xpath>
         	<xpath expr="//button[@name='button_approve']" position="replace">
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
@@ -48,7 +68,35 @@
             </field>
         </field>
     </record>
-    
+    <record id="netcom_view_hr_expense_sheet_form" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.form</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
+            <field name="arch" type="xml">
+            <field name="name" position="before">
+            	<field name= "need_override" invisible = "1"/>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+            </field>
+            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
+            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+            </xpath>
+            <field name="analytic_account_id" position="replace">
+            	<field name="account_id"/>
+            </field>
+            </field>
+    </record>
+    <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.tree</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_tree"/>
+            <field name="arch" type="xml">
+            <field name="state" position="before">
+            	<field name="need_override"/>
+            </field>
+            </field>
+    </record>
     <record id="netcom_expense_form_view" model="ir.ui.view">
             <field name="name">netcom.expense.form</field>
             <field name="model">hr.expense</field>
@@ -62,7 +110,9 @@
 	            	<field name="analytic_account_id" invisible="1" required="1"/>
 	            </field>
 	            <field name="account_id" position="replace">
-	            	<field name="account_id" domain="[('user_type_id', '=', 'Expenses')]" required="1"/>
+	            	<field name="account_id" required="1"/>
+<!-- 	            	<field name= "need_override"/>
+	            	<field name= "override_budget"/> -->
 	            </field>
 	        </field>
 	 </record>

@@ -32,7 +32,20 @@ class HrExpense(models.Model):
     
     analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
-
+    need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
+    override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
+    
+    @api.multi
+    def action_override_budget(self):
+        self.write({'override_budget': True})
+        if self.sheet_id.need_override == False:
+            subject = "Budget Override Done, Expense {} can be approved now".format(self.name)
+            partner_ids = []
+            for partner in self.sheet_id.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            
+    
     @api.multi
     def submit_expenses(self):
         if any(expense.state != 'draft' for expense in self):
@@ -167,7 +180,17 @@ class HrExpenseSheet(models.Model):
     _name = "hr.expense.sheet"
     _inherit = 'hr.expense.sheet'
     
+    @api.multi
+    def _check_override(self):
+        for self in self:
+            for line in self.expense_line_ids:
+                if line.need_override and line.override_budget == False:
+                    self.need_override = True
+                else:
+                    self.need_override = False
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
+    need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
+    
     @api.multi
     def action_sheet_move_create(self):
         if any(sheet.state != 'approve' for sheet in self):
@@ -189,15 +212,20 @@ class HrExpenseSheet(models.Model):
             self.write({'state': 'done'})
         return res
     
+    
+    
     @api.multi
     def approve_expense_sheets(self):
-        if not self.user_has_groups('hr_expense.group_hr_expense_user'):
+        if not self.user_has_groups('netcom.group_hr_line_manager'):
             raise UserError(_("Only Line Managers can approve expenses"))
-        self._check_budget()
+        if self._check_budget() == False and self.need_override:
+            return {}
+        
         self.write({'state': 'approve', 'responsible_id': self.env.user.id})
         
     @api.multi
     def _check_budget(self):
+        override = False
         for line in self.expense_line_ids:
             self.env.cr.execute("""
                     SELECT * FROM crossovered_budget_lines WHERE
@@ -208,10 +236,20 @@ class HrExpenseSheet(models.Model):
             result = self.env.cr.fetchone()
             if result:
                 result = self.env['crossovered.budget.lines'].browse(result[0]) 
-                if line.total_amount > result.allowed_amount:
-                    raise UserError(_(line.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
-            else:
-                raise UserError(_(line.name + ' has no budget lines, Please notify Finance to create budget'))
+                if line.total_amount > result.allowed_amount and line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
+        if override:
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Expense {} needs a budget override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
         return True
 
     
@@ -342,6 +380,16 @@ class PurchaseOrder(models.Model):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
     
+    @api.multi
+    def _check_override(self):
+        for self in self:
+            for line in self.order_line:
+                if line.need_override and line.override_budget == False:
+                    self.need_override = True
+                else:
+                    self.need_override = False
+                    
+    need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     employee_id = fields.Many2one('hr.employee', 'Employee',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
     
@@ -362,6 +410,7 @@ class PurchaseOrder(models.Model):
     
     @api.multi
     def _check_budget(self):
+        override = False
         for line in self.order_line:
             self.env.cr.execute("""
                     SELECT * FROM crossovered_budget_lines WHERE
@@ -372,19 +421,31 @@ class PurchaseOrder(models.Model):
             result = self.env.cr.fetchone()
             if result:
                 result = self.env['crossovered.budget.lines'].browse(result[0]) 
-                if line.price_total > result.allowed_amount:
-                    raise UserError(_(line.product_id.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
-            else:
-                raise UserError(_(line.product_id.name + ' has no budget lines, Please notify Finance to create budget'))
+                if line.price_total > result.allowed_amount and line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
+        if override:
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Purchase Order {} needs a budget override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
         return True
+    
     
     @api.multi
     def button_confirm(self):
         for order in self:
             if order.state not in ['draft','submit', 'sent']:
                 continue
+            if self._check_budget() == False and self.need_override:
+                return {}
             order._add_supplier_to_product()
-            self._check_budget()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\
                     or (order.company_id.po_double_validation == 'two_step'\
@@ -413,6 +474,18 @@ class PurchaseOrderLine(models.Model):
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic)
     account_id = fields.Many2one('account.account', string='Account', domain = "[('user_type_id', '=', 'Expenses')]")
+    need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
+    override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
+    
+    @api.multi
+    def action_override_budget(self):
+        self.write({'override_budget': True})
+        if self.order_id.need_override == False:
+            subject = "Budget Override Done, Purchase Order {} can be approved now".format(self.name)
+            partner_ids = []
+            for partner in self.order_id.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.order_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
 
 
