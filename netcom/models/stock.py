@@ -190,6 +190,7 @@ class HrExpenseSheet(models.Model):
                     self.need_override = False
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
+    expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
     
     @api.multi
     def action_sheet_move_create(self):
@@ -276,6 +277,7 @@ class Picking(models.Model):
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
+    _order = "general_budget_id"
     
     allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
     commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
