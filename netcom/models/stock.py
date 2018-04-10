@@ -519,6 +519,7 @@ class SaleOrder(models.Model):
             })
     
     remarks = fields.Char('Remarks', track_visibility='onchange')
+    date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')

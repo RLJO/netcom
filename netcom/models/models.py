@@ -7,6 +7,7 @@ class Partner(models.Model):
     _inherit = 'res.partner'
 
     parent_account_number = fields.Char('Parent Account Number')
+    contact_name = fields.Char('Contact Name')
 
     @api.multi
     def name_get(self):
@@ -144,6 +145,17 @@ class SubAccount(models.Model):
     _name = "sub.account"
     _description = "sub account form"
     _order = "parent_id"
+    
+    @api.multi
+    def name_get(self):
+        res = []
+
+        for partner in self:
+            result = partner.name
+            if partner.child_account:
+                result = str(partner.name) + " " + str(partner.child_account)
+            res.append((partner.id, result))
+        return res
     
     def _default_category(self):
         return self.env['res.partner.category'].browse(self._context.get('category_id'))
