@@ -11,12 +11,13 @@
 		</field>
 	    </field>
 	</record>
-
+	
 	<record id="pipeline_netcom_form" model="ir.ui.view">
 	    <field name="name">pipeline.netcom.form</field>
 	    <field name="model">crm.lead</field>
-	    <field name="inherit_id" ref="crm.crm_case_form_view_oppor"/>
+	    <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
 	    <field name="arch" type="xml">
+	    <button name="%(sale_crm.sale_action_quotations_new)d" position="attributes"> <attribute name="groups">netcom.group_sale_account_exec</attribute></button>
     	<xpath expr="//button[@name='action_set_won']" position="before">
        		<button name="assign_engineer" string="Send to Engineers" type="object" attrs="{'invisible': ['|', ('active','=',False), ('probability', '!=', 70)]}" groups="base.group_user"/>
        	</xpath>
@@ -140,6 +141,7 @@
     <menuitem name="Customer Request" id="customer_request" parent="sale.sale_order_menu"
               action="CustomerRequest_action_window"/>
               
+              
     <menuitem name="Vendor Request" id="Vendor_request" parent="purchase.menu_procurement_management"
               action="VendorRequest_action_window"/>
               
@@ -154,8 +156,8 @@
         <form string="Partners">
    	<header>
 		<button name="button_submit" states="draft" string="Submit" type="object" />
-		<button name="button_approve" states="submit" string="Approve" type="object" />
-		<button name="button_reject" states="submit" string="Reject" type="object" />
+		<button name="button_approve" states="submit" string="Approve" type="object" groups="account.group_account_invoice"/>
+		<button name="button_reject" states="submit" string="Reject" type="object" groups="account.group_account_invoice"/>
 		<button name="button_reset" states="reject" string="Set to Draft" type="object" />
 		<field name="state" widget="statusbar" statusbar_visible="draft,submit,approve" readonly="1"/>
     </header>

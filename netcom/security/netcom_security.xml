@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <record id="group_sale_account_manager" model="res.groups">
+        <field name="name">Account Manager</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_hr_line_manager" model="res.groups">
+        <field name="name">Line Manager</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_exec" model="res.groups">
+        <field name="name">Account Executive</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_col" model="res.groups">
+        <field name="name">Collections Officer</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_taxation" model="res.groups">
+        <field name="name">Taxation</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_budget" model="res.groups">
+        <field name="name">Budget Officer</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_tres" model="res.groups">
+        <field name="name">Treasury</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_account_data" model="res.groups">
+        <field name="name">Data Analyst</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_sale_bom" model="res.groups">
+        <field name="name">BOM Creation</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <record id="group_product_creation" model="res.groups">
+        <field name="name">Product Creation</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+
+</data>
+</odoo>

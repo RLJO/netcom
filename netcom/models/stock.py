@@ -27,8 +27,25 @@ class HrExpense(models.Model):
     _name = "hr.expense"
     _inherit = 'hr.expense'
     
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
-
+    need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
+    override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
+    
+    @api.multi
+    def action_override_budget(self):
+        self.write({'override_budget': True})
+        if self.sheet_id.need_override == False:
+            subject = "Budget Override Done, Expense {} can be approved now".format(self.name)
+            partner_ids = []
+            for partner in self.sheet_id.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            
+    
     @api.multi
     def submit_expenses(self):
         if any(expense.state != 'draft' for expense in self):
@@ -163,7 +180,18 @@ class HrExpenseSheet(models.Model):
     _name = "hr.expense.sheet"
     _inherit = 'hr.expense.sheet'
     
+    @api.multi
+    def _check_override(self):
+        for self in self:
+            for line in self.expense_line_ids:
+                if line.need_override and line.override_budget == False:
+                    self.need_override = True
+                else:
+                    self.need_override = False
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
+    need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
+    expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
+    
     @api.multi
     def action_sheet_move_create(self):
         if any(sheet.state != 'approve' for sheet in self):
@@ -186,6 +214,46 @@ class HrExpenseSheet(models.Model):
         return res
     
     
+    
+    @api.multi
+    def approve_expense_sheets(self):
+        if not self.user_has_groups('netcom.group_hr_line_manager'):
+            raise UserError(_("Only Line Managers can approve expenses"))
+        if self._check_budget() == False and self.need_override:
+            return {}
+        
+        self.write({'state': 'approve', 'responsible_id': self.env.user.id})
+        
+    @api.multi
+    def _check_budget(self):
+        override = False
+        for line in self.expense_line_ids:
+            self.env.cr.execute("""
+                    SELECT * FROM crossovered_budget_lines WHERE
+                    general_budget_id in (SELECT budget_id FROM account_budget_rel WHERE account_id=%s) AND
+                    analytic_account_id = %s AND 
+                    to_date(%s,'yyyy-mm-dd') between date_from and date_to""",
+                    (line.account_id.id,line.analytic_account_id.id, line.date))
+            result = self.env.cr.fetchone()
+            if result:
+                result = self.env['crossovered.budget.lines'].browse(result[0]) 
+                if line.total_amount > result.allowed_amount and line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
+        if override:
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Expense {} needs a budget override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
+        return True
+
+    
 
 class Picking(models.Model):
     _name = "stock.picking"
@@ -194,21 +262,85 @@ class Picking(models.Model):
     def _default_owner(self):
         return self.env.context.get('default_employee_id') or self.env['res.users'].browse(self.env.uid).partner_id
     
+    def _default_employee(self):
+        self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+        return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+    
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
+        help="Default Owner")
+    
+    employee_id = fields.Many2one('hr.employee', 'Employee',
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee,
         help="Default Owner")
 
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
+    _order = "general_budget_id"
     
     allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
     commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
     
     @api.multi
+    def _compute_theoritical_amount(self):
+        today = fields.Datetime.now()
+        for line in self:
+            # Used for the report
+
+            if self.env.context.get('wizard_date_from') and self.env.context.get('wizard_date_to'):
+                date_from = fields.Datetime.from_string(self.env.context.get('wizard_date_from'))
+                date_to = fields.Datetime.from_string(self.env.context.get('wizard_date_to'))
+                if date_from < fields.Datetime.from_string(line.date_from):
+                    date_from = fields.Datetime.from_string(line.date_from)
+                elif date_from > fields.Datetime.from_string(line.date_to):
+                    date_from = False
+
+                if date_to > fields.Datetime.from_string(line.date_to):
+                    date_to = fields.Datetime.from_string(line.date_to)
+                elif date_to < fields.Datetime.from_string(line.date_from):
+                    date_to = False
+
+                theo_amt = 0.00
+                if date_from and date_to:
+                    line_timedelta = fields.Datetime.from_string(line.date_to) - fields.Datetime.from_string(line.date_from)
+                    elapsed_timedelta = date_to - date_from
+                    if elapsed_timedelta.days > 0:
+                        theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
+            else:
+                if line.paid_date:
+                    if fields.Datetime.from_string(line.date_to) <= fields.Datetime.from_string(line.paid_date):
+                        theo_amt = 0.00
+                    else:
+                        theo_amt = line.planned_amount
+                else:
+                    line_timedelta = fields.Datetime.from_string(line.date_to) - fields.Datetime.from_string(line.date_from)
+                    elapsed_timedelta = fields.Datetime.from_string(today) - (fields.Datetime.from_string(line.date_from))
+
+                    if elapsed_timedelta.days < 0:
+                        # If the budget line has not started yet, theoretical amount should be zero
+                        theo_amt = 0.00
+                    elif line_timedelta.days > 0 and fields.Datetime.from_string(today) < fields.Datetime.from_string(line.date_to):
+                        # If today is between the budget line date_from and date_to
+                        if elapsed_timedelta.days < 30:
+                            time = 1
+                        elif elapsed_timedelta.days > 30 and elapsed_timedelta.days < 60:
+                            time = 2
+                        elif elapsed_timedelta.days > 60 and elapsed_timedelta.days < 90:
+                            time = 3
+                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days < 120:
+                            time = 4
+                        theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
+                    else:
+                        theo_amt = line.planned_amount
+
+            line.theoritical_amount = theo_amt
+    
+    @api.multi
     def _compute_allowed_amount(self):
         for line in self:
             line.allowed_amount = line.theoritical_amount + float((line.practical_amount or 0.0)) + float((line.commitments or 0.0))
+    
     
     @api.multi
     def _compute_commitments(self):
@@ -228,13 +360,40 @@ class CrossoveredBudgetLines(models.Model):
                     and date_order between to_date(%s,'yyyy-mm-dd') AND to_date(%s,'yyyy-mm-dd'))""",
                         (line.analytic_account_id.id, acc_ids, date_from, date_to,))
                 result = self.env.cr.fetchone()[0] or 0.0
-
-            line.commitments = -(result)
+                
+                self.env.cr.execute("""
+                    SELECT sum(total_amount) 
+                    from hr_expense 
+                    WHERE analytic_account_id=%s
+                    AND account_id=ANY(%s)
+                    AND sheet_id in (SELECT id FROM hr_expense_sheet WHERE state = 'approve') 
+                    and date between to_date(%s,'yyyy-mm-dd') AND to_date(%s,'yyyy-mm-dd')""",
+                        (line.analytic_account_id.id, acc_ids, date_from, date_to,))
+                result2 = self.env.cr.fetchone()[0] or 0.0
+                
+            line.commitments = -(result+result2)
 
 
 class PurchaseOrder(models.Model):
     _name = "purchase.order"
     _inherit = ['purchase.order']
+    
+    def _default_employee(self):
+        self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+        return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
+    
+    @api.multi
+    def _check_override(self):
+        for self in self:
+            for line in self.order_line:
+                if line.need_override and line.override_budget == False:
+                    self.need_override = True
+                else:
+                    self.need_override = False
+                    
+    need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
+    employee_id = fields.Many2one('hr.employee', 'Employee',
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
     
     state = fields.Selection([
         ('draft', 'RFQ'),
@@ -253,19 +412,42 @@ class PurchaseOrder(models.Model):
     
     @api.multi
     def _check_budget(self):
+        override = False
         for line in self.order_line:
-            budget_line = self.env['crossovered.budget.lines'].search([('analytic_account_id', '=', line.account_analytic_id.id)],limit=1)
-            if line.price_total > budget_line.allowed_amount:
-                raise UserError(_(line.product_id.name + ' has exceeded your budget, Please reduce your request or notify Finance to increase your budget'))
+            self.env.cr.execute("""
+                    SELECT * FROM crossovered_budget_lines WHERE
+                    general_budget_id in (SELECT budget_id FROM account_budget_rel WHERE account_id=%s) AND
+                    analytic_account_id = %s AND 
+                    to_date(%s,'yyyy-mm-dd') between date_from and date_to""",
+                    (line.account_id.id,line.account_analytic_id.id, line.order_id.date_order))
+            result = self.env.cr.fetchone()
+            if result:
+                result = self.env['crossovered.budget.lines'].browse(result[0]) 
+                if line.price_total > result.allowed_amount and line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
+        if override:
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Purchase Order {} needs a budget override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
         return True
+    
     
     @api.multi
     def button_confirm(self):
         for order in self:
             if order.state not in ['draft','submit', 'sent']:
                 continue
+            if self._check_budget() == False and self.need_override:
+                return {}
             order._add_supplier_to_product()
-            self._check_budget()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\
                     or (order.company_id.po_double_validation == 'two_step'\
@@ -281,7 +463,32 @@ class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
     _inherit = ['purchase.order.line']
     
-    account_id = fields.Many2one('account.account', related='product_id.property_account_expense_id', string='Account', required=False, store=True, readonly=True)
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    def _default_account(self):
+        return self.product_id.property_account_expense_id
+#     
+#     @api.multi
+#     @api.onchange('type')
+#     def type_change(self):
+#         self.product_id = False
+    
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic)
+    account_id = fields.Many2one('account.account', string='Account', domain = "[('user_type_id', '=', 'Expenses')]")
+    need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
+    override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
+    
+    @api.multi
+    def action_override_budget(self):
+        self.write({'override_budget': True})
+        if self.order_id.need_override == False:
+            subject = "Budget Override Done, Purchase Order {} can be approved now".format(self.name)
+            partner_ids = []
+            for partner in self.order_id.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.order_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+    
 
 
 class SaleOrder(models.Model):

@@ -1,27 +1,102 @@
 <odoo>
   <data>
   
+  	<record id="netcom_purchase_tree_view" model="ir.ui.view">
+        <field name="name">netcom.purchase.tree</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+	        <field name="state" position="before">
+	        	<field name="need_override"/>
+	        </field>	
+        </field>
+    </record>
+  
   	<record id="netcom_purchase_form_view" model="ir.ui.view">
         <field name="name">netcom.purchase.form</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
+        	<button name="print_quotation" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
+        	<button name="action_rfq_send" position="attributes"> <attribute name="groups">purchase.group_purchase_user</attribute></button>
+        	<field name="name" position="before">
+            	<field name= "need_override" invisible = "1"/>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+            </field>
+        	<xpath expr="//button[@name='action_view_picking']" position="replace">
+        		<button type="object"
+                            name="action_view_picking"
+                            class="oe_stat_button"
+                            icon="fa-truck" attrs="{'invisible':[('state', 'in', ('submit','draft','sent','to approve')),('picking_ids','=',[])]}">
+                            <field name="picking_count" widget="statinfo" string="Shipment" help="Incoming Shipments"/>
+                            <field name="picking_ids" invisible="1"/>
+                        </button>
+        	</xpath>
+        	<xpath expr="//button[@name='action_view_invoice']" position="replace">
+        		<button type="object"  name="action_view_invoice"
+                     class="oe_stat_button" groups="account.group_account_invoice"
+                     icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('submit','draft','sent','to approve')),('invoice_ids','=',[])]}">
+                     <field name="invoice_count" widget="statinfo" string="Vendor Bills"/>
+                     <field name='invoice_ids' invisible="1"/>
+                 </button>
+        	</xpath>
+        	<xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+            </xpath>
         	<xpath expr="//button[@name='action_rfq_send']" position="before">
         		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
         	</xpath>
         	<xpath expr="//button[@name='button_confirm']" position="replace">
-        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm"/>
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
         	</xpath>
         	<xpath expr="//button[@name='button_approve']" position="replace">
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
         	<xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
-            	<field name="account_id"/>
+            	<field name="account_id" required = "1"/>
             </xpath>
-            
+            <xpath expr="//field[@name='order_line']/tree/field[@name='account_analytic_id']" position="replace">
+            	<field name="account_analytic_id" invisible = "1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='analytic_tag_ids']" position="replace">
+            	<field name="analytic_tag_ids" groups="purchase.group_analytic_accounting" invisible = "1" widget="many2many_tags" options="{'color_field': 'color'}"/>
+            </xpath>
+            <field name="partner_id" position="after">
+            	<field name="employee_id" groups="netcom.group_hr_line_manager"/>
+            </field>
         </field>
     </record>
-    
+    <record id="netcom_view_hr_expense_sheet_form" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.form</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
+            <field name="arch" type="xml">
+            <field name="name" position="before">
+            	<field name= "need_override" invisible = "1"/>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+            </field>
+            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
+            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+            </xpath>
+            <field name="analytic_account_id" position="replace">
+            	<field name="account_id"/>
+            </field>
+            </field>
+    </record>
+    <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.tree</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_tree"/>
+            <field name="arch" type="xml">
+            <field name="state" position="before">
+            	<field name="need_override"/>
+            </field>
+            </field>
+    </record>
     <record id="netcom_expense_form_view" model="ir.ui.view">
             <field name="name">netcom.expense.form</field>
             <field name="model">hr.expense</field>
@@ -30,6 +105,14 @@
             	<field name="employee_id" position="replace">
 	                <field name="employee_id" attrs="{'invisible': [('payment_mode', '!=', 'own_account')]}" groups="hr_expense.group_hr_expense_user"/>
 	                <field name="vendor_id" attrs="{'invisible': [('payment_mode', '=', 'own_account')],'required': [('payment_mode', '!=', 'own_account')]}"/>
+	            </field>
+	            <field name="analytic_account_id" position="replace">
+	            	<field name="analytic_account_id" invisible="1" required="1"/>
+	            </field>
+	            <field name="account_id" position="replace">
+	            	<field name="account_id" required="1"/>
+<!-- 	            	<field name= "need_override"/>
+	            	<field name= "override_budget"/> -->
 	            </field>
 	        </field>
 	 </record>
@@ -119,15 +202,16 @@
                     <group>
                         <group>
                         	<field name="is_locked" invisible="1"/>
+                        	<field name="employee_id" invisible="1"/>
                             <field name="partner_id" attrs="{'invisible': [('picking_type_code', '=', 'internal')]}"/>
-                            <field name="location_id" groups="stock.group_stock_multi_locations" attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
-                            <field name="location_dest_id" groups="stock.group_stock_multi_locations" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+                            <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
+                            <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                             <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>
                         </group>
                         <group>
                             <field name="scheduled_date" attrs="{'readonly': [('id', '=', False)], 'required': [('id', '!=', False)]}"/>
                             <field name="origin" placeholder="e.g. PO0032"/>
-                            <field name="owner_id" groups="stock.group_tracking_owner"/>
+                            <field name="owner_id" groups="netcom.group_hr_line_manager"/>
                             <div groups="stock.group_tracking_owner" colspan="2" col="2">
                                 <button name="action_assign_owner" string="Assign Owner" type="object" attrs="{'invisible': ['|',('move_line_exist', '=', False),('state', 'not in', ('draft','assigned','confirmed'))]}"
                                     class="oe_link"/>
@@ -135,7 +219,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Detailed Operations" attrs="{'invisible': [('show_operations', '=', False)]}">
+                        <page string="Detailed Operations" groups="stock.group_stock_user" attrs="{'invisible': [('show_operations', '=', False)]}">
                             <field name="move_line_ids" attrs="{'readonly': [('state', '=', 'done'), ('is_locked', '=', True)]}" context="{'default_picking_id': id, 'default_location_id': location_id, 'default_location_dest_id': location_dest_id}">
                                 <tree editable="bottom" decoration-muted="(state == 'done' and is_locked == True)" decoration-danger="qty_done&gt;product_uom_qty and state!='done'" decoration-success="qty_done==product_uom_qty and state!='done' and not result_package_id">
                                     <field name="product_id" required="1" attrs="{'readonly': ['|', ('state', '=', 'done'), ('move_id', '!=', False)]}"/>
@@ -192,7 +276,7 @@
                             <field name="entire_package_ids" context="{'picking_id': id, 'tree_view_ref': 'stock.view_quant_package_picking_tree'}" attrs="{'invisible': ['|', ('picking_type_entire_packs', '=', False), ('show_operations', '=', True)]}" readonly="0"/>
                             <button class="oe_highlight" name="put_in_pack" type="object" string="Put in Pack" attrs="{'invisible': [('state', 'in', ('done', 'cancel'))]}" groups="stock.group_tracking_lot"/>
                         </page>
-                        <page string="Additional Info" name="extra">
+                        <page string="Additional Info" name="extra" groups="stock.group_stock_user">
                             <group>
                                 <group>
                                     <field name="picking_type_code" invisible="1"/>
@@ -481,7 +565,7 @@
 
 
 
-    <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_warehouse_mgmt"
+    <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>
 
   </data>
