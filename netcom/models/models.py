@@ -62,6 +62,13 @@ class Lead(models.Model):
         self.write({'stage_id': stage_id.id})
         return {}
 
+class SaleSubscriptionLine(models.Model):
+    _name = "sale.subscription.line"
+    _description = "Subscription Line"
+    _inherit = ['sale.subscription.line']
+    
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    
         
 class EquipmentType(models.Model):
     _name = "equipment.type"
