@@ -9,16 +9,16 @@ class Partner(models.Model):
     parent_account_number = fields.Char('Parent Account Number')
     contact_name = fields.Char('Contact Name')
 
-#     @api.multi
-#     def name_get(self):
-#         res = []
-# 
-#         for partner in self:
-#             result = partner.name
-#             if partner.parent_account_number:
-#                 result = str(partner.name) + " " + str(partner.parent_account_number)
-#             res.append((partner.id, result))
-#         return res
+    @api.multi
+    def name_get(self):
+        res = []
+ 
+        for partner in self:
+            result = partner.name
+            if partner.parent_account_number:
+                result = str(partner.name) + " " + str(partner.parent_account_number)
+            res.append((partner.id, result))
+        return res
 
 class Lead(models.Model):
     _name = "crm.lead"
@@ -153,16 +153,16 @@ class SubAccount(models.Model):
     _description = "sub account form"
     _order = "parent_id"
     
-#     @api.multi
-#     def name_get(self):
-#         res = []
-# 
-#         for partner in self:
-#             result = partner.name
-#             if partner.child_account:
-#                 result = str(partner.name) + " " + str(partner.child_account)
-#             res.append((partner.id, result))
-#         return res
+    @api.multi
+    def name_get(self):
+        res = []
+ 
+        for partner in self:
+            result = partner.name
+            if partner.child_account:
+                result = str(partner.name) + " " + str(partner.child_account)
+            res.append((partner.id, result))
+        return res
     
     def _default_category(self):
         return self.env['res.partner.category'].browse(self._context.get('category_id'))
