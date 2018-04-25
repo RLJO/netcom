@@ -104,6 +104,18 @@
         </field>
     </record>
     
+    <record id="netcom_hr_expense_refsheet" model="ir.ui.view">
+        <field name="name">netcom.hr.expenserefsheet</field>
+        <field name="model">hr.expense</field>
+        <field name="priority" eval="7"/>
+        <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" readonly="1"/>
+            </field>
+        </field>
+    </record>
+    
     <record id="netcom_kin_form_view" model="ir.ui.view">
         <field name="name">netcom.kin.form</field>
         <field name="model">hr.employee</field>

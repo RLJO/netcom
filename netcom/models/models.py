@@ -322,7 +322,12 @@ class ExpenseRef(models.Model):
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('hr.expense') or '/'
         return super(ExpenseRef, self).create(vals)
-      
+    
+class ExpenseRefSheet(models.Model):
+    _name = "hr.expense.sheet"
+    _inherit = 'hr.expense.sheet'
+    
+    name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
 
 
 #     name = fields.Char()
