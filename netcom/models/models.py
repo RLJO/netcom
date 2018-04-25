@@ -314,7 +314,7 @@ class ExpenseRef(models.Model):
     _name = 'hr.expense'
     _inherit = 'hr.expense'
     
-    name = fields.Char('Order Reference', required=True, index=True, copy=False, default='New')
+    name = fields.Char('Order Reference', readonly=True, required=True, index=True, copy=False, default='New')
     description = fields.Char(string='Expense Desciption') 
 
     @api.model
