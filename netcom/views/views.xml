@@ -106,7 +106,7 @@
     
     <record id="netcom_hr_expense_refsheet" model="ir.ui.view">
         <field name="name">netcom.hr.expenserefsheet</field>
-        <field name="model">hr.expense</field>
+        <field name="model">hr.expense.sheet</field>
         <field name="priority" eval="7"/>
         <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
         <field name="arch" type="xml">
