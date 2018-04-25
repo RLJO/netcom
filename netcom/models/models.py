@@ -310,7 +310,18 @@ class ProductTemplate(models.Model):
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
     
+class ExpenseRef(models.Model):
+    _name = 'hr.expense'
+    _inherit = 'hr.expense'
+    
+    name = fields.Char('Order Reference', required=True, index=True, copy=False, default='New')
+    description = fields.Char(string='Expense Desciption') 
 
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'New') == 'New':
+            vals['name'] = self.env['ir.sequence'].next_by_code('hr.expense') or '/'
+        return super(ExpenseRef, self).create(vals)
       
 
 
