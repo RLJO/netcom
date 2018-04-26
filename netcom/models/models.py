@@ -328,6 +328,21 @@ class ExpenseRefSheet(models.Model):
     _inherit = 'hr.expense.sheet'
     
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
+    
+class StoreReqEdit(models.Model):
+    _name = "stock.picking"
+    _inherit = 'stock.picking'
+    
+    location_id = fields.Many2one(
+        'stock.location', "Source Location",
+        default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_src_id,
+        readonly=False, required=True,
+        states={'draft': [('readonly', False)]})
+    location_dest_id = fields.Many2one(
+        'stock.location', "Destination Location",
+        default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_dest_id,
+        readonly=True, required=True,
+        states={'draft': [('readonly', False)]})
 
 
 #     name = fields.Char()
