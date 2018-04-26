@@ -6,8 +6,14 @@ class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
 
-    parent_account_number = fields.Char('Parent Account Number')
+    parent_account_number = fields.Char('Parent Account Number', readonly=True, required=True, index=True, copy=False, default='New')
     contact_name = fields.Char('Contact Name')
+
+    @api.model
+    def create(self, vals):
+        if vals.get('parent_account_number', 'New') == 'New':
+            vals['parent_account_number'] = self.env['ir.sequence'].next_by_code('res.partner') or '/'
+        return super(Partner, self).create(vals)
 
     @api.multi
     def name_get(self):
@@ -343,7 +349,6 @@ class StoreReqEdit(models.Model):
         default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_dest_id,
         readonly=True, required=True,
         states={'draft': [('readonly', False)]})
-
 
 #     name = fields.Char()
 #     value = fields.Integer()

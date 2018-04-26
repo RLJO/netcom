@@ -39,6 +39,14 @@
         	<field name="company_id" eval="False"/>
         </record>
         
+        <record id="seq_customer_code" model="ir.sequence">
+        	<field name="name">Customer Code</field>
+        	<field name="code">res.partner</field>
+        	<field name="prefix">MA</field>
+        	<field name="padding">4</field>
+        	<field name="company_id" eval="False"/>
+        </record>
+        
         <!--  -->
         <!--   <record id="object0" model="netcom.netcom"> -->
         <!--     <field name="name">Object 0</field> -->
