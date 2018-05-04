@@ -30,6 +30,23 @@
             <field name="group_ids" eval="[(4, ref('base.group_user'))]"/>
             <field name="description">BOM Creation Group for Engineers.</field>
         </record>
+        
+        <record id="seq_exp_ref" model="ir.sequence">
+        	<field name="name">Expense Ref</field>
+        	<field name="code">hr.expense</field>
+        	<field name="prefix">EX</field>
+        	<field name="padding">5</field>
+        	<field name="company_id" eval="False"/>
+        </record>
+        
+        <record id="seq_customer_code" model="ir.sequence">
+        	<field name="name">Customer Code</field>
+        	<field name="code">res.partner</field>
+        	<field name="prefix">MA</field>
+        	<field name="padding">4</field>
+        	<field name="company_id" eval="False"/>
+        </record>
+        
         <!--  -->
         <!--   <record id="object0" model="netcom.netcom"> -->
         <!--     <field name="name">Object 0</field> -->
