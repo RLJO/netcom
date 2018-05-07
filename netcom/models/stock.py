@@ -567,6 +567,19 @@ class SaleOrder(models.Model):
             })
     
     @api.multi
+    def action_cancel(self):
+        return self.write({'state': 'cancel','bill_confirm':False})
+    
+    @api.multi
+    def copy_data(self, default=None):
+        self.bill_confirm = False
+        if default is None:
+            default = {}
+        if 'order_line' not in default:
+            default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
+        return super(SaleOrder, self).copy_data(default)
+    
+    @api.multi
     def billing_confirm(self):
         for order in self:
             order.write({'bill_confirm': True})

@@ -365,7 +365,7 @@
                 </div>
                 <group>
                     <group>
-                        <field name="partner_id" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
+                        <field name="partner_id" domain="[('customer','=',True)]" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}" context="{'search_default_customer':1, 'show_address': 1}" options='{"always_reload": True}'/>
                         <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}" options='{"always_reload": True}'/>
                         <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}" options='{"always_reload": True}'/>
                         <field name="bill_confirm" readonly="1"/>
@@ -373,17 +373,17 @@
                     <group>
                         <field name="validity_date" attrs="{'invisible': [('state', 'in', ['sale', 'done'])]}"/>
                         <field name="confirmation_date" attrs="{'invisible': [('state', 'in', ['draft', 'sent', 'cancel'])]}"/>
-                        <field name="pricelist_id" groups="product.group_sale_pricelist"/>
+                        <field name="pricelist_id" groups="product.group_sale_pricelist" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
                         <field name="currency_id" invisible="1"/>
-                        <field name="payment_term_id" options="{'no_create': True}"/>
-                        <field name="remarks"/>
-                        <field name="period"/>
+                        <field name="payment_term_id" options="{'no_create': True}" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
+                        <field name="remarks" />
+                        <field name="period" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
                     </group>
                 </group>
                 <notebook>
                     <page string="Order Lines">
                         <field name="order_line" mode="tree,kanban"
-                            attrs="{'readonly': [('state', 'in', ('done','cancel'))]}">
+                            attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}">
                             <form string="Sales Order Lines">
                                 <group>
                                     <group>
