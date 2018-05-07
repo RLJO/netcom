@@ -566,11 +566,31 @@ class SaleOrder(models.Model):
                 'amount_total': amount_untaxed + amount_tax,
             })
     
+    @api.multi
+    def action_cancel(self):
+        return self.write({'state': 'cancel','bill_confirm':False})
+    
+    @api.multi
+    def copy_data(self, default=None):
+        self.bill_confirm = False
+        if default is None:
+            default = {}
+        if 'order_line' not in default:
+            default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
+        return super(SaleOrder, self).copy_data(default)
+    
+    @api.multi
+    def billing_confirm(self):
+        for order in self:
+            order.write({'bill_confirm': True})
+        return True
+    
     remarks = fields.Char('Remarks', track_visibility='onchange')
     date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
+    bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -631,7 +651,8 @@ class SaleOrderLine(models.Model):
                 self.product_id = False
                 return result
 
-        name = product.name_get()[0][1]
+        #name = product.name_get()[0][1]
+        name = product.name
         if product.description_sale:
             name += '\n' + product.description_sale
         vals['name'] = name
@@ -645,5 +666,26 @@ class SaleOrderLine(models.Model):
         self.update(vals)
 
         return result
+    
+    @api.onchange('product_uom', 'product_uom_qty')
+    def product_uom_change(self):
+        if not self.product_uom or not self.product_id:
+            self.price_unit = 0.0
+            return
+        if self.order_id.pricelist_id and self.order_id.partner_id:
+            product = self.product_id.with_context(
+                lang=self.order_id.partner_id.lang,
+                partner=self.order_id.partner_id.id,
+                quantity=self.product_uom_qty,
+                date=self.order_id.date_order,
+                pricelist=self.order_id.pricelist_id.id,
+                uom=self.product_uom.id,
+                fiscal_position=self.env.context.get('fiscal_position')
+            )
+            if self.type == "lease":
+                self.price_unit = self.product_id.lease_price
+            else:
+                self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
+
 
 

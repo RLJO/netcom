@@ -6,12 +6,13 @@ class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
 
-    parent_account_number = fields.Char('Parent Account Number', readonly=True, required=True, index=True, copy=False, default='New')
+    parent_account_number = fields.Char('Parent Account Number', readonly=True, required=False, index=True, copy=False,)
     contact_name = fields.Char('Contact Name')
 
     @api.model
     def create(self, vals):
-        if vals.get('parent_account_number', 'New') == 'New':
+#         if vals.get('parent_account_number', 'New') == 'New':
+        if 'customer' in vals and vals['customer'] == True:
             vals['parent_account_number'] = self.env['ir.sequence'].next_by_code('res.partner') or '/'
         return super(Partner, self).create(vals)
 
@@ -67,6 +68,40 @@ class Lead(models.Model):
         stage_id = self._stage_find(domain=[('probability', '=', 75.0), ('on_change', '=', True)])
         self.write({'stage_id': stage_id.id})
         return {}
+
+class SaleSubscription(models.Model):
+    _name = "sale.subscription"
+    _description = "Sale Subscription"
+    _inherit = ['sale.subscription']
+    
+    def _prepare_invoice_line(self, line, fiscal_position):
+        if 'force_company' in self.env.context:
+            company = self.env['res.company'].browse(self.env.context['force_company'])
+        else:
+            company = line.analytic_account_id.company_id
+            line = line.with_context(force_company=company.id, company_id=company.id)
+
+        account = line.product_id.property_account_income_id
+        if not account:
+            account = line.product_id.categ_id.property_account_income_categ_id
+        account_id = fiscal_position.map_account(account).id
+
+        tax = line.product_id.taxes_id.filtered(lambda r: r.company_id == company)
+        tax = fiscal_position.map_tax(tax, product=line.product_id, partner=self.partner_id)
+        return {
+            'name': line.name,
+            'account_id': account_id,
+            'account_analytic_id': line.analytic_account_id.analytic_account_id.id,
+            'subscription_id': line.analytic_account_id.id,
+            'price_unit': line.price_unit or 0.0,
+            'discount': line.discount,
+            'quantity': line.quantity,
+            'uom_id': line.uom_id.id,
+            'product_id': line.product_id.id,
+            'invoice_line_tax_ids': [(6, 0, tax.ids)],
+            'analytic_tag_ids': [(6, 0, line.analytic_account_id.tag_ids.ids)],
+            'sub_account_id': line.sub_account_id.id
+        }
 
 class SaleSubscriptionLine(models.Model):
     _name = "sale.subscription.line"
@@ -143,7 +178,9 @@ class CustomerRequest(models.Model):
             'function' : self.function,
             'phone' : self.phone,
             'mobile' : self.mobile,
-            'email' : self.email
+            'email' : self.email,
+            'customer': self.customer,
+            'supplier' : self.supplier
         }
         self.env['res.partner'].create(vals)
         return {}
