@@ -37,6 +37,7 @@ class Lead(models.Model):
     planned_revenue = fields.Float('Expected Revenue',compute='_compute_planned_revenue', track_visibility='always')
     name = fields.Char('Services', required=True, index=True)
     acc_executive = fields.Many2one('res.users', string='Account Executive', index=True, track_visibility='onchange')
+    probability = fields.Float('Probability', group_operator="avg", default=lambda self: self._default_probability())
     
     @api.one
     @api.depends('nrc','mrc')    
@@ -227,7 +228,7 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number')
+    child_account = fields.Char(string='Child Account Number', readonly=True, required=True, index=True, copy=False, default='New')
     
     website = fields.Char(help="Website of Partner or Company")
     
@@ -274,7 +275,13 @@ class SubAccount(models.Model):
         ('terminate', 'Terminated'),
         ('cancel', 'Canceled'),
         ], string='Status', readonly=True, index=True, copy=False, default='new', track_visibility='onchange')
-    
+
+    @api.model
+    def create(self, vals):
+        if vals.get('child_account', 'New') == 'New':
+            vals['child_account'] = self.env['ir.sequence'].next_by_code('sub.account') or '/'
+        return super(SubAccount, self).create(vals)
+
     @api.multi
     def button_new(self):
         self.write({'state': 'new'})
