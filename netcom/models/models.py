@@ -214,9 +214,14 @@ class SubAccount(models.Model):
     def _default_company(self):
         return self.env['res.company']._company_default_get('res.partner')
     
+    @api.depends('is_company')
     def _write_company_type(self):
         for partner in self:
             partner.is_company = partner.company_type == 'company'
+            
+    def _compute_company_type(self):
+        for partner in self:
+            partner.company_type = 'company' if partner.is_company else 'person'
 
     name = fields.Char(index=True)
     
@@ -228,11 +233,23 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', readonly=True, required=True, index=True, copy=False, default='New')
+    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False)
     
     website = fields.Char(help="Website of Partner or Company")
     
+    customer = fields.Boolean(string='Is a Customer', default=True,
+                               help="Check this box if this contact is a customer.")
+    
+    supplier = fields.Boolean(string='Is a Vendor',
+                               help="Check this box if this contact is a vendor. "
+                               "If it's not checked, purchase people will not see it when encoding a purchase order.")
+    
+    employee = fields.Boolean(help="Check this box if this contact is an Employee.")
+    
     fax = fields.Char(help="fax")
+    
+    is_company = fields.Boolean(string='Is a Company', default=False,
+        help="Check if the contact is a company, otherwise it is a person")
     
     create_date = fields.Date(string='Create Date', readonly=True)
     
@@ -269,18 +286,20 @@ class SubAccount(models.Model):
     company_name = fields.Char('Company Name') 
     
     state = fields.Selection([
-        ('new', 'New'),
+        ('new', 'Waiting Approval'),
+        ('approve', 'Approved'),
         ('activate', 'Activated'),
         ('suspend', 'Suspended'),
         ('terminate', 'Terminated'),
         ('cancel', 'Canceled'),
+        ('reject', 'Rejected'),
         ], string='Status', readonly=True, index=True, copy=False, default='new', track_visibility='onchange')
 
-    @api.model
-    def create(self, vals):
-        if vals.get('child_account', 'New') == 'New':
-            vals['child_account'] = self.env['ir.sequence'].next_by_code('sub.account') or '/'
-        return super(SubAccount, self).create(vals)
+#    @api.model
+ #   def create(self, vals):
+  #      if vals.get('child_account', 'New') == 'New':
+   #         vals['child_account'] = self.env['ir.sequence'].next_by_code('sub.account') or '/'
+    #    return super(SubAccount, self).create(vals)
 
     @api.multi
     def button_new(self):
@@ -306,7 +325,34 @@ class SubAccount(models.Model):
     def button_cancel(self):
         self.write({'state': 'cancel'})
         return {}
-
+    
+    @api.multi
+    def button_approve(self):
+        self.write({'state': 'approve'})
+        vals = {
+            'name' : self.name,
+            'company_type' : self.company_type,
+            'parent_id' : self.parent_id.id,
+            'street' : self.street,
+            'street2' : self.street2,
+            'city' : self.city,
+            'state_id' : self.state_id.id,
+            'zip' : self.zip,
+            'country_id' : self.country_id.id,
+            'function' : self.function,
+            'phone' : self.phone,
+            'mobile' : self.mobile,
+            'email' : self.email,
+            'customer': self.customer,
+            'supplier' : self.supplier
+        }
+        self.env['res.partner'].create(vals)
+        return {}
+    
+    @api.multi
+    def button_reject(self):
+        self.write({'state': 'reject'})
+        return {}
 
 class PensionManager(models.Model):
     _name = 'pen.type'

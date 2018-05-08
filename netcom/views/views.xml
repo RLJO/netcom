@@ -268,17 +268,20 @@
     <field name="arch" type="xml">
         <form string="Partners">
 			 <header>
+			 	<button name="button_approve" states="new" string="Approve" type="object" groups="account.group_account_invoice"/>
+				<button name="button_reject" states="new" string="Reject" type="object" groups="account.group_account_invoice"/>
+				<button name="button_new" states="reject" string="Renew" type="object" />
 				<button name="button_new" states="cancel" string="Renew" type="object" />
-				<button name="button_activate" states="new" string="Activate" type="object" />
+				<button name="button_activate" states="approve" string="Activate" type="object" />
 				<button name="button_activate" states="suspend" string="Activate" type="object" />
 				<button name="button_suspend" states="activate" string="Suspend" type="object" />
-				<button name="button_terminate" states="new" string="Terminate" type="object" />
+				<button name="button_terminate" states="approve" string="Terminate" type="object" />
 				<button name="button_terminate" states="suspend" string="Terminate" type="object" />
-				<button name="button_cancel" states="new" string="Cancel" type="object" />
+				<button name="button_cancel" states="approve" string="Cancel" type="object" />
 				<button name="button_terminate" states="activate" string="Terminate" type="object" />
 				<button name="button_cancel" states="activate" string="Cancel" type="object" />
 				<button name="button_cancel" states="terminate" string="cancel" type="object" />
-				<field name="state" widget="statusbar" statusbar_visible="new,cancel,activate,suspend,terminate" readonly="1"/>
+				<field name="state" widget="statusbar" statusbar_visible="new,approve,activate,suspend,terminate" readonly="1"/>
 			  </header>
         <sheet>
           <div class="oe_title">
