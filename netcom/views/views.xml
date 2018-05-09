@@ -273,8 +273,8 @@
     <field name="arch" type="xml">
         <form string="Partners">
 			 <header>
-			 	<button name="button_approve" states="new" string="Approve" type="object" groups="account.group_account_invoice"/>
-				<button name="button_reject" states="new" string="Reject" type="object" groups="account.group_account_invoice"/>
+			 	<button name="button_approve" states="new" string="Approve" type="object" groups="netcom.group_sale_billing"/>
+				<button name="button_reject" states="new" string="Reject" type="object" groups="netcom.group_sale_billing"/>
 				<button name="button_new" states="reject, cancel" string="Renew" type="object" />
 				<button name="button_activate" states="approve, suspend" string="Activate" type="object" />
 				<button name="button_suspend" states="activate" string="Suspend" type="object" />
