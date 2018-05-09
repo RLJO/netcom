@@ -200,7 +200,6 @@ class SubAccount(models.Model):
     @api.multi
     def name_get(self):
         res = []
- 
         for partner in self:
             result = partner.name
             if partner.child_account:
@@ -217,6 +216,12 @@ class SubAccount(models.Model):
     def _compute_company_type(self):
         for partner in self:
             partner.company_type = 'company' if partner.is_company else 'person'
+            
+#     def _createSub(self):
+#         partner_ids = self.search([('parent_id','=',self.parent_id.id)])
+#         number = len(partner_ids) + 1
+#         number = "SA00" + str(number)
+#         return number
 
     name = fields.Char(index=True, track_visibility='onchange')
     
@@ -228,7 +233,7 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False, track_visibility='onchange')
+    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False,default='/', track_visibility='onchange')
     
     website = fields.Char(help="Website of Partner or Company")
     
@@ -249,7 +254,7 @@ class SubAccount(models.Model):
          ('invoice', 'Invoice address'),
          ('delivery', 'Shipping address'),
          ('other', 'Other address')], string='Address Type',
-        default='contact',
+        default='invoice',
         help="Used to select automatically the right address according to the context in sales and purchases documents.")
     street = fields.Char()
     street2 = fields.Char()
@@ -280,11 +285,12 @@ class SubAccount(models.Model):
         ('reject', 'Rejected'),
         ], string='Status', readonly=True, index=True, copy=False, default='new', track_visibility='onchange')
 
-#    @api.model
- #   def create(self, vals):
-  #      if vals.get('child_account', 'New') == 'New':
-   #         vals['child_account'] = self.env['ir.sequence'].next_by_code('sub.account') or '/'
-    #    return super(SubAccount, self).create(vals)
+    @api.model
+    def create(self, vals):
+        partner_ids = self.search([('parent_id','=',vals['parent_id'])])
+        number = len(partner_ids) + 1
+        vals['child_account'] = "SA00" + str(number)
+        return super(SubAccount, self).create(vals)
     
     
     #partners = self.search([len('child_account')])
@@ -293,15 +299,6 @@ class SubAccount(models.Model):
        #     label = "SA"
         #    partners = str(label) + str(partners.child_account)
         
-    '''
-    @api.model
-    def createSub(self, vals):
-        if 'customer' in vals and vals['customer'] == True:
-            partner_ids = self.env['sub.account'].search([len('child_account','=',vals['child_account'])]).partner_id.id
-            partner_ids = partner_ids + 1
-            partner_ids = str(partner_ids.child_account) + str(partner_ids.child_account)
-        return super(SubAccount, self).create(vals)
-    '''
     
     @api.multi
     def button_new(self):

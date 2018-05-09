@@ -291,14 +291,14 @@
                 </h1>
                 <div class="o_row">
                     
-                    <field name="parent_id" placeholder="Customer" />
+                    <field name="parent_id" required="1" placeholder="Customer" />
                      </div>
                      <group>
                      
                      <field name="function" placeholder="DESCRIPTION"/>
                      
                      <field name="create_date" widget="date"/>
-                     <field name="child_account" placeholder=""/>
+                     <field name="child_account" required="1" placeholder=""/>
                      <field name="addinfo" placeholder="Additional Information"/>
                      <field name="company_name" placeholder="Company Name"/>
                      
