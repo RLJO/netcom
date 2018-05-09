@@ -37,7 +37,6 @@ class Lead(models.Model):
     planned_revenue = fields.Float('Expected Revenue',compute='_compute_planned_revenue', track_visibility='always')
     name = fields.Char('Services', required=True, index=True)
     acc_executive = fields.Many2one('res.users', string='Account Executive', index=True, track_visibility='onchange')
-    probability = fields.Float('Probability', group_operator="avg", default=lambda self: self._default_probability())
     
     @api.one
     @api.depends('nrc','mrc')    
@@ -214,19 +213,14 @@ class SubAccount(models.Model):
 
     def _default_company(self):
         return self.env['res.company']._company_default_get('res.partner')
-    
-    @api.depends('is_company')
-    def _write_company_type(self):
-        for partner in self:
-            partner.is_company = partner.company_type == 'company'
             
     def _compute_company_type(self):
         for partner in self:
             partner.company_type = 'company' if partner.is_company else 'person'
 
-    name = fields.Char(index=True)
+    name = fields.Char(index=True, track_visibility='onchange')
     
-    parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade')
+    parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade', track_visibility='onchange')
         
     function = fields.Char(string='Description')
     
@@ -234,25 +228,15 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False)
+    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False, track_visibility='onchange')
     
     website = fields.Char(help="Website of Partner or Company")
-    
-    customer = fields.Boolean(string='Is a Customer', default=True,
-                               help="Check this box if this contact is a customer.")
-    
-    supplier = fields.Boolean(string='Is a Vendor',
-                               help="Check this box if this contact is a vendor. "
-                               "If it's not checked, purchase people will not see it when encoding a purchase order.")
     
     employee = fields.Boolean(help="Check this box if this contact is an Employee.")
     
     fax = fields.Char(help="fax")
     
-    is_company = fields.Boolean(string='Is a Company', default=False,
-        help="Check if the contact is a company, otherwise it is a person")
-    
-    create_date = fields.Date(string='Create Date', readonly=True)
+    create_date = fields.Date(string='Create Date', readonly=True, track_visibility='onchange')
     
     contact_person = fields.Many2one('res.partner.title')
     
@@ -347,24 +331,6 @@ class SubAccount(models.Model):
     @api.multi
     def button_approve(self):
         self.write({'state': 'approve'})
-        vals = {
-            'name' : self.name,
-            'company_type' : self.company_type,
-            'parent_id' : self.parent_id.id,
-            'street' : self.street,
-            'street2' : self.street2,
-            'city' : self.city,
-            'state_id' : self.state_id.id,
-            'zip' : self.zip,
-            'country_id' : self.country_id.id,
-            'function' : self.function,
-            'phone' : self.phone,
-            'mobile' : self.mobile,
-            'email' : self.email,
-            'customer': self.customer,
-            'supplier' : self.supplier
-        }
-        self.env['res.partner'].create(vals)
         return {}
     
     @api.multi

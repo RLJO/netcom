@@ -52,17 +52,6 @@
 	    </field>
 	</record>
 
-	<record id="netcom_crm_case_tree_view_leads" model="ir.ui.view">
-            <field name="name">netcom.crm.lead.tree.lead</field>
-            <field name="model">crm.lead</field>
-            <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
-            <field name="arch" type="xml">
-                <field name="probability" position="replace">
-                    <field name="probability"/>
-                </field>
-            </field>
-    </record>
-
       <record id="netcom_view_move_form" model="ir.ui.view">
             <field name="name">netcom.account.move.form</field>
             <field name="model">account.move</field>
@@ -284,19 +273,13 @@
     <field name="arch" type="xml">
         <form string="Partners">
 			 <header>
-			 	<button name="button_approve" states="new" string="Approve" type="object" groups="account.group_sale_billing"/>
-				<button name="button_reject" states="new" string="Reject" type="object" groups="account.group_sale_billing"/>
-				<button name="button_new" states="reject" string="Renew" type="object" />
-				<button name="button_new" states="cancel" string="Renew" type="object" />
-				<button name="button_activate" states="approve" string="Activate" type="object" />
-				<button name="button_activate" states="suspend" string="Activate" type="object" />
+			 	<button name="button_approve" states="new" string="Approve" type="object" groups="account.group_account_invoice"/>
+				<button name="button_reject" states="new" string="Reject" type="object" groups="account.group_account_invoice"/>
+				<button name="button_new" states="reject, cancel" string="Renew" type="object" />
+				<button name="button_activate" states="approve, suspend" string="Activate" type="object" />
 				<button name="button_suspend" states="activate" string="Suspend" type="object" />
-				<button name="button_terminate" states="approve" string="Terminate" type="object" />
-				<button name="button_terminate" states="suspend" string="Terminate" type="object" />
-				<button name="button_cancel" states="approve" string="Cancel" type="object" />
-				<button name="button_terminate" states="activate" string="Terminate" type="object" />
-				<button name="button_cancel" states="activate" string="Cancel" type="object" />
-				<button name="button_cancel" states="terminate" string="cancel" type="object" />
+				<button name="button_terminate" states="approve, activate, suspend" string="Terminate" type="object" />
+				<button name="button_cancel" states="approve, activate, terminate" string="Cancel" type="object" />
 				<field name="state" widget="statusbar" statusbar_visible="new,approve,activate,suspend,terminate" readonly="1"/>
 			  </header>
         <sheet>
