@@ -63,6 +63,22 @@
             </field>
     </record>
 
+      <record id="netcom_view_move_form" model="ir.ui.view">
+            <field name="name">netcom.account.move.form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <field name="narration" position="after">
+                	<div class="oe_chatter">
+			             <field name="message_follower_ids" widget="mail_followers"/>
+			             <field name="activity_ids" widget="mail_activity"/>
+			             <field name="message_ids" widget="mail_thread"/>
+			        </div>
+                </field>
+            </field>
+    </record>
+
+
 	<record id="netcom_product_form_view" model="ir.ui.view">
         <field name="name">netcom.product.form</field>
         <field name="model">product.template</field>
@@ -343,11 +359,16 @@
                 </group>
             </group>
         </sheet>
+        <div class="oe_chatter">
+             <field name="message_follower_ids" widget="mail_followers"/>
+             <field name="activity_ids" widget="mail_activity"/>
+             <field name="message_ids" widget="mail_thread"/>
+        </div>
         </form>
     </field>
     </record>
-
-
+	
+	
     <!-- explicit list view definition -->
     <!--
     <record model="ir.ui.view" id="netcom.list">
