@@ -138,7 +138,7 @@
         <field name="inherit_id" ref="mrp_repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="sub_account_id" domain="[('state','=','approve')]"/>
+                <field name="sub_account_id" domain="[('parent_id','=',partner_id), ('state','=','approve')]"/>
             </field>
         </field>
     </record>

@@ -463,6 +463,7 @@ class RepairSub(models.Model):
     _name = 'mrp.repair'
     _inherit = 'mrp.repair'
     
+    parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade', track_visibility='onchange')
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
 
 
