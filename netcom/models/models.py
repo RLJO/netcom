@@ -459,6 +459,13 @@ class StoreReqEdit(models.Model):
         readonly=True, required=True,
         states={'draft': [('readonly', False)]})
 
+class RepairSub(models.Model):
+    _name = 'mrp.repair'
+    _inherit = 'mrp.repair'
+    
+    sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
+
+
 #     name = fields.Char()
 #     value = fields.Integer()
 #     value2 = fields.Float(compute="_value_pc", store=True)

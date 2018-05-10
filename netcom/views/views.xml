@@ -131,6 +131,18 @@
         </field>
     </record>
     
+    <record id="netcom_subacnt_mrprepair" model="ir.ui.view">
+        <field name="name">netcom.mrp.repair</field>
+        <field name="model">mrp.repair</field>
+        <field name="priority" eval="7"/>
+        <field name="inherit_id" ref="mrp_repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="sub_account_id" domain="[('state','=','approve')]"/>
+            </field>
+        </field>
+    </record>
+    
     <record id="netcom_kin_form_view" model="ir.ui.view">
         <field name="name">netcom.kin.form</field>
         <field name="model">hr.employee</field>
