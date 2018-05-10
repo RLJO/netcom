@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Netcom',
-    'version': '0.11999999',
+    'version': '0.12999910',
 
 
     # any module necessary for this one to work correctly

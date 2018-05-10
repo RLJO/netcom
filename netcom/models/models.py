@@ -283,7 +283,7 @@ class SubAccount(models.Model):
         ('terminate', 'Terminated'),
         ('cancel', 'Canceled'),
         ('reject', 'Rejected'),
-        ], string='Status', readonly=True, index=True, copy=False, default='new', track_visibility='onchange')
+        ], string='Status', index=True, copy=False, default='new', track_visibility='onchange')
 
     @api.model
     def create(self, vals):
