@@ -18,7 +18,7 @@
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
             <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='product_id']" position="before">
-            	<field name="sub_account_id" domain="[('parent_id','=',parent.partner_id)]"/>
+            	<field name="sub_account_id" domain="[('parent_id','=',parent.partner_id), ('state','=','approve')]"/>
             </xpath>
             <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='account_id']" position="before">
             	<field name="nrc_mrc"/>
@@ -83,6 +83,9 @@
             </xpath>
             <field name="partner_id" position="after">
             	<field name="employee_id" groups="netcom.group_hr_line_manager"/>
+            	<!-- 
+            	<field name="sub_account_id" domain="[('state','=','approve')]"/>
+            	 -->
             </field>
         </field>
     </record>
@@ -396,7 +399,7 @@
                                            />
                                         <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                         <field name="nrc_mrc"/>
-                                        <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id)]"/>
+                                        <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id), ('state','=','approve')]"/>
                                         <field name="invoice_status" invisible="1"/>
                                         <field name="qty_to_invoice" invisible="1"/>
                                         <field name="qty_delivered_updateable" invisible="1"/>
@@ -448,7 +451,7 @@
                                 <field name="sequence" widget="handle"/>
                                 <field name="product_updatable" invisible="1"/>
                                 <field name="type"/>
-                                <field name="sub_account_id" required="1" domain="[('parent_id','=',parent.partner_id)]"/>
+                                <field name="sub_account_id" required="1" domain="[('parent_id','=',parent.partner_id), ('state','=','approve')]"/>
                                 <field name="product_id"
                                     attrs="{'readonly': [('product_updatable', '=', False)]}"
                                     force_save="1"
