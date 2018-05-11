@@ -9,7 +9,7 @@
                 <xpath expr="//group[@name='salary_and_advantages']" position="after">
 	                 <group col="2" colspan="2" name="right_column">
 	                    <separator colspan="2" string="Pension Rate (Percent)"/>
-	                        <field name="pen_contrib" />
+	                        <field name="pen_contrib"/>
 	                 </group>                  
                  </xpath>                
             </field>
