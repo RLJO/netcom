@@ -273,6 +273,8 @@ class Picking(models.Model):
     employee_id = fields.Many2one('hr.employee', 'Employee',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee,
         help="Default Owner")
+    
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
 
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
@@ -394,6 +396,7 @@ class PurchaseOrder(models.Model):
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     employee_id = fields.Many2one('hr.employee', 'Employee',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
+    sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
     
     state = fields.Selection([
         ('draft', 'RFQ'),
