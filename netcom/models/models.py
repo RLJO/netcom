@@ -289,7 +289,7 @@ class SubAccount(models.Model):
     def create(self, vals):
         partner_ids = self.search([('parent_id','=',vals['parent_id'])])
         number = len(partner_ids) + 1
-        vals['child_account'] = "SA00" + str(number)
+        vals['child_account'] = "SA" + str(number).zfill(3)
         return super(SubAccount, self).create(vals)
     
     
@@ -462,7 +462,7 @@ class StoreReqEdit(models.Model):
 class RepairSub(models.Model):
     _name = 'mrp.repair'
     _inherit = 'mrp.repair'
-    
+     
     parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade', track_visibility='onchange')
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
 
