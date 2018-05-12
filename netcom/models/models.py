@@ -119,7 +119,7 @@ class SaleSubscription(models.Model):
         auto_commit = self.env.context.get('auto_commit', True)
         cr = self.env.cr
         invoices = self.env['account.invoice']
-        current_date = date.today() - timedelta(5)
+        current_date = date.today() - timedelta(days=15)
         imd_res = self.env['ir.model.data']
         template_res = self.env['mail.template']
         if len(self) > 0:
