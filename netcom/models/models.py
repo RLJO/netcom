@@ -18,7 +18,7 @@ class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
 
-    parent_account_number = fields.Char('Parent Account Number', readonly=True, required=False, index=True, copy=False,)
+    parent_account_number = fields.Char('Parent Account Number', required=False, index=True, copy=False,)
     contact_name = fields.Char('Contact Name')
 
     @api.model

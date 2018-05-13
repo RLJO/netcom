@@ -7,7 +7,7 @@
 	    <field name="inherit_id" ref="base.view_partner_form"/>
 	    <field name="arch" type="xml">
 	    <field name="function" position="before">
-    		<field name="parent_account_number" readonly="1"/>
+    		<field name="parent_account_number"/>
     		<field name="contact_name" />
 		</field>
 <!-- 		<field name="phone" position="before">
@@ -290,10 +290,10 @@
 			 <header>
 			 	<button name="button_approve" states="new" string="Approve" type="object" groups="netcom.group_sale_billing"/>
 				<button name="button_reject" states="new" string="Reject" type="object" groups="netcom.group_sale_billing"/>
-				<button name="button_new" states="reject, cancel" string="Renew" type="object" />
-				<button name="button_activate" states="approve, suspend" string="Activate" type="object" />
+				<button name="button_new" states="reject,cancel" string="Renew" type="object" />
+				<button name="button_activate" states="approve,suspend" string="Activate" type="object" />
 				<button name="button_suspend" states="activate" string="Suspend" type="object" />
-				<button name="button_terminate" states="approve, activate, suspend" string="Terminate" type="object" />
+				<button name="button_terminate" states="approve,activate,suspend" string="Terminate" type="object" />
 				<button name="button_cancel" states="approve, activate, terminate" string="Cancel" type="object" />
 				<field name="state" widget="statusbar" statusbar_visible="new,approve,activate,suspend,terminate" readonly="1"/>
 			  </header>
