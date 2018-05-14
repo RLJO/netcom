@@ -588,14 +588,31 @@ class StoreReqEdit(models.Model):
         default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_dest_id,
         readonly=True, required=True,
         states={'draft': [('readonly', False)]})
-
+'''
 class RepairSub(models.Model):
     _name = 'mrp.repair'
     _inherit = 'mrp.repair'
      
     parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade', track_visibility='onchange')
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
-
+'''
+class Holidays(models.Model):
+    _name = "hr.holidays"
+    _inherit = 'hr.holidays'
+    
+    state = fields.Selection([
+            ('draft', 'To Submit'),
+            ('cancel', 'Cancelled'),
+            ('confirm', 'To Approve'),
+            ('refuse', 'Refused'),
+            ('validate1', 'Second Approval'),
+            ('validate', 'Approved')
+            ], string='Status', readonly=False, track_visibility='onchange', copy=False, default='confirm',
+                help="The status is set to 'To Submit', when a leave request is created." +
+                "\nThe status is 'To Approve', when leave request is confirmed by user." +
+                "\nThe status is 'Refused', when leave request is refused by manager." +
+                "\nThe status is 'Approved', when leave request is approved by manager.")
+    
 
 #     name = fields.Char()
 #     value = fields.Integer()
