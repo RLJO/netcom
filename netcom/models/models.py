@@ -86,6 +86,46 @@ class SaleSubscription(models.Model):
     _description = "Sale Subscription"
     _inherit = ['sale.subscription']
     
+    def _prepare_invoice_data(self):
+        self.ensure_one()
+
+        if not self.partner_id:
+            raise UserError(_("You must first select a Customer for Subscription %s!") % self.name)
+
+        if 'force_company' in self.env.context:
+            company = self.env['res.company'].browse(self.env.context['force_company'])
+        else:
+            company = self.company_id
+            self = self.with_context(force_company=company.id, company_id=company.id)
+
+        fpos_id = self.env['account.fiscal.position'].get_fiscal_position(self.partner_id.id)
+        journal = self.template_id.journal_id or self.env['account.journal'].search([('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
+        if not journal:
+            raise UserError(_('Please define a sale journal for the company "%s".') % (company.name or '', ))
+
+        next_date = fields.Date.from_string(self.recurring_next_date)
+        if not next_date:
+            raise UserError(_('Please define Date of Next Invoice of "%s".') % (self.display_name,))
+        periods = {'daily': 'days', 'weekly': 'weeks', 'monthly': 'months', 'yearly': 'years'}
+        end_date = next_date + relativedelta(**{periods[self.recurring_rule_type]: self.recurring_interval})
+        end_date = end_date - relativedelta(days=1)     # remove 1 day as normal people thinks in term of inclusive ranges.
+        addr = self.partner_id.address_get(['delivery'])
+
+        return {
+            'account_id': self.partner_id.property_account_receivable_id.id,
+            'type': 'out_invoice',
+            'date_due' : self.recurring_next_date,
+            'partner_id': self.partner_id.id,
+            'partner_shipping_id': addr['delivery'],
+            'currency_id': self.pricelist_id.currency_id.id,
+            'journal_id': journal.id,
+            'origin': self.code,
+            'fiscal_position_id': fpos_id,
+            'payment_term_id': self.partner_id.property_payment_term_id.id,
+            'company_id': company.id,
+            'comment': _("This invoice covers the following period: %s - %s") % (format_date(self.env, next_date), format_date(self.env, end_date)),
+        }
+    
     def _prepare_invoice_line(self, line, fiscal_position):
         if 'force_company' in self.env.context:
             company = self.env['res.company'].browse(self.env.context['force_company'])
@@ -119,7 +159,7 @@ class SaleSubscription(models.Model):
         auto_commit = self.env.context.get('auto_commit', True)
         cr = self.env.cr
         invoices = self.env['account.invoice']
-        current_date = date.today() - timedelta(days=15)
+        current_date = date.today() + timedelta(days=20)
         imd_res = self.env['ir.model.data']
         template_res = self.env['mail.template']
         if len(self) > 0:
