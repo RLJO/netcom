@@ -116,6 +116,7 @@ class SaleSubscription(models.Model):
             'type': 'out_invoice',
             'date_due' : self.recurring_next_date,
             'partner_id': self.partner_id.id,
+            'user_id' : self.user_id.id,
             'partner_shipping_id': addr['delivery'],
             'currency_id': self.pricelist_id.currency_id.id,
             'journal_id': journal.id,
@@ -123,7 +124,11 @@ class SaleSubscription(models.Model):
             'fiscal_position_id': fpos_id,
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
-            'comment': _("This invoice covers the following period: %s - %s") % (format_date(self.env, next_date), format_date(self.env, end_date)),
+            'comment': _('''This invoice covers the following period: %s - %s \nContingent upon actual site survey.
+By making the payment for this Invoice, the Customer hereby agrees to the Netcom General Terms and Conditions
+as outlined in the Service Agreement which is available at http://www.netcomafrica.com/terms.pdf. Please pay the
+complete invoice value net of all statutory deductions. If you are entitled for any deductions, please gross up the
+invoice amount at your cost and provide us with associated Credit Notes with evidence of payment to Netcom.''') % (format_date(self.env, next_date), format_date(self.env, end_date)),
         }
     
     def _prepare_invoice_line(self, line, fiscal_position):
