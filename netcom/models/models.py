@@ -373,6 +373,8 @@ class SubAccount(models.Model):
     
     create_date = fields.Date(string='Create Date', readonly=True, track_visibility='onchange')
     
+    activation_date = fields.Date(string='Activation Date', readonly=True, track_visibility='onchange')
+    
     contact_person = fields.Many2one('res.partner.title')
     
     company_name = fields.Many2many('Company Name')
@@ -438,6 +440,7 @@ class SubAccount(models.Model):
     @api.multi
     def button_activate(self):
         self.write({'state': 'activate'})
+        self.activation_date = date.today()
         return {}
     
     @api.multi
