@@ -48,6 +48,7 @@ class NetcomPayslipDetailsReport(models.AbstractModel):
                             'rule_category': line.category_id.code,
                             'name': line.name,
                             'code': line.code,
+                            'amount': line.amount,
                             'total': line.total,
                             'level': level
                         })
