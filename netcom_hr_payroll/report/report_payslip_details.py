@@ -43,27 +43,17 @@ class NetcomPayslipDetailsReport(models.AbstractModel):
                 result.setdefault(x[2], {})
                 result[x[2]].setdefault(x[1], [])
                 result[x[2]][x[1]].append(x[0])
-            for payslip_id, lines_dict in result.iteritems():
+            for payslip_id, lines_dict in result.items():
                 res.setdefault(payslip_id, [])
-                for rule_categ_id, line_ids in lines_dict.iteritems():
+                for rule_categ_id, line_ids in lines_dict.items():
                     rule_categories = RuleCateg.browse(rule_categ_id)
                     lines = PayslipLine.browse(line_ids)
                     level = 0
-                    """for parent in get_recursive_parent(rule_categories):
-                        res[payslip_id].append({
-                            'rule_category': parent.code,
-                            'name': parent.name,
-                            'code': parent.code,
-                            'level': level,
-                            'total': sum(lines.mapped('total')),
-                        })
-                        level += 1"""
                     for line in lines:
                         res[payslip_id].append({
-                            'rule_category': line.category_id.code,
+                            'rule_category': line.name,
                             'name': line.name,
                             'code': line.code,
-                            'amount': line.amount,
                             'total': line.total,
                             'level': level
                         })
