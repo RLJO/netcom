@@ -45,7 +45,7 @@ class NetcomPayslipDetailsReport(models.AbstractModel):
                     level = 0
                     for line in lines:
                         res[payslip_id].append({
-                            'rule_category': line.name,
+                            'rule_category': line.category_id.code,
                             'name': line.name,
                             'code': line.code,
                             'total': line.total,
