@@ -71,7 +71,7 @@ class NetcomPayslipDetailsReport(models.AbstractModel):
 
 
     @api.model
-    def render_html(self, docids, data=None):
+    def get_report_values(self, docids, data=None):
         payslips = self.env['hr.payslip'].browse(docids[0])
         docargs = {
             'doc_ids': docids,
