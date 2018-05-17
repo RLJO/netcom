@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="report_netcompayslipdetails">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Pay Slip</h2>
+                    <p t-field="o.name"/>
+
+                    <table class="table table-condensed table-bordered">
+                        <tr>
+                            <td><strong>Name</strong></td>
+                            <td><span t-field="o.employee_id"/></td>
+                            <td><strong>Designation</strong></td>
+                            <td><span t-field="o.employee_id.job_id"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Address</strong></td>
+                            <td colspan="3">
+                                <div t-field="o.employee_id.address_home_id"
+                                    t-options='{"widget": "contact", "fields": ["address", "name", "phone", "fax"], "no_marker": True, "phone_icons": True}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td><span t-field="o.employee_id.work_email"/></td>
+                            <td><strong>Identification No</strong></td>
+                            <td><span t-field="o.employee_id.identification_id"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reference</strong></td>
+                            <td><span t-field="o.number"/></td>
+                            <td><strong>Department</strong></td>
+                            <td><span t-field="o.employee_id.department_id"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Date From</strong></td>
+                            <td><span t-field="o.date_from"/></td>
+                            <td><strong>Date To</strong></td>
+                            <td><span t-field="o.date_to"/></td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Earnings and Hours</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'EAH' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'BASIC'">
+                                        <span t-esc="o.get_total('YTDB')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'MLNG'">
+                                       <span t-esc="o.get_total('YTDM')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'ENNG'">
+                                       <span t-esc="o.get_total('YTDE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'HRANG'">
+                                       <span t-esc="o.get_total('YTDH')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/> 
+                                    </td>
+                                    <td t-if="line['code'] == 'TRNG'">
+                                       <span t-esc="o.get_total('YTDT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'LANG'">
+                                       <span t-esc="o.get_total('YTDL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'BONUSNG'">
+                                       <span>Set YTD for BONUSNG</span> 
+                                    </td>
+                                    <td t-if="line['code'] == 'OT'">
+                                       <span>Set YTD rule OT</span> 
+                                    </td>
+                                    <td t-if="line['code'] == 'UTING'">
+                                       <span t-esc="o.get_total('YTDU')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'SALA'">
+                                       <span t-esc="o.get_total('YTDSALA')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'TTEH'">
+                                       <span t-esc="o.get_total('YTDTE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/> 
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>  
+
+                   <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Deductions</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'WHT' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'PAYPERMONTH'">
+                                        <span t-esc="o.get_total('YTDP')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Other Allowances</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'RSV' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'FURNG'">
+                                        <span t-esc="o.get_total('YTDFURNG')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'DRSSNG'">
+                                        <span t-esc="o.get_total('YTDDRS')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'FUELNG'">
+                                        <span t-esc="o.get_total('YTDFUEL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'DDRE'">
+                                        <span t-esc="o.get_total('YTDDRE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'TTREAD'">
+                                        <span>IFE set TTREAD</span>
+                                    </td>
+                                    <td t-if="line['code'] == 'TTRE'">
+                                        <span t-esc="o.get_total('YTDTTRE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Deductions from Gross Pay</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'DGP' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'SALDA'">
+                                        <span t-esc="o.get_total('YTDSALDA')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Adjustments to Net Pay</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'ADJP' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']">
+                                         <span t-if="line['code'] == 'SALDA'" t-field="o.employee_id.pfa_id.name"/>   
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'NHFNG'">
+                                        <span>Set ytd NHFNG</span>
+                                    </td>
+                                    <td t-if="line['code'] == 'PENNG'">
+                                        <span t-esc="o.get_total('YTDPEN')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'SALD'">
+                                        <span t-esc="o.get_total('YTDSALD')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'STFL'">
+                                        <span t-esc="o.get_total('YTDSTFL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'DOT'">
+                                        <span t-esc="o.get_total('YTDOT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'CAPF'">
+                                        <span t-esc="o.get_total('YTDCAPF')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'TELE'">
+                                        <span t-esc="o.get_total('YTDTELE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'MACD'">
+                                        <span t-esc="o.get_total('YTDMAC')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'REIM'">
+                                        <span t-esc="o.get_total('YTDREIM')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'OTH'">
+                                        <span t-esc="o.get_total('YTDOTH')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'SCDF'">
+                                        <span t-esc="o.get_total('YTDSCDF')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-condensed mb32">
+                        <thead>
+                            <tr>
+                                <th>Net Pay</th>
+                                <th>Current</th>
+                                <th>YTD Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                <tr t-if="line['rule_category'] == 'NEP' and line['amount'] != 0">
+                                    <td>
+                                        <span t-esc="line['name']"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'NET'">
+                                        <span t-esc="o.get_total('YTDNET')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                    <td t-if="line['code'] == 'TOTNET'">
+                                        <span t-esc="o.get_total('YTDTOT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+</odoo>
