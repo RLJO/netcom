@@ -6,12 +6,6 @@ from odoo import api, models
 
 class NetcomPayslipDetailsReport(models.AbstractModel):
     _name = 'report.netcom_hr_payroll.report_netcompayslipdetails'
-    
-    
-    def _get_payslips(self, payslip_ids):
-        payslip_obj = self.env['hr.payslip']
-        payslips = payslip_obj.search([('id','in',payslip_ids)])
-        return payslips
 
     def _get_payslip_lines(self, payslip_lines):       
         PayslipLine = self.env['hr.payslip.line']
@@ -63,12 +57,10 @@ class NetcomPayslipDetailsReport(models.AbstractModel):
     @api.model
     def get_report_values(self, docids, data=None):
         payslips = self.env['hr.payslip'].browse(docids[0])
-        docargs = {
+        return {
             'doc_ids': docids,
             'doc_model': 'hr.payslip',
             'docs': payslips,
             'data': data,
-            'get_payslip': self._get_payslips(payslips.ids),
             'get_payslip_lines': self._get_payslip_lines(payslips.mapped('details_by_salary_rule_category').filtered(lambda r: r.appears_on_payslip)),
         }
-        return self.env['report'].render('netcom_hr_payroll.report_netcompayslipdetails', docargs)
