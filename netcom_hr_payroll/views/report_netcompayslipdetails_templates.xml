@@ -31,8 +31,8 @@
                         <tr>
                             <td><strong>Reference</strong></td>
                             <td><span t-field="o.number"/></td>
-                            <td><strong>Bank Account</strong></td>
-                            <td><span t-field="o.employee_id.bank_account_id"/></td>
+                            <td><strong>Department</strong></td>
+                            <td><span t-field="o.employee_id.department_id"/></td>
                         </tr>
                         <tr>
                             <td><strong>Date From</strong></td>
