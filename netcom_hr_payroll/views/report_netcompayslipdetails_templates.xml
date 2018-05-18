@@ -45,7 +45,7 @@
                     <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Earnings and Hours</th>
+                                <th>Earnings and Hours&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
                                 <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
@@ -100,7 +100,7 @@
                    <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Deductions</th>
+                                <th>Deductions&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
                                 <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
@@ -125,7 +125,7 @@
                     <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Other Allowances</th>
+                                <th>Other Allowances&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
                                 <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
@@ -190,7 +190,7 @@
                     <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Adjustments to Net Pay</th>
+                                <th>Adjustments to Net Pay&#160;&#160;</th>
                                 <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
@@ -247,7 +247,7 @@
                     <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Net Pay&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
+                                <th>Net Pay&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
                                 <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
