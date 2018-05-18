@@ -56,40 +56,40 @@
                                     <td>
                                         <span t-esc="line['name']"/>
                                     </td>
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'BASIC'">
+                                    <td class="text-right" t-if="line['code'] == 'BASIC'">
                                         <span t-esc="o.get_total('YTDB')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'MLNG'">
+                                    <td class="text-right" t-if="line['code'] == 'MLNG'">
                                        <span t-esc="o.get_total('YTDM')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'ENNG'">
+                                    <td class="text-right" t-if="line['code'] == 'ENNG'">
                                        <span t-esc="o.get_total('YTDE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'HRANG'">
+                                    <td class="text-right" t-if="line['code'] == 'HRANG'">
                                        <span t-esc="o.get_total('YTDH')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/> 
                                     </td>
-                                    <td t-if="line['code'] == 'TRNG'">
+                                    <td class="text-right" t-if="line['code'] == 'TRNG'">
                                        <span t-esc="o.get_total('YTDT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'LANG'">
+                                    <td class="text-right" t-if="line['code'] == 'LANG'">
                                        <span t-esc="o.get_total('YTDL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'BONUSNG'">
+                                    <td class="text-right" t-if="line['code'] == 'BONUSNG'">
                                        <span>Set YTD for BONUSNG</span> 
                                     </td>
                                     <td t-if="line['code'] == 'OT'">
                                        <span>Set YTD rule OT</span> 
                                     </td>
-                                    <td t-if="line['code'] == 'UTING'">
+                                    <td class="text-right" t-if="line['code'] == 'UTING'">
                                        <span t-esc="o.get_total('YTDU')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'SALA'">
+                                    <td class="text-right" t-if="line['code'] == 'SALA'">
                                        <span t-esc="o.get_total('YTDSALA')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'TTEH'">
+                                    <td class="text-right" t-if="line['code'] == 'TTEH'">
                                        <span t-esc="o.get_total('YTDTE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/> 
                                     </td>
                                 </tr>
@@ -136,25 +136,25 @@
                                     <td>
                                         <span t-esc="line['name']"/>
                                     </td>
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'FURNG'">
+                                    <td class="text-right" t-if="line['code'] == 'FURNG'">
                                         <span t-esc="o.get_total('YTDFURNG')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'DRSSNG'">
+                                    <td class="text-right" t-if="line['code'] == 'DRSSNG'">
                                         <span t-esc="o.get_total('YTDDRS')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'FUELNG'">
+                                    <td class="text-right" t-if="line['code'] == 'FUELNG'">
                                         <span t-esc="o.get_total('YTDFUEL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'DDRE'">
+                                    <td class="text-right" t-if="line['code'] == 'DDRE'">
                                         <span t-esc="o.get_total('YTDDRE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'TTREAD'">
+                                    <td class="text-right" t-if="line['code'] == 'TTREAD'">
                                         <span>IFE set TTREAD</span>
                                     </td>
-                                    <td t-if="line['code'] == 'TTRE'">
+                                    <td class="text-right" t-if="line['code'] == 'TTRE'">
                                         <span t-esc="o.get_total('YTDTTRE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                 </tr>
@@ -176,10 +176,10 @@
                                     <td>
                                         <span t-esc="line['name']"/>
                                     </td>
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'SALDA'">
+                                    <td class="text-right" t-if="line['code'] == 'SALDA'">
                                         <span t-esc="o.get_total('YTDSALDA')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                 </tr>
@@ -198,45 +198,45 @@
                         <tbody>
                             <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
                                 <tr t-if="line['rule_category'] == 'ADJP' and line['amount'] != 0">
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['name']">
                                          <span t-if="line['code'] == 'SALDA'" t-field="o.employee_id.pfa_id.name"/>   
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'NHFNG'">
+                                    <td class="text-right" t-if="line['code'] == 'NHFNG'">
                                         <span>Set ytd NHFNG</span>
                                     </td>
-                                    <td t-if="line['code'] == 'PENNG'">
+                                    <td class="text-right" t-if="line['code'] == 'PENNG'">
                                         <span t-esc="o.get_total('YTDPEN')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'SALD'">
+                                    <td class="text-right" t-if="line['code'] == 'SALD'">
                                         <span t-esc="o.get_total('YTDSALD')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'STFL'">
+                                    <td class="text-right" t-if="line['code'] == 'STFL'">
                                         <span t-esc="o.get_total('YTDSTFL')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'DOT'">
+                                    <td class="text-right" t-if="line['code'] == 'DOT'">
                                         <span t-esc="o.get_total('YTDOT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'CAPF'">
+                                    <td class="text-right" t-if="line['code'] == 'CAPF'">
                                         <span t-esc="o.get_total('YTDCAPF')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'TELE'">
+                                    <td class="text-right" t-if="line['code'] == 'TELE'">
                                         <span t-esc="o.get_total('YTDTELE')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'MACD'">
+                                    <td class="text-right" t-if="line['code'] == 'MACD'">
                                         <span t-esc="o.get_total('YTDMAC')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'REIM'">
+                                    <td class="text-right" t-if="line['code'] == 'REIM'">
                                         <span t-esc="o.get_total('YTDREIM')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'OTH'">
+                                    <td class="text-right" t-if="line['code'] == 'OTH'">
                                         <span t-esc="o.get_total('YTDOTH')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'SCDF'">
+                                    <td class="text-right" t-if="line['code'] == 'SCDF'">
                                         <span t-esc="o.get_total('YTDSCDF')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                 </tr>
@@ -258,19 +258,20 @@
                                     <td>
                                         <span t-esc="line['name']"/>
                                     </td>
-                                    <td>
+                                    <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'NET'">
+                                    <td class="text-right" t-if="line['code'] == 'NET'">
                                         <span t-esc="o.get_total('YTDNET')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
-                                    <td t-if="line['code'] == 'TOTNET'">
+                                    <td class="text-right" t-if="line['code'] == 'TOTNET'">
                                         <span t-esc="o.get_total('YTDTOT')" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                 </tr>
                             </tr>
                         </tbody>
                     </table>
+                    <p class="text-right"><strong>Authorized signature</strong></p>
                 </div>
             </t>
         </t>
