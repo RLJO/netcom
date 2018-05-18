@@ -198,7 +198,7 @@
                         <tbody>
                             <tr t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
                                 <tr t-if="line['rule_category'] == 'ADJP' and line['amount'] != 0">
-                                    <td class="text-right">
+                                    <td>
                                         <span t-esc="line['name']">
                                          <span t-if="line['code'] == 'SALDA'" t-field="o.employee_id.pfa_id.name"/>   
                                         </span>
@@ -247,7 +247,7 @@
                     <table class="table table-condensed mb32">
                         <thead>
                             <tr>
-                                <th>Net Pay                   </th>
+                                <th>Adjustments to Net Pay</th>
                                 <th>Current</th>
                                 <th>YTD Amount</th>
                             </tr>
