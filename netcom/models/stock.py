@@ -524,14 +524,30 @@ class AccountInvoice(models.Model):
         self.amount_total_signed = self.amount_total * sign
         self.amount_untaxed_signed = amount_untaxed_signed * sign
     
-    amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_compute_amount', track_visibility='onchange')
-    amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_compute_amount', track_visibility='onchange')
+    amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
+    amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
+    
+    number = fields.Char(related='move_id.name', store=True, readonly=False, copy=False)
+    move_id = fields.Many2one('account.move', string='Journal Entry',
+        readonly=True, index=True, ondelete='restrict', copy=False,
+        help="Link to the automatically generated Journal Items.")
+    state = fields.Selection([
+            ('draft','Draft'),
+            ('open', 'Open'),
+            ('paid', 'Paid'),
+            ('cancel', 'Cancelled'),
+        ], string='Status', index=True, readonly=False, default='draft',
+        track_visibility='onchange', copy=False,
+        help=" * The 'Draft' status is used when a user is encoding a new and unconfirmed Invoice.\n"
+             " * The 'Open' status is used when user creates invoice, an invoice number is generated. It stays in the open status till the user pays the invoice.\n"
+             " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
+             " * The 'Cancelled' status is used when user cancel invoice.")
     
 class AccountInvoiceLine(models.Model):
     _name = "account.invoice.line"
     _inherit = ['account.invoice.line']
     
-    nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
+    nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=False, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     @api.one
