@@ -101,7 +101,7 @@
                         <thead>
                             <tr>
                                 <th>Deductions&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</th>
-                                <th class="text-right">Current&#160;&#160;&#160;&#160;&#160;&#160;</th>
+                                <th class="text-right">Current</th>
                                 <th class="text-right">YTD Amount</th>
                             </tr>
                         </thead>
@@ -110,6 +110,7 @@
                                 <tr t-if="line['rule_category'] == 'WHT' and line['amount'] != 0">
                                     <td>
                                         <span t-esc="line['name']"/>
+                                        <span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</span>
                                     </td>
                                     <td class="text-right">
                                         <span t-esc="line['total']" t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
