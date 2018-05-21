@@ -482,13 +482,8 @@ class SubAccount(models.Model):
         if not partner_ids:
             vals['child_account'] = "SA001"
         else:
-            try:
-                number = partner_ids[0].child_account.split("A",2)
-                number = int(number[1]) + 1
-                print('....inside try')
-            except:
-                print('....inside except')
-                number = 1
+            number = partner_ids[0].child_account.split("A",2)
+            number = int(number[1]) + 1
             vals['child_account'] = "SA" + str(number).zfill(3)
         return super(SubAccount, self).create(vals)
     
