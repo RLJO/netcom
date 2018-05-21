@@ -240,6 +240,10 @@ class HrExpenseSheet(models.Model):
                 if line.total_amount > result.allowed_amount and line.override_budget == False:
                     override = True
                     line.write({'need_override': True})
+            else:
+                if line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
         if override:
             group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
             user_ids = []
@@ -427,6 +431,10 @@ class PurchaseOrder(models.Model):
             if result:
                 result = self.env['crossovered.budget.lines'].browse(result[0]) 
                 if line.price_total > result.allowed_amount and line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
+            else:
+                if line.override_budget == False:
                     override = True
                     line.write({'need_override': True})
         if override:
