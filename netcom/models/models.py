@@ -477,14 +477,13 @@ class SubAccount(models.Model):
     @api.model
     def create(self, vals):
         partner_ids = self.search([('parent_id','=',vals['parent_id'])],order="child_account desc")
+        for p in  partner_ids:
+            print(p.child_account)
         if not partner_ids:
             vals['child_account'] = "SA001"
         else:
-            try:
-                number = partner_ids[0].child_account.split("A",2)
-                number = int(number[1]) + 1
-            except:
-                number = 1
+            number = partner_ids[0].child_account.split("A",2)
+            number = int(number[1]) + 1
             vals['child_account'] = "SA" + str(number).zfill(3)
         return super(SubAccount, self).create(vals)
     
