@@ -69,6 +69,10 @@
         	<xpath expr="//button[@name='button_confirm']" position="replace">
         		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
         	</xpath>
+        	<xpath expr="//button[@name='button_cancel']" position="replace">
+        		<button name="button_cancel" type="object" states="submit" string="Decline Order" id="draft_decline" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        	</xpath>
+        	
         	<xpath expr="//button[@name='button_approve']" position="replace">
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
@@ -200,6 +204,7 @@
                     <field name="show_operations" invisible="1" readonly="1"/>
                     <field name="move_line_exist" invisible="1"/>
                     <field name="has_packages" invisible="1"/>
+                    <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Unlock" groups="stock.group_stock_manager" type="object" help="If the picking is unlocked you can edit initial demand (for a draft picking) or done quantities (for a done picking)."/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': [('is_locked', '=', True)]}" string="Lock" class="oe_highlight" groups="stock.group_stock_manager" type="object"/>
@@ -224,6 +229,7 @@
                         <group>
                         	<field name="is_locked" invisible="1"/>
                         	<field name="employee_id" invisible="1"/>
+                        	<field name="man_confirm" readonly="1"/>
                             <field name="partner_id" attrs="{'invisible': [('picking_type_code', '=', 'internal')]}"/>
                             <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
@@ -334,7 +340,7 @@
                 <button name="action_quotation_send" string="Send by Email" type="object" class="btn-primary" attrs="{'invisible': ['|',('bill_confirm','=',False),('state', 'not in', ['draft'])]}"/>
                 <button name="action_quotation_send" type="object" string="Send PRO-FORMA Invoice" groups="sale.group_proforma_sales" class="btn-primary" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('invoice_count','&gt;=',1)]}" context="{'proforma': True}"/>
                 <button name="print_quotation" string="Print" type="object" class="btn-primary o_sale_print" attrs="{'invisible': ['|',('bill_confirm','=',False),('state', 'not in', ['draft'])]}"/>
-                <button name="billing_confirm" groups="netcom.group_sale_billing" class="btn-primary" string="Billing Confirmation" type="object"  attrs="{'invisible': ['|',('bill_confirm','=',True),('state', 'not in', ['draft'])]}"/>/>
+                <button name="billing_confirm" groups="netcom.group_sale_billing" class="btn-primary" string="Billing Confirmation" type="object"  attrs="{'invisible': ['|',('bill_confirm','=',True),('state', 'not in', ['draft'])]}"/>
                 <button name="action_confirm" id="action_confirm"
                     string="Confirm Sale" class="btn-primary" type="object"
                     attrs="{'invisible': [('state', 'not in', ['sent'])]}"/>

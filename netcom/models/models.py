@@ -420,7 +420,7 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False,default='/', track_visibility='onchange')
+    child_account = fields.Char(string='Child Account Number', index=True, copy=False,default='/', track_visibility='onchange')
     
     website = fields.Char(help="Website of Partner or Company")
     
