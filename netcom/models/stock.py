@@ -566,11 +566,6 @@ class AccountInvoiceLine(models.Model):
         else:
             self.nrc_mrc = "NRC"
     
-    account_id = fields.Many2one('account.account', string='Account',
-        required=False, domain=[('deprecated', '=', False)],
-        default=_default_account,
-        help="The income or expense account related to the selected product.")
-    
     @api.model
     def _default_account(self):
         if self._context.get('journal_id'):
@@ -578,6 +573,11 @@ class AccountInvoiceLine(models.Model):
             if self._context.get('type') in ('out_invoice', 'in_refund'):
                 return journal.default_credit_account_id.id
             return journal.default_debit_account_id.id
+        
+    account_id = fields.Many2one('account.account', string='Account',
+        required=False, domain=[('deprecated', '=', False)],
+        default=_default_account,
+        help="The income or expense account related to the selected product.")
     
 class SaleOrder(models.Model):
     _name = "sale.order"
