@@ -263,6 +263,12 @@ class Picking(models.Model):
     _name = "stock.picking"
     _inherit = 'stock.picking'
     
+    @api.multi
+    def manager_confirm(self):
+        for order in self:
+            order.write({'man_confirm': True})
+        return True
+    
     def _default_owner(self):
         return self.env.context.get('default_employee_id') or self.env['res.users'].browse(self.env.uid).partner_id
     
@@ -279,6 +285,7 @@ class Picking(models.Model):
         help="Default Owner")
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
 
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
