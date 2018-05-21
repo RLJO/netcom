@@ -124,7 +124,7 @@ class SaleSubscription(models.Model):
             'fiscal_position_id': fpos_id,
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
-            'comment': _('''This invoice covers the following period: %s - %s \nContingent upon actual site survey.
+            'comment': _('''This invoice covers the following period: %s - %s \n
 By making the payment for this Invoice, the Customer hereby agrees to the Netcom General Terms and Conditions
 as outlined in the Service Agreement which is available at http://www.netcomafrica.com/terms.pdf. Please pay the
 complete invoice value net of all statutory deductions. If you are entitled for any deductions, please gross up the
@@ -285,6 +285,18 @@ class SaleSubscriptionLine(models.Model):
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
+    @api.onchange('product_id')
+    def onchange_product_id(self):
+        product = self.product_id
+        partner = self.analytic_account_id.partner_id
+        if partner.lang:
+            self.product_id.with_context(lang=partner.lang)
+
+        name = product.name
+        if product.description_sale:
+            name += '\n' + product.description_sale
+        self.name = name
+    
         
 class EquipmentType(models.Model):
     _name = "equipment.type"
@@ -357,7 +369,7 @@ class CustomerRequest(models.Model):
             'customer': self.customer,
             'supplier' : self.supplier
         }
-        self.env['res.partner'].create(vals)
+        self.sudo().env['res.partner'].create(vals)
         return {}
     
     @api.multi
@@ -464,9 +476,16 @@ class SubAccount(models.Model):
 
     @api.model
     def create(self, vals):
-        partner_ids = self.search([('parent_id','=',vals['parent_id'])])
-        number = len(partner_ids) + 1
-        vals['child_account'] = "SA" + str(number).zfill(3)
+        partner_ids = self.search([('parent_id','=',vals['parent_id'])],order="child_account desc")
+        if not partner_ids:
+            vals['child_account'] = "SA001"
+        else:
+            try:
+                number = partner_ids[0].child_account.split("A",2)
+                number = int(number[1]) + 1
+            except:
+                number = 1
+            vals['child_account'] = "SA" + str(number).zfill(3)
         return super(SubAccount, self).create(vals)
     
     
