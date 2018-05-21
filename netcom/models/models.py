@@ -420,7 +420,7 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', index=True, copy=False,default='/', track_visibility='onchange')
+    child_account = fields.Char(string='Child Account Number', index=True, copy=False, default='/', track_visibility='onchange')
     
     website = fields.Char(help="Website of Partner or Company")
     
@@ -430,7 +430,7 @@ class SubAccount(models.Model):
     
     create_date = fields.Date(string='Create Date', readonly=True, track_visibility='onchange')
     
-    activation_date = fields.Date(string='Activation Date', readonly=True, track_visibility='onchange')
+    activation_date = fields.Date(string='Activation Date', readonly=False, track_visibility='onchange')
     
     contact_person = fields.Many2one('res.partner.title')
     
