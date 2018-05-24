@@ -88,6 +88,9 @@
             <field name="property_account_expense_id" position="replace">
                 <field name="property_account_expense_id" domain="[('internal_type','=','other'),('deprecated','=',False)]"/>
             </field>
+            <field name="asset_category_id" position="replace">
+                <field name="asset_category_id" domain="[('type', '=', 'purchase')]" context="{'default_type': 'purchase'}"/>
+            </field>
         </field>
     </record>
     
