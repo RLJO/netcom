@@ -430,7 +430,7 @@ class SubAccount(models.Model):
     
     create_date = fields.Date(string='Create Date', readonly=True, track_visibility='onchange')
     
-    activation_date = fields.Date(string='Activation Date', readonly=True, track_visibility='onchange')
+    activation_date = fields.Date(string='Activation Date', readonly=False, track_visibility='onchange')
     
     contact_person = fields.Many2one('res.partner.title')
     
