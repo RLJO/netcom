@@ -87,8 +87,11 @@
             </xpath>
             <field name="partner_id" position="after">
             	<field name="employee_id" groups="netcom.group_hr_line_manager"/>
+            	<field name="approval_date"/>
+            	<field name="manager_approval"/>
             	<!-- 
             	<field name="sub_account_id" domain="[('state','=','approve')]"/>
+            	<field name="manager_approval"/>
             	 -->
             </field>
         </field>

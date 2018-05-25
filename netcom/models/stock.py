@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import datetime
 
+from datetime import date, timedelta
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import float_is_zero
@@ -408,6 +410,8 @@ class PurchaseOrder(models.Model):
     employee_id = fields.Many2one('hr.employee', 'Employee',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
+    approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
+    manager_approval = fields.Char(string='Manager Approval Name', readonly=True, track_visibility='onchange')
     
     state = fields.Selection([
         ('draft', 'RFQ'),
@@ -457,9 +461,11 @@ class PurchaseOrder(models.Model):
             return False
         return True
     
-    
     @api.multi
     def button_confirm(self):
+        self.approval_date = date.today()
+        self.manager_approval = self.user_id
+        print('self.user_id')
         for order in self:
             if order.state not in ['draft','submit', 'sent']:
                 continue
@@ -475,8 +481,7 @@ class PurchaseOrder(models.Model):
             else:
                 order.write({'state': 'to approve'})
         return True
-
-    
+        
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
     _inherit = ['purchase.order.line']
