@@ -19,12 +19,14 @@ The app goal is to limit user access to a specified warehouse and location. The 
     'depends': [
         'stock',
         'purchase',
+        'sale_stock',
     ],
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
         'views/stock_view.xml',
         'views/purchase_view.xml',
+        'views/sale_order_views.xml',
         'views/res_users_view.xml',
     ],
     'qweb': [
