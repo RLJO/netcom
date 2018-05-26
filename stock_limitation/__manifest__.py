@@ -18,11 +18,13 @@ The app goal is to limit user access to a specified warehouse and location. The 
     'website': 'http://tosinkomolafe.com',
     'depends': [
         'stock',
+        'purchase',
     ],
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
         'views/stock_view.xml',
+        'views/purchase_view.xml',
         'views/res_users_view.xml',
     ],
     'qweb': [
