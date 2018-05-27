@@ -20,7 +20,7 @@ class StockLocation(models.Model):
 
     @api.multi
     def name_get(self):
-        return super(stock_location, self.sudo()).name_get()
+        return super(StockLocation, self.sudo()).name_get()
 
     own_user_ids = fields.Many2many(
         'res.users',
