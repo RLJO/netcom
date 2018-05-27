@@ -12,6 +12,7 @@
 		<record id="stock_location_comp_rule" model="ir.rule">
 			<field name="name">Location multi-company</field>
 			<field name="model_id" ref="model_stock_location"/>
+			<field name="global" eval="True"/>
 			<field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
 			<field name="domain_force">[
 				'&amp;',
@@ -27,6 +28,32 @@
 			<field name="name">Super Warehouse Manager Locations</field>
 			<field name="model_id" ref="stock.model_stock_location"/>
 			<field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+			<field name="global" eval="True"/>
+			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+		</record>
+
+		<!-- Stock Warehouses -->
+		<delete id="stock.stock_warehouse_comp_rule" model="ir.rule"/>
+		<record id="stock_warehouse_comp_rule" model="ir.rule">
+			<field name="name">Warehouse multi-company</field>
+			<field name="model_id" ref="model_stock_warehouse"/>
+			<field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
+			<field name="global" eval="True"/>
+			<field name="domain_force">[
+				'&amp;',
+					'|',
+						('company_id','=',False),
+						('company_id','child_of',[user.company_id.id]),
+					'|',
+						('lot_stock_id.user_ids', '=', False),
+				        ('lot_stock_id.user_ids', '=', user.id),
+			]</field>
+		</record>
+    	<record id="stock_warehouse_comp_rule_super_manager" model="ir.rule">
+			<field name="name">Super Warehouse Manager Warehouses</field>
+			<field name="model_id" ref="stock.model_stock_warehouse"/>
+			<field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+			<field name="global" eval="True"/>
 			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
 		</record>
 
@@ -50,6 +77,7 @@
 			<field name="name">Super Warehouse Manager Quants</field>
 			<field name="model_id" ref="stock.model_stock_quant"/>
 			<field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+			<field name="global" eval="True"/>
 			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
 		</record>
 
@@ -58,6 +86,7 @@
 	    <record id="stock_move_rule" model="ir.rule">
 	         <field name="name">stock_move multi-company</field>
 	        <field name="model_id" search="[('model','=','stock.move')]" model="ir.model"/>
+	        <field name="global" eval="True"/>
 	        <field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
 	        <field name="domain_force">[
 				'&amp;',
@@ -77,6 +106,7 @@
 			<field name="name">Super Warehouse stock_move</field>
 			<field name="model_id" ref="stock.model_stock_move"/>
 			<field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+			<field name="global" eval="True"/>
 			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
 		</record>
 
@@ -85,6 +115,7 @@
 	    <record id="stock_picking_rule" model="ir.rule">
 	        <field name="name">stock_picking multi-company</field>
 	        <field name="model_id" search="[('model','=','stock.picking')]" model="ir.model"/>
+	        <field name="global" eval="True"/>
 	        <field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
 	        <field name="domain_force">[
 				'&amp;',
@@ -106,6 +137,7 @@
 			<field name="name">Super Warehouse stock_move</field>
 			<field name="model_id" ref="stock.model_stock_picking"/>
 			<field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+			<field name="global" eval="True"/>
 			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
 		</record>
 
@@ -115,6 +147,7 @@
 		<record model="ir.rule" id="stock_picking_type_rule">
 	        <field name="name">Stock Picking Type multi-company</field>
 	        <field name="model_id" search="[('model', '=', 'stock.picking.type')]" model="ir.model"/>
+	        <field name="global" eval="True"/>
 	        <field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
 	        <field name="domain_force">[
 	        	'&amp;',
@@ -138,6 +171,7 @@
 	        <field name="name">Super Warehouse Manager Locations Picking Type</field>
 	        <field name="model_id" search="[('model', '=', 'stock.picking.type')]" model="ir.model"/>
 	        <field name="groups" eval="[(4, ref('stock_limitation.super_warehouse_manager'))]"/>
+	        <field name="global" eval="True"/>
 	        <field name="domain_force">[
 	        	 	 '|',
 	        	 	 	('warehouse_id', '=', False),

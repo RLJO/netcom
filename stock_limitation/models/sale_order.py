@@ -8,7 +8,7 @@ class SaleOrder(models.Model):
     @api.model
     def _default_warehouse_id(self):
         company = self.env.user.company_id.id
-        warehouse_ids = self.env['stock.warehouse'].search([('company_id', '=', company), ('is_allowed', '!=', False)], limit=1)
+        warehouse_ids = self.env['stock.warehouse'].search([('company_id', '=', company),('lot_stock_id.user_ids','=',self.env.user.id)], limit=1)
         return warehouse_ids
 
 
