@@ -3,7 +3,7 @@
 from odoo import models, fields, api, _
 
 
-class stock_location(models.Model):
+class StockLocation(models.Model):
     _inherit = 'stock.location'
 
     @api.depends('own_user_ids', 'location_id.own_user_ids', 'location_id.user_ids')
@@ -36,3 +36,18 @@ class stock_location(models.Model):
         string='Accepted Users',
         store=True,
     )
+
+
+class StockWarehouse(models.Model):
+    _inherit = 'stock.warehouse'
+
+    @api.multi
+    def _check_user(self):
+        for warehouse in self:
+            if self.env.user.id in warehouse.lot_stock_id.user_ids.ids:
+                warehouse.is_allowed = True
+            else:
+                warehouse.is_allowed = False
+
+
+    is_allowed = fields.Boolean(string='User Allowed?', compute=_check_user)

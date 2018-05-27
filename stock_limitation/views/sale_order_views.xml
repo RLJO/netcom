@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock"/>
             <field name="arch" type="xml">
                 <field name="warehouse_id" position="attributes">
-                    <attribute name="domain">[('company_id','=',company_id),('create_uid', '=', uid)]</attribute>
+                    <attribute name="domain">[('company_id','=',company_id),('is_allowed', '=', True)]</attribute>
                 </field>
             </field>
         </record>
