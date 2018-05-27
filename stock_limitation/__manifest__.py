@@ -26,7 +26,6 @@ The app goal is to limit user access to a specified warehouse and location. The 
         'security/security.xml',
         'views/stock_view.xml',
         'views/purchase_view.xml',
-        'views/sale_order_views.xml',
         'views/res_users_view.xml',
     ],
     'qweb': [
