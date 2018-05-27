@@ -36,7 +36,7 @@
 		<delete id="stock.stock_warehouse_comp_rule" model="ir.rule"/>
 		<record id="stock_warehouse_comp_rule" model="ir.rule">
 			<field name="name">Warehouse multi-company</field>
-			<field name="model_id" ref="model_stock_warehouse"/>
+			<field name="model_id" ref="stock.model_stock_warehouse"/>
 			<field name="groups" eval="[(4, ref('stock.group_stock_user')), (4, ref('stock.group_stock_manager'))]"/>
 			<field name="global" eval="True"/>
 			<field name="domain_force">[
