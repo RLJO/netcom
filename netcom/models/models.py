@@ -289,6 +289,7 @@ class SaleSubscriptionLine(models.Model):
     _inherit = ['sale.subscription.line']
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     
     @api.onchange('product_id')
     def onchange_product_id(self):
@@ -311,6 +312,37 @@ class SaleSubscriptionLine(models.Model):
             line.price_subtotal = line.price_subtotal * line_sudo.analytic_account_id.template_id.recurring_interval
             if line.analytic_account_id.pricelist_id:
                 line.price_subtotal = line_sudo.analytic_account_id.pricelist_id.currency_id.round(line.price_subtotal)
+                
+    @api.onchange('product_id', 'quantity','type')
+    def onchange_product_quantity(self):
+        domain = {}
+        subscription = self.analytic_account_id
+        company_id = subscription.company_id.id
+        pricelist_id = subscription.pricelist_id.id
+        context = dict(self.env.context, company_id=company_id, force_company=company_id, pricelist=pricelist_id, quantity=self.quantity)
+        if not self.product_id:
+            self.price_unit = 0.0
+            domain['uom_id'] = []
+        else:
+            partner = subscription.partner_id.with_context(context)
+            if partner.lang:
+                context.update({'lang': partner.lang})
+
+            product = self.product_id.with_context(context)
+            if self.type == 'sale' : 
+                print('....saoudjioasjjasja....')
+                self.price_unit = product.price
+            else:
+                print('saoudjioasjjasja....')
+                self.price_unit = product.lease_price
+
+            if not self.uom_id:
+                self.uom_id = product.uom_id.id
+            if self.uom_id.id != product.uom_id.id:
+                self.price_unit = product.uom_id._compute_price(self.price_unit, self.uom_id)
+            domain['uom_id'] = [('category_id', '=', product.uom_id.category_id.id)]
+
+        return {'domain': domain}
 
         
 class EquipmentType(models.Model):
@@ -607,9 +639,12 @@ class ProductTemplate(models.Model):
         equipment = self.env['equipment.type'].search([('id','=',vals['equipment_type'])])
         code = brand.code + equipment.code
         other = self.search([('default_code','like',code + '%')],order="default_code desc")
-        no = int(other[0].default_code[4:8]) + 1
+        if other:
+            no = int(other[0].default_code[4:8]) + 1
+        else:
+            no = 1
         item_code = code + str(no).zfill(4)
-        self.default_code = item_code
+        vals['default_code'] = item_code
         return super(ProductTemplate, self).create(vals)
 
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
