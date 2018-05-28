@@ -86,6 +86,11 @@ class SaleSubscription(models.Model):
     _description = "Sale Subscription"
     _inherit = ['sale.subscription']
     
+    @api.depends('recurring_invoice_line_ids', 'recurring_invoice_line_ids.quantity', 'recurring_invoice_line_ids.price_subtotal', 'template_id')
+    def _compute_recurring_total(self):
+        for account in self:
+            account.recurring_total = sum(line.price_subtotal for line in account.recurring_invoice_line_ids)
+    
     def _prepare_invoice_data(self):
         self.ensure_one()
 
@@ -296,7 +301,17 @@ class SaleSubscriptionLine(models.Model):
         if product.description_sale:
             name += '\n' + product.description_sale
         self.name = name
-    
+        
+    @api.depends('price_unit', 'quantity', 'discount', 'analytic_account_id.pricelist_id' , 'analytic_account_id.template_id')
+    def _compute_price_subtotal(self):
+        for line in self:
+            line_sudo = line.sudo()
+            price = line.env['account.tax']._fix_tax_included_price(line.price_unit, line_sudo.product_id.taxes_id, [])
+            line.price_subtotal = line.quantity * price * (100.0 - line.discount) / 100.0 
+            line.price_subtotal = line.price_subtotal * line_sudo.analytic_account_id.template_id.recurring_interval
+            if line.analytic_account_id.pricelist_id:
+                line.price_subtotal = line_sudo.analytic_account_id.pricelist_id.currency_id.round(line.price_subtotal)
+
         
 class EquipmentType(models.Model):
     _name = "equipment.type"
@@ -577,11 +592,31 @@ class Employee(models.Model):
            
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+    
+    @api.depends('product_variant_ids', 'product_variant_ids.default_code', 'brand')
+    def _compute_default_code(self):
+        unique_variants = self.filtered(lambda template: len(template.product_variant_ids) == 1)
+        for template in unique_variants:
+            template.default_code = template.product_variant_ids.default_code
+        for template in (self - unique_variants):
+            template.default_code = ''
+        
+    @api.model
+    def create(self, vals):
+        brand = self.env['brand.type'].search([('id','=',vals['brand'])])
+        equipment = self.env['equipment.type'].search([('id','=',vals['equipment_type'])])
+        code = brand.code + equipment.code
+        other = self.search([('default_code','like',code + '%')],order="default_code desc")
+        no = int(other[0].default_code[4:8]) + 1
+        item_code = code + str(no).zfill(4)
+        self.default_code = item_code
+        return super(ProductTemplate, self).create(vals)
 
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
+    
     
 class ExpenseRef(models.Model):
     _name = 'hr.expense'
