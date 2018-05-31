@@ -749,7 +749,18 @@ class Holidays(models.Model):
                 "\nThe status is 'Refused', when leave request is refused by manager." +
                 "\nThe status is 'Approved', when leave request is approved by manager.")
     
+    date_from = fields.Date('Start Date', readonly=True, index=True, copy=False,
+        states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
+    date_to = fields.Date('End Date', readonly=True, copy=False,
+        states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
+   
+class HolidaysType(models.Model):
+    _name = "hr.holidays.status"
+    _inherit = 'hr.holidays.status'
 
+    remaining_leaves = fields.Float(compute='_compute_leaves', string='Remaining Leaves',
+        help='Maximum Leaves Allowed - Leaves Already Taken', track_visibility='onchange')
+    
 #     name = fields.Char()
 #     value = fields.Integer()
 #     value2 = fields.Float(compute="_value_pc", store=True)
