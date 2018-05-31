@@ -336,6 +336,7 @@ class CrossoveredBudgetLines(models.Model):
                         # If the budget line has not started yet, theoretical amount should be zero
                         theo_amt = 0.00
                     elif line_timedelta.days > 0 and fields.Datetime.from_string(today) < fields.Datetime.from_string(line.date_to):
+                        time = 0
                         # If today is between the budget line date_from and date_to
                         if elapsed_timedelta.days < 30:
                             time = 1
@@ -343,9 +344,12 @@ class CrossoveredBudgetLines(models.Model):
                             time = 2
                         elif elapsed_timedelta.days > 60 and elapsed_timedelta.days < 90:
                             time = 3
-                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days < 120:
+                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days <= 120:
                             time = 4
-                        theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
+                        if time == 0:
+                            theo_amt = line.planned_amount
+                        else: 
+                            theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
                     else:
                         theo_amt = line.planned_amount
 
