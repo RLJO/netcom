@@ -555,6 +555,7 @@ class AccountInvoice(models.Model):
     
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
+    interval = fields.Float("Invoice interval", default=1)
     
     number = fields.Char(related='move_id.name', store=True, readonly=False, copy=False)
     move_id = fields.Many2one('account.move', string='Journal Entry',
@@ -580,6 +581,23 @@ class AccountInvoiceLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     @api.one
+    @api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
+        'product_id', 'invoice_id.partner_id', 'invoice_id.currency_id', 'invoice_id.company_id',
+        'invoice_id.date_invoice', 'invoice_id.date', 'invoice_id.interval')
+    def _compute_price(self):
+        currency = self.invoice_id and self.invoice_id.currency_id or None
+        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
+        taxes = False
+        if self.invoice_line_tax_ids:
+            taxes = self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
+        self.price_subtotal = price_subtotal_signed = (taxes['total_excluded']) * self.invoice_id.interval if taxes else self.quantity * price * self.invoice_id.interval
+        self.price_total = taxes['total_included'] * self.invoice_id.interval if taxes else self.price_subtotal * self.invoice_id.interval
+        if self.invoice_id.currency_id and self.invoice_id.currency_id != self.invoice_id.company_id.currency_id:
+            price_subtotal_signed = self.invoice_id.currency_id.with_context(date=self.invoice_id._get_currency_rate_date()).compute(price_subtotal_signed, self.invoice_id.company_id.currency_id)
+        sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
+        self.price_subtotal_signed = price_subtotal_signed * sign
+    
+    @api.one
     @api.depends('product_id')
     def _compute_mrc_nrc(self):
         if self.product_id.recurring_invoice == True:
@@ -587,6 +605,67 @@ class AccountInvoiceLine(models.Model):
         else:
             self.nrc_mrc = "NRC"
     
+class StockMove(models.Model):
+    _inherit = "stock.move"
+    
+    @api.multi
+    @api.onchange('product_id')
+    def product_change(self):
+        accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+        if self.location_dest_id.valuation_in_account_id:
+            acc_dest = self.location_dest_id.valuation_in_account_id.id
+        else:
+            acc_dest = accounts_data['stock_output'].id
+        self.account_id = acc_dest
+        
+    @api.multi
+    def _get_accounting_data_for_valuation(self):
+        """ Return the accounts and journal to use to post Journal Entries for
+        the real-time valuation of the quant. """
+        self.ensure_one()
+        accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+
+        if self.location_id.valuation_out_account_id:
+            acc_src = self.location_id.valuation_out_account_id.id
+        else:
+            acc_src = accounts_data['stock_input'].id
+
+        if self.account_id:
+            acc_dest = self.account_id.id
+        elif self.location_dest_id.valuation_in_account_id:
+            acc_dest = self.location_dest_id.valuation_in_account_id.id
+        else:
+            acc_dest = accounts_data['stock_output'].id
+
+        acc_valuation = accounts_data.get('stock_valuation', False)
+        if acc_valuation:
+            acc_valuation = acc_valuation.id
+        if not accounts_data.get('stock_journal', False):
+            raise UserError(_('You don\'t have any stock journal defined on your product category, check if you have installed a chart of accounts'))
+        if not acc_src:
+            raise UserError(_('Cannot find a stock input account for the product %s. You must define one on the product category, or on the location, before processing this operation.') % (self.product_id.name))
+        if not acc_dest:
+            raise UserError(_('Cannot find a stock output account for the product %s. You must define one on the product category, or on the location, before processing this operation.') % (self.product_id.name))
+        if not acc_valuation:
+            raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
+        journal_id = accounts_data['stock_journal'].id
+        return journal_id, acc_src, acc_dest, acc_valuation
+    
+#     @api.model
+#     def _get_account_id(self):
+#         accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+#         print(accounts_data) 
+#         if self.location_dest_id.valuation_in_account_id:
+#             acc_dest = self.location_dest_id.valuation_in_account_id.id
+#         else:
+#             acc_dest = accounts_data['stock_output'].id
+#         return acc_dest
+        
+    
+    account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
+
+
+
 class SaleOrder(models.Model):
     _name = "sale.order"
     _inherit = ['sale.order']

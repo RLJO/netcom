@@ -118,6 +118,7 @@ class SaleSubscription(models.Model):
 
         return {
             'account_id': self.partner_id.property_account_receivable_id.id,
+            'interval' : self.template_id.recurring_interval,
             'type': 'out_invoice',
             'date_due' : self.recurring_next_date,
             'partner_id': self.partner_id.id,
@@ -330,10 +331,8 @@ class SaleSubscriptionLine(models.Model):
 
             product = self.product_id.with_context(context)
             if self.type == 'sale' : 
-                print('....saoudjioasjjasja....')
                 self.price_unit = product.price
             else:
-                print('saoudjioasjjasja....')
                 self.price_unit = product.lease_price
 
             if not self.uom_id:
