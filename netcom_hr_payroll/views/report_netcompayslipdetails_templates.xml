@@ -29,9 +29,6 @@
                             <td><span t-field="o.employee_id.identification_id"/></td>
                         </tr>
                         <tr>
-                            
-                            <td><strong>Designation</strong></td>
-                            <td><span t-field="o.employee_id.job_id"/></td>
                             <td><strong>Department</strong></td>
                             <td><span t-field="o.employee_id.department_id"/></td>
                         </tr>
