@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import datetime
 
+from datetime import date, timedelta
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import float_is_zero
@@ -240,6 +242,10 @@ class HrExpenseSheet(models.Model):
                 if line.total_amount > result.allowed_amount and line.override_budget == False:
                     override = True
                     line.write({'need_override': True})
+            else:
+                if line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
         if override:
             group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
             user_ids = []
@@ -259,6 +265,12 @@ class Picking(models.Model):
     _name = "stock.picking"
     _inherit = 'stock.picking'
     
+    @api.multi
+    def manager_confirm(self):
+        for order in self:
+            order.write({'man_confirm': True})
+        return True
+    
     def _default_owner(self):
         return self.env.context.get('default_employee_id') or self.env['res.users'].browse(self.env.uid).partner_id
     
@@ -275,6 +287,13 @@ class Picking(models.Model):
         help="Default Owner")
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
+    
+    @api.multi
+    def button_reset(self):
+        self.mapped('move_lines')._action_cancel()
+        self.write({'state': 'draft'})
+        return {}
 
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
@@ -323,6 +342,7 @@ class CrossoveredBudgetLines(models.Model):
                         # If the budget line has not started yet, theoretical amount should be zero
                         theo_amt = 0.00
                     elif line_timedelta.days > 0 and fields.Datetime.from_string(today) < fields.Datetime.from_string(line.date_to):
+                        time = 0
                         # If today is between the budget line date_from and date_to
                         if elapsed_timedelta.days < 30:
                             time = 1
@@ -330,9 +350,12 @@ class CrossoveredBudgetLines(models.Model):
                             time = 2
                         elif elapsed_timedelta.days > 60 and elapsed_timedelta.days < 90:
                             time = 3
-                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days < 120:
+                        elif elapsed_timedelta.days > 90 and elapsed_timedelta.days <= 120:
                             time = 4
-                        theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
+                        if time == 0:
+                            theo_amt = line.planned_amount
+                        else: 
+                            theo_amt = (time / (line_timedelta.days/ 30)) * line.planned_amount
                     else:
                         theo_amt = line.planned_amount
 
@@ -397,6 +420,8 @@ class PurchaseOrder(models.Model):
     employee_id = fields.Many2one('hr.employee', 'Employee',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
+    approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
+    manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
     
     state = fields.Selection([
         ('draft', 'RFQ'),
@@ -429,6 +454,10 @@ class PurchaseOrder(models.Model):
                 if line.price_total > result.allowed_amount and line.override_budget == False:
                     override = True
                     line.write({'need_override': True})
+            else:
+                if line.override_budget == False:
+                    override = True
+                    line.write({'need_override': True})
         if override:
             group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_account_budget')
             user_ids = []
@@ -442,7 +471,6 @@ class PurchaseOrder(models.Model):
             return False
         return True
     
-    
     @api.multi
     def button_confirm(self):
         for order in self:
@@ -450,6 +478,8 @@ class PurchaseOrder(models.Model):
                 continue
             if self._check_budget() == False and self.need_override:
                 return {}
+            self.approval_date = date.today()
+            self.manager_approval = self._uid
             order._add_supplier_to_product()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\
@@ -460,8 +490,7 @@ class PurchaseOrder(models.Model):
             else:
                 order.write({'state': 'to approve'})
         return True
-
-    
+        
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
     _inherit = ['purchase.order.line']
@@ -524,15 +553,49 @@ class AccountInvoice(models.Model):
         self.amount_total_signed = self.amount_total * sign
         self.amount_untaxed_signed = amount_untaxed_signed * sign
     
-    amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_compute_amount', track_visibility='onchange')
-    amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_compute_amount', track_visibility='onchange')
+    amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
+    amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=False, compute='_compute_amount', track_visibility='onchange')
+    interval = fields.Float("Invoice interval", default=1)
+    
+    number = fields.Char(related='move_id.name', store=True, readonly=False, copy=False)
+    move_id = fields.Many2one('account.move', string='Journal Entry',
+        readonly=True, index=True, ondelete='restrict', copy=False,
+        help="Link to the automatically generated Journal Items.")
+    state = fields.Selection([
+            ('draft','Draft'),
+            ('open', 'Open'),
+            ('paid', 'Paid'),
+            ('cancel', 'Cancelled'),
+        ], string='Status', index=True, readonly=False, default='draft',
+        track_visibility='onchange', copy=False,
+        help=" * The 'Draft' status is used when a user is encoding a new and unconfirmed Invoice.\n"
+             " * The 'Open' status is used when user creates invoice, an invoice number is generated. It stays in the open status till the user pays the invoice.\n"
+             " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
+             " * The 'Cancelled' status is used when user cancel invoice.")
     
 class AccountInvoiceLine(models.Model):
     _name = "account.invoice.line"
     _inherit = ['account.invoice.line']
     
-    nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
+    nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=False, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    
+    @api.one
+    @api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
+        'product_id', 'invoice_id.partner_id', 'invoice_id.currency_id', 'invoice_id.company_id',
+        'invoice_id.date_invoice', 'invoice_id.date', 'invoice_id.interval')
+    def _compute_price(self):
+        currency = self.invoice_id and self.invoice_id.currency_id or None
+        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
+        taxes = False
+        if self.invoice_line_tax_ids:
+            taxes = self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
+        self.price_subtotal = price_subtotal_signed = (taxes['total_excluded']) * self.invoice_id.interval if taxes else self.quantity * price * self.invoice_id.interval
+        self.price_total = taxes['total_included'] * self.invoice_id.interval if taxes else self.price_subtotal * self.invoice_id.interval
+        if self.invoice_id.currency_id and self.invoice_id.currency_id != self.invoice_id.company_id.currency_id:
+            price_subtotal_signed = self.invoice_id.currency_id.with_context(date=self.invoice_id._get_currency_rate_date()).compute(price_subtotal_signed, self.invoice_id.company_id.currency_id)
+        sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
+        self.price_subtotal_signed = price_subtotal_signed * sign
     
     @api.one
     @api.depends('product_id')
@@ -541,6 +604,67 @@ class AccountInvoiceLine(models.Model):
             self.nrc_mrc = "MRC"
         else:
             self.nrc_mrc = "NRC"
+    
+class StockMove(models.Model):
+    _inherit = "stock.move"
+    
+    @api.multi
+    @api.onchange('product_id')
+    def product_change(self):
+        accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+        if self.location_dest_id.valuation_in_account_id:
+            acc_dest = self.location_dest_id.valuation_in_account_id.id
+        else:
+            acc_dest = accounts_data['stock_output'].id
+        self.account_id = acc_dest
+        
+    @api.multi
+    def _get_accounting_data_for_valuation(self):
+        """ Return the accounts and journal to use to post Journal Entries for
+        the real-time valuation of the quant. """
+        self.ensure_one()
+        accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+
+        if self.location_id.valuation_out_account_id:
+            acc_src = self.location_id.valuation_out_account_id.id
+        else:
+            acc_src = accounts_data['stock_input'].id
+
+        if self.account_id:
+            acc_dest = self.account_id.id
+        elif self.location_dest_id.valuation_in_account_id:
+            acc_dest = self.location_dest_id.valuation_in_account_id.id
+        else:
+            acc_dest = accounts_data['stock_output'].id
+
+        acc_valuation = accounts_data.get('stock_valuation', False)
+        if acc_valuation:
+            acc_valuation = acc_valuation.id
+        if not accounts_data.get('stock_journal', False):
+            raise UserError(_('You don\'t have any stock journal defined on your product category, check if you have installed a chart of accounts'))
+        if not acc_src:
+            raise UserError(_('Cannot find a stock input account for the product %s. You must define one on the product category, or on the location, before processing this operation.') % (self.product_id.name))
+        if not acc_dest:
+            raise UserError(_('Cannot find a stock output account for the product %s. You must define one on the product category, or on the location, before processing this operation.') % (self.product_id.name))
+        if not acc_valuation:
+            raise UserError(_('You don\'t have any stock valuation account defined on your product category. You must define one before processing this operation.'))
+        journal_id = accounts_data['stock_journal'].id
+        return journal_id, acc_src, acc_dest, acc_valuation
+    
+#     @api.model
+#     def _get_account_id(self):
+#         accounts_data = self.product_id.product_tmpl_id.get_product_accounts()
+#         print(accounts_data) 
+#         if self.location_dest_id.valuation_in_account_id:
+#             acc_dest = self.location_dest_id.valuation_in_account_id.id
+#         else:
+#             acc_dest = accounts_data['stock_output'].id
+#         return acc_dest
+        
+    
+    account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
+
+
 
 class SaleOrder(models.Model):
     _name = "sale.order"
@@ -603,6 +727,42 @@ class SaleOrderLine(models.Model):
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    
+    @api.multi
+    def _prepare_invoice_line(self, qty):
+        """
+        Prepare the dict of values to create the new invoice line for a sales order line.
+
+        :param qty: float quantity to invoice
+        """
+        self.ensure_one()
+        res = {}
+        account = self.product_id.property_account_income_id or self.product_id.categ_id.property_account_income_categ_id
+        if not account:
+            raise UserError(_('Please define income account for this product: "%s" (id:%d) - or for its category: "%s".') %
+                (self.product_id.name, self.product_id.id, self.product_id.categ_id.name))
+
+        fpos = self.order_id.fiscal_position_id or self.order_id.partner_id.property_account_position_id
+        if fpos:
+            account = fpos.map_account(account)
+
+        res = {
+            'name': self.name,
+            'sequence': self.sequence,
+            'origin': self.order_id.name,
+            'sub_account_id' : self.sub_account_id.id,
+            'account_id': account.id,
+            'price_unit': self.price_unit,
+            'quantity': qty,
+            'discount': self.discount,
+            'uom_id': self.product_uom.id,
+            'product_id': self.product_id.id or False,
+            'layout_category_id': self.layout_category_id and self.layout_category_id.id or False,
+            'invoice_line_tax_ids': [(6, 0, self.tax_id.ids)],
+            'account_analytic_id': self.order_id.analytic_account_id.id,
+            'analytic_tag_ids': [(6, 0, self.analytic_tag_ids.ids)],
+        }
+        return res
     
     @api.one
     @api.depends('product_id')

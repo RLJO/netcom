@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
+import datetime
+import uuid
+import time
+import traceback
 
-from odoo import models, fields, api
+from collections import Counter
+from dateutil.relativedelta import relativedelta
+from datetime import date, timedelta
+
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
+from odoo.tools import format_date
+
+from odoo.addons import decimal_precision as dp
 
 class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
 
-    parent_account_number = fields.Char('Parent Account Number', readonly=True, required=False, index=True, copy=False,)
+    parent_account_number = fields.Char('Parent Account Number', required=False, index=True, copy=False,)
     contact_name = fields.Char('Contact Name')
 
     @api.model
@@ -74,6 +86,57 @@ class SaleSubscription(models.Model):
     _description = "Sale Subscription"
     _inherit = ['sale.subscription']
     
+    @api.depends('recurring_invoice_line_ids', 'recurring_invoice_line_ids.quantity', 'recurring_invoice_line_ids.price_subtotal', 'template_id')
+    def _compute_recurring_total(self):
+        for account in self:
+            account.recurring_total = sum(line.price_subtotal for line in account.recurring_invoice_line_ids)
+    
+    def _prepare_invoice_data(self):
+        self.ensure_one()
+
+        if not self.partner_id:
+            raise UserError(_("You must first select a Customer for Subscription %s!") % self.name)
+
+        if 'force_company' in self.env.context:
+            company = self.env['res.company'].browse(self.env.context['force_company'])
+        else:
+            company = self.company_id
+            self = self.with_context(force_company=company.id, company_id=company.id)
+
+        fpos_id = self.env['account.fiscal.position'].get_fiscal_position(self.partner_id.id)
+        journal = self.template_id.journal_id or self.env['account.journal'].search([('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
+        if not journal:
+            raise UserError(_('Please define a sale journal for the company "%s".') % (company.name or '', ))
+
+        next_date = fields.Date.from_string(self.recurring_next_date)
+        if not next_date:
+            raise UserError(_('Please define Date of Next Invoice of "%s".') % (self.display_name,))
+        periods = {'daily': 'days', 'weekly': 'weeks', 'monthly': 'months', 'yearly': 'years'}
+        end_date = next_date + relativedelta(**{periods[self.recurring_rule_type]: self.recurring_interval})
+        end_date = end_date - relativedelta(days=1)     # remove 1 day as normal people thinks in term of inclusive ranges.
+        addr = self.partner_id.address_get(['delivery'])
+
+        return {
+            'account_id': self.partner_id.property_account_receivable_id.id,
+            'interval' : self.template_id.recurring_interval,
+            'type': 'out_invoice',
+            'date_due' : self.recurring_next_date,
+            'partner_id': self.partner_id.id,
+            'user_id' : self.user_id.id,
+            'partner_shipping_id': addr['delivery'],
+            'currency_id': self.pricelist_id.currency_id.id,
+            'journal_id': journal.id,
+            'origin': self.code,
+            'fiscal_position_id': fpos_id,
+            'payment_term_id': self.partner_id.property_payment_term_id.id,
+            'company_id': company.id,
+            'comment': _('''This invoice covers the following period: %s - %s \n
+By making the payment for this Invoice, the Customer hereby agrees to the Netcom General Terms and Conditions
+as outlined in the Service Agreement which is available at http://www.netcomafrica.com/terms.pdf. Please pay the
+complete invoice value net of all statutory deductions. If you are entitled for any deductions, please gross up the
+invoice amount at your cost and provide us with associated Credit Notes with evidence of payment to Netcom.''') % (format_date(self.env, next_date), format_date(self.env, end_date)),
+        }
+    
     def _prepare_invoice_line(self, line, fiscal_position):
         if 'force_company' in self.env.context:
             company = self.env['res.company'].browse(self.env.context['force_company'])
@@ -102,6 +165,124 @@ class SaleSubscription(models.Model):
             'analytic_tag_ids': [(6, 0, line.analytic_account_id.tag_ids.ids)],
             'sub_account_id': line.sub_account_id.id
         }
+    @api.multi
+    def _recurring_create_invoice(self, automatic=False):
+        auto_commit = self.env.context.get('auto_commit', True)
+        cr = self.env.cr
+        invoices = self.env['account.invoice']
+        current_date = date.today() + timedelta(days=20)
+        imd_res = self.env['ir.model.data']
+        template_res = self.env['mail.template']
+        if len(self) > 0:
+            subscriptions = self
+        else:
+            domain = [('recurring_next_date', '<=', current_date),
+                      ('state', 'in', ['open', 'pending'])]
+            subscriptions = self.search(domain)
+        if subscriptions:
+            sub_data = subscriptions.read(fields=['id', 'company_id'])
+            for company_id in set(data['company_id'][0] for data in sub_data):
+                sub_ids = [s['id'] for s in sub_data if s['company_id'][0] == company_id]
+                subs = self.with_context(company_id=company_id, force_company=company_id).browse(sub_ids)
+                context_company = dict(self.env.context, company_id=company_id, force_company=company_id)
+                for subscription in subs:
+                    if automatic and auto_commit:
+                        cr.commit()
+                    # payment + invoice (only by cron)
+                    if subscription.template_id.payment_mandatory and subscription.recurring_total and automatic:
+                        try:
+                            payment_token = subscription.payment_token_id
+                            tx = None
+                            if payment_token:
+                                invoice_values = subscription.with_context(lang=subscription.partner_id.lang)._prepare_invoice()
+                                new_invoice = self.env['account.invoice'].with_context(context_company).create(invoice_values)
+                                new_invoice.message_post_with_view('mail.message_origin_link',
+                                    values = {'self': new_invoice, 'origin': subscription},
+                                    subtype_id = self.env.ref('mail.mt_note').id)
+                                new_invoice.with_context(context_company).compute_taxes()
+                                tx = subscription._do_payment(payment_token, new_invoice, two_steps_sec=False)[0]
+                                # commit change as soon as we try the payment so we have a trace somewhere
+                                if auto_commit:
+                                    cr.commit()
+                                if tx.state in ['done', 'authorized']:
+                                    subscription.send_success_mail(tx, new_invoice)
+                                    msg_body = 'Automatic payment succeeded. Payment reference: <a href=# data-oe-model=payment.transaction data-oe-id=%d>%s</a>; Amount: %s. Invoice <a href=# data-oe-model=account.invoice data-oe-id=%d>View Invoice</a>.' % (tx.id, tx.reference, tx.amount, new_invoice.id)
+                                    subscription.message_post(body=msg_body)
+                                    if auto_commit:
+                                        cr.commit()
+                                else:
+                                    _logger.error('Fail to create recurring invoice for subscription %s', subscription.code)
+                                    if auto_commit:
+                                        cr.rollback()
+                                    new_invoice.unlink()
+                            if tx is None or tx.state != 'done':
+                                amount = subscription.recurring_total
+                                date_close = datetime.datetime.strptime(subscription.recurring_next_date, "%Y-%m-%d") + relativedelta(days=15)
+                                close_subscription = current_date >= date_close.strftime('%Y-%m-%d')
+                                email_context = self.env.context.copy()
+                                email_context.update({
+                                    'payment_token': subscription.payment_token_id and subscription.payment_token_id.name,
+                                    'renewed': False,
+                                    'total_amount': amount,
+                                    'email_to': subscription.partner_id.email,
+                                    'code': subscription.code,
+                                    'currency': subscription.pricelist_id.currency_id.name,
+                                    'date_end': subscription.date,
+                                    'date_close': date_close.date()
+                                })
+                                if close_subscription:
+                                    _, template_id = imd_res.get_object_reference('sale_subscription', 'email_payment_close')
+                                    template = template_res.browse(template_id)
+                                    template.with_context(email_context).send_mail(subscription.id)
+                                    _logger.debug("Sending Subscription Closure Mail to %s for subscription %s and closing subscription", subscription.partner_id.email, subscription.id)
+                                    msg_body = 'Automatic payment failed after multiple attempts. Subscription closed automatically.'
+                                    subscription.message_post(body=msg_body)
+                                else:
+                                    _, template_id = imd_res.get_object_reference('sale_subscription', 'email_payment_reminder')
+                                    msg_body = 'Automatic payment failed. Subscription set to "To Renew".'
+                                    if (datetime.datetime.today() - datetime.datetime.strptime(subscription.recurring_next_date, '%Y-%m-%d')).days in [0, 3, 7, 14]:
+                                        template = template_res.browse(template_id)
+                                        template.with_context(email_context).send_mail(subscription.id)
+                                        _logger.debug("Sending Payment Failure Mail to %s for subscription %s and setting subscription to pending", subscription.partner_id.email, subscription.id)
+                                        msg_body += ' E-mail sent to customer.'
+                                    subscription.message_post(body=msg_body)
+                                subscription.write({'state': 'close' if close_subscription else 'pending'})
+                            if auto_commit:
+                                cr.commit()
+                        except Exception:
+                            if auto_commit:
+                                cr.rollback()
+                            # we assume that the payment is run only once a day
+                            traceback_message = traceback.format_exc()
+                            _logger.error(traceback_message)
+                            last_tx = self.env['payment.transaction'].search([('reference', 'like', 'SUBSCRIPTION-%s-%s' % (subscription.id, datetime.date.today().strftime('%y%m%d')))], limit=1)
+                            error_message = "Error during renewal of subscription %s (%s)" % (subscription.code, 'Payment recorded: %s' % last_tx.reference if last_tx and last_tx.state == 'done' else 'No payment recorded.')
+                            _logger.error(error_message)
+
+                    # invoice only
+                    else:
+                        try:
+                            invoice_values = subscription.with_context(lang=subscription.partner_id.lang)._prepare_invoice()
+                            new_invoice = self.env['account.invoice'].with_context(context_company).create(invoice_values)
+                            new_invoice.message_post_with_view('mail.message_origin_link',
+                                values = {'self': new_invoice, 'origin': subscription},
+                                subtype_id = self.env.ref('mail.mt_note').id)
+                            new_invoice.with_context(context_company).compute_taxes()
+                            invoices += new_invoice
+                            next_date = datetime.datetime.strptime(subscription.recurring_next_date or current_date, "%Y-%m-%d")
+                            periods = {'daily': 'days', 'weekly': 'weeks', 'monthly': 'months', 'yearly': 'years'}
+                            invoicing_period = relativedelta(**{periods[subscription.recurring_rule_type]: subscription.recurring_interval})
+                            new_date = next_date + invoicing_period
+                            subscription.write({'recurring_next_date': new_date.strftime('%Y-%m-%d')})
+                            if automatic and auto_commit:
+                                cr.commit()
+                        except Exception:
+                            if automatic and auto_commit:
+                                cr.rollback()
+                                _logger.exception('Fail to create recurring invoice for subscription %s', subscription.code)
+                            else:
+                                raise
+        return invoices
 
 class SaleSubscriptionLine(models.Model):
     _name = "sale.subscription.line"
@@ -109,7 +290,59 @@ class SaleSubscriptionLine(models.Model):
     _inherit = ['sale.subscription.line']
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     
+    @api.onchange('product_id')
+    def onchange_product_id(self):
+        product = self.product_id
+        partner = self.analytic_account_id.partner_id
+        if partner.lang:
+            self.product_id.with_context(lang=partner.lang)
+
+        name = product.name
+        if product.description_sale:
+            name += '\n' + product.description_sale
+        self.name = name
+        
+    @api.depends('price_unit', 'quantity', 'discount', 'analytic_account_id.pricelist_id' , 'analytic_account_id.template_id')
+    def _compute_price_subtotal(self):
+        for line in self:
+            line_sudo = line.sudo()
+            price = line.env['account.tax']._fix_tax_included_price(line.price_unit, line_sudo.product_id.taxes_id, [])
+            line.price_subtotal = line.quantity * price * (100.0 - line.discount) / 100.0 
+            line.price_subtotal = line.price_subtotal * line_sudo.analytic_account_id.template_id.recurring_interval
+            if line.analytic_account_id.pricelist_id:
+                line.price_subtotal = line_sudo.analytic_account_id.pricelist_id.currency_id.round(line.price_subtotal)
+                
+    @api.onchange('product_id', 'quantity','type')
+    def onchange_product_quantity(self):
+        domain = {}
+        subscription = self.analytic_account_id
+        company_id = subscription.company_id.id
+        pricelist_id = subscription.pricelist_id.id
+        context = dict(self.env.context, company_id=company_id, force_company=company_id, pricelist=pricelist_id, quantity=self.quantity)
+        if not self.product_id:
+            self.price_unit = 0.0
+            domain['uom_id'] = []
+        else:
+            partner = subscription.partner_id.with_context(context)
+            if partner.lang:
+                context.update({'lang': partner.lang})
+
+            product = self.product_id.with_context(context)
+            if self.type == 'sale' : 
+                self.price_unit = product.price
+            else:
+                self.price_unit = product.lease_price
+
+            if not self.uom_id:
+                self.uom_id = product.uom_id.id
+            if self.uom_id.id != product.uom_id.id:
+                self.price_unit = product.uom_id._compute_price(self.price_unit, self.uom_id)
+            domain['uom_id'] = [('category_id', '=', product.uom_id.category_id.id)]
+
+        return {'domain': domain}
+
         
 class EquipmentType(models.Model):
     _name = "equipment.type"
@@ -182,7 +415,7 @@ class CustomerRequest(models.Model):
             'customer': self.customer,
             'supplier' : self.supplier
         }
-        self.env['res.partner'].create(vals)
+        self.sudo().env['res.partner'].create(vals)
         return {}
     
     @api.multi
@@ -233,7 +466,7 @@ class SubAccount(models.Model):
     
     addinfo = fields.Text(string='Additional Information')
     
-    child_account = fields.Char(string='Child Account Number', readonly=True, index=True, copy=False,default='/', track_visibility='onchange')
+    child_account = fields.Char(string='Child Account Number', index=True, copy=False, default='/', track_visibility='onchange')
     
     website = fields.Char(help="Website of Partner or Company")
     
@@ -242,6 +475,8 @@ class SubAccount(models.Model):
     fax = fields.Char(help="fax")
     
     create_date = fields.Date(string='Create Date', readonly=True, track_visibility='onchange')
+    
+    activation_date = fields.Date(string='Activation Date', readonly=False, track_visibility='onchange')
     
     contact_person = fields.Many2one('res.partner.title')
     
@@ -287,9 +522,15 @@ class SubAccount(models.Model):
 
     @api.model
     def create(self, vals):
-        partner_ids = self.search([('parent_id','=',vals['parent_id'])])
-        number = len(partner_ids) + 1
-        vals['child_account'] = "SA" + str(number).zfill(3)
+        partner_ids = self.search([('parent_id','=',vals['parent_id'])],order="child_account desc")
+        for p in  partner_ids:
+            print(p.child_account)
+        if not partner_ids:
+            vals['child_account'] = "SA001"
+        else:
+            number = partner_ids[0].child_account.split("A",2)
+            number = int(number[1]) + 1
+            vals['child_account'] = "SA" + str(number).zfill(3)
         return super(SubAccount, self).create(vals)
     
     
@@ -308,6 +549,7 @@ class SubAccount(models.Model):
     @api.multi
     def button_activate(self):
         self.write({'state': 'activate'})
+        self.activation_date = date.today()
         return {}
     
     @api.multi
@@ -381,11 +623,34 @@ class Employee(models.Model):
            
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+    
+    @api.depends('product_variant_ids', 'product_variant_ids.default_code', 'brand')
+    def _compute_default_code(self):
+        unique_variants = self.filtered(lambda template: len(template.product_variant_ids) == 1)
+        for template in unique_variants:
+            template.default_code = template.product_variant_ids.default_code
+        for template in (self - unique_variants):
+            template.default_code = ''
+        
+    @api.model
+    def create(self, vals):
+        brand = self.env['brand.type'].search([('id','=',vals['brand'])])
+        equipment = self.env['equipment.type'].search([('id','=',vals['equipment_type'])])
+        code = brand.code + equipment.code
+        other = self.search([('default_code','like',code + '%')],order="default_code desc")
+        if other:
+            no = int(other[0].default_code[4:8]) + 1
+        else:
+            no = 1
+        item_code = code + str(no).zfill(4)
+        vals['default_code'] = item_code
+        return super(ProductTemplate, self).create(vals)
 
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
+    
     
 class ExpenseRef(models.Model):
     _name = 'hr.expense'
@@ -458,15 +723,43 @@ class StoreReqEdit(models.Model):
         default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_dest_id,
         readonly=True, required=True,
         states={'draft': [('readonly', False)]})
-
+'''
 class RepairSub(models.Model):
     _name = 'mrp.repair'
     _inherit = 'mrp.repair'
      
     parent_id = fields.Many2one('res.partner', string='Customer', domain="[('customer','=',True)]", index=True, ondelete='cascade', track_visibility='onchange')
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
+'''
+class Holidays(models.Model):
+    _name = "hr.holidays"
+    _inherit = 'hr.holidays'
+    
+    state = fields.Selection([
+            ('draft', 'To Submit'),
+            ('cancel', 'Cancelled'),
+            ('confirm', 'To Approve'),
+            ('refuse', 'Refused'),
+            ('validate1', 'Second Approval'),
+            ('validate', 'Approved')
+            ], string='Status', readonly=False, track_visibility='onchange', copy=False, default='confirm',
+                help="The status is set to 'To Submit', when a leave request is created." +
+                "\nThe status is 'To Approve', when leave request is confirmed by user." +
+                "\nThe status is 'Refused', when leave request is refused by manager." +
+                "\nThe status is 'Approved', when leave request is approved by manager.")
+    
+    date_from = fields.Date('Start Date', readonly=True, index=True, copy=False,
+        states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
+    date_to = fields.Date('End Date', readonly=True, copy=False,
+        states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
+   
+class HolidaysType(models.Model):
+    _name = "hr.holidays.status"
+    _inherit = 'hr.holidays.status'
 
-
+    remaining_leaves = fields.Float(compute='_compute_leaves', string='Remaining Leaves',
+        help='Maximum Leaves Allowed - Leaves Already Taken', track_visibility='onchange')
+    
 #     name = fields.Char()
 #     value = fields.Integer()
 #     value2 = fields.Float(compute="_value_pc", store=True)
