@@ -13,54 +13,31 @@
             <t t-call="web.external_layout">
                 <div class="page">
                     <div style="width:100%">
-                        <h2>Pay Slip</h2>
-                        <p t-field="o.name"/>
-                        <table class="table table-condensed" style="border-collapse: collapse;">
+                        <table class="table table-condensed" style="border-collapse:collapse;border:0px;background:#fff" cellpadding="0" width="100%">
                             <tr>
-                                <td style="padding:0;border:0;">
-                                    <strong>Name</strong>
+                                <td height="50">Slip Number:<span t-field="o.number"/></td>
+                                <td height="50">Pay Period: <span t-field="o.date_from"/> - <span t-field="o.date_to"/></td>
+                            </tr>
+                            <tr style="border:0px;width:100%">
+                                <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
+                                    <strong>Employee</strong>
                                 </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.employee_id"/>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <strong>Designation</strong>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.employee_id.job_id"/>
+                                
+                                <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
+                                    <strong>Department</strong>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="padding:0;border:0;">
-                                    <strong>Slip Number</strong>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.number"/>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <strong>Department</strong>
+                                    <span t-field="o.employee_id"/>, <span t-field="o.employee_id.job_id"/>
                                 </td>
                                 <td style="padding:0;border:0;">
                                     <span t-field="o.employee_id.department_id"/>
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="padding:0;border:0;">
-                                    <strong>Date From</strong>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.date_from"/>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <strong>Date To</strong>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.date_to"/>
-                                </td>
-                            </tr>
-                        </table>
+                        </table>    
                         <div style="width:60%; float:left;border:0px;">
-                            <table class="table" style="border:0px;" cellpadding="0">
+                            <table class="table" style="border:0px;background:#fff" cellpadding="0" >
                                 <tr style="border:0px">
                                     <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Earnings and Hours</th>
                                     <th width="25%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Current</th>
