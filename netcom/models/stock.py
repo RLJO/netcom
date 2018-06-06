@@ -795,7 +795,7 @@ class SaleOrderLine(models.Model):
         values = list()
         for line in self:
             values.append((0, False, {
-                'sub_account_id' : self.sub_account_id.id,
+                'sub_account_id' : line.sub_account_id.id,
                 'product_id': line.product_id.id,
                 'name': line.name,
                 'quantity': line.product_uom_qty,
