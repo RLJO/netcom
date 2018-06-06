@@ -12,5 +12,6 @@
     'data': [
         'views/hr_payroll_report.xml',
         'views/report_netcompayslipdetails_templates.xml',
+        'views/hr_payslip_view.xml',
     ],
 }
