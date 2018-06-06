@@ -637,12 +637,13 @@ class ProductTemplate(models.Model):
         brand = self.env['brand.type'].search([('id','=',vals['brand'])])
         equipment = self.env['equipment.type'].search([('id','=',vals['equipment_type'])])
         code = brand.code + equipment.code
-        other = self.search([('default_code','like',code + '%')],order="default_code desc")
-        if other:
-            no = int(other[0].default_code[4:8]) + 1
-        else:
-            no = 1
-        item_code = code + str(no).zfill(4)
+#         other = self.search([('default_code','like',code + '%')],order="default_code desc")
+#         if other:
+#             no = int(other[0].default_code[4:8]) + 1
+#         else:
+#             no = 1
+        no = self.env['ir.sequence'].next_by_code('product.template')
+        item_code = code + str(no)
         vals['default_code'] = item_code
         return super(ProductTemplate, self).create(vals)
 

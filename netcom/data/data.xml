@@ -47,6 +47,14 @@
         	<field name="company_id" eval="False"/>
         </record>
         
+        <record id="seq_item_code" model="ir.sequence">
+        	<field name="name">Item Code</field>
+        	<field name="code">product.template</field>
+        	<field name="prefix"></field>
+        	<field name="padding">4</field>
+        	<field name="company_id" eval="False"/>
+        </record>
+        
         <!-- 
         
         <record id="seq_Sub_Account" model="ir.sequence">
