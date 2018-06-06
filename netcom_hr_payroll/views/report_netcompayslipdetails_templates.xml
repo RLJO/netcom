@@ -234,7 +234,7 @@
                         <div style="background:#fff;width:40%; float:right">
                             <p style="text-align:center;font-size:17px">
                                 <strong>NOTES</strong>
-                                <span t-field="o.notes"/>
+                                <span t-field="o.note"/>
                             </p>
                         </div>
                     </div>
