@@ -671,6 +671,30 @@ class SaleOrder(models.Model):
     _inherit = ['sale.order']
     _description = "Quotation"
     
+    def _prepare_subscription_data(self, template):
+        """Prepare a dictionnary of values to create a subscription from a template."""
+        self.ensure_one()
+        values = {
+            'name': template.name,
+            'state': 'draft',
+            'template_id': template.id,
+            'partner_id': self.partner_id.id,
+            'user_id': self.user_id.id,
+            'date_start': fields.Date.today(),
+            'description': self.note or template.description,
+            'pricelist_id': self.pricelist_id.id,
+            'company_id': self.company_id.id,
+            'analytic_account_id': self.analytic_account_id.id,
+            'payment_token_id': self.payment_tx_id.payment_token_id.id if template.payment_mandatory else False
+        }
+        # compute the next date
+        today = datetime.date.today()
+        periods = {'daily': 'days', 'weekly': 'weeks', 'monthly': 'months', 'yearly': 'years'}
+        invoicing_period = relativedelta(**{periods[template.recurring_rule_type]: template.recurring_interval})
+        recurring_next_date = today + invoicing_period
+        values['recurring_next_date'] = fields.Date.to_string(recurring_next_date)
+        return values
+    
     @api.depends('order_line.price_total')
     def _amount_all(self):
         """
@@ -763,6 +787,21 @@ class SaleOrderLine(models.Model):
             'analytic_tag_ids': [(6, 0, self.analytic_tag_ids.ids)],
         }
         return res
+    
+    def _prepare_subscription_line_data(self):
+        """Prepare a dictionnary of values to add lines to a subscription."""
+        values = list()
+        for line in self:
+            values.append((0, False, {
+                'sub_account_id' : self.sub_account_id.id,
+                'product_id': line.product_id.id,
+                'name': line.name,
+                'quantity': line.product_uom_qty,
+                'uom_id': line.product_uom.id,
+                'price_unit': line.price_unit,
+                'discount': line.discount if line.order_id.subscription_management != 'upsell' else False,
+            }))
+        return values
     
     @api.one
     @api.depends('product_id')
