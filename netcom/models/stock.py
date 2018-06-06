@@ -6,6 +6,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import float_is_zero
 
+from dateutil.relativedelta import relativedelta
+
 
 
 class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
