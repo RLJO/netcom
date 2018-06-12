@@ -15,13 +15,15 @@
             name="Directory" 
             id="netcom_hr_employee_directory_menu" 
             parent="hr.menu_open_view_employee_list_my" 
+            action="hr.open_view_employee_list_my"
             sequence="1" 
             groups="hr.group_hr_user"/>
 
         <menuitem 
             name="My Profile" 
             id="netcom_hr_employee_profile_menu" 
-            parent="hr.menu_open_view_employee_list_my" 
+            parent="hr.menu_open_view_employee_list_my"
+            action="hr.open_view_employee_list_my" 
             sequence="1" 
             groups="hr.group_hr_user"/>
 
