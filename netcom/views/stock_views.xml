@@ -158,11 +158,12 @@
         	<xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
             	<field name="commitments" sum="Commitments" widget="monetary"/>
             	<field name="allowed_amount" sum="Allowed Amount" widget="monetary"/>
-            	<field name="department"/>
+            	<!-- <field name="department"/> -->
             </xpath>	    
 	    </field>
 	</record>
 	
+	<!--  
 	
 	<record id="netcom_budgetary_dept" model="ir.ui.view">
         <field name="name">netcom.budgetary.dept</field>
@@ -175,7 +176,7 @@
     		</field>
         </field>
     </record>
-	    
+	-->    
 	
     
     <record id="purchase_rfq" model="ir.actions.act_window">
