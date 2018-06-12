@@ -23,7 +23,7 @@
 {
     'name': 'Netcom HR Contract',
     'summary': """Extra functionalities on HR Contract""",
-    'version': '10.0.1.0.0',
+    'version': '11.0.1.0.0',
     'description': """Netcom HR Contract""",
     'author': 'Tosin Komolafe',
     'company': 'Ballotnet Solutions Ltd',

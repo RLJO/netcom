@@ -1,251 +1,248 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<template id="report_netcompayslipdetails">
-    <style>
-        .footer {
-            width:100%;
-            float: right;
-        }
-        .font-color: black;
-    </style>
-    <t t-call="web.html_container">
-        <t t-foreach="docs" t-as="o">
-            <t t-if="o and 'company_id' in o">
-                <t t-set="company" t-value="o.company_id.sudo()"/>
-            </t>
-            <t t-call="web.external_layout_standard">
-                <div class="page">
-                    <div style="width:100%">
-                        <table class="table table-condensed" style="border-collapse:collapse;border:0px;background:#fff" cellpadding="0" width="100%">
-                            <tr>
-                                <td height="50">Slip Number:<span t-field="o.number"/></td>
-                                <td height="50">Pay Period: <span t-field="o.date_from"/> - <span t-field="o.date_to"/></td>
-                            </tr>
-                            <tr style="border:0px;width:100%">
-                                <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
-                                    <strong>Employee</strong>
-                                </td>
-                                
-                                <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
-                                    <strong>Department</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.employee_id"/>, <span t-field="o.employee_id.job_id"/>
-                                </td>
-                                <td style="padding:0;border:0;">
-                                    <span t-field="o.employee_id.department_id"/>
-                                </td>
-                            </tr>
-                        </table>    
-                        <div style="width:60%; float:left;border:0px;">
-                            <table class="table" style="border:0px;background:#fff" cellpadding="0" >
-                                <tr style="border:0px">
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Earnings and Hours</th>
-                                    <th width="25%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Current</th>
-                                    <th width="25%" style="border-bottom:2px solid #000;padding:0px; border-top:0px; border-top:0px" class="text-right">YTD Amount</th>
-                                </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'EAH' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']"/>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'BASIC'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDB')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'MLNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDM')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'ENNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDE')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'HRANG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDH')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TRNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDT')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'LANG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDL')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'BONUSNG'" style="padding:0;border:0;">
-                                            <span>Set YTD for BONUSNG</span>
-                                        </td>
-                                        <td t-if="line['code'] == 'OT'" style="padding:0;border:0;">
-                                            <span>Set YTD rule OT</span>
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'UTING'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDU')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'SALA'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDSALA')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TTEH'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDTE')" />
-                                        </td>
-                                    </tr>
-                                </t>
-                                <!-- Deductions -->
+    <template id="netcom_hr_payroll.report_netcompayslipdetails">
+        <style>
+            .footer {
+                width:100%;
+                float: right;
+            }
+            .font-color: black;
+        </style>
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-if="o and 'company_id' in o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                </t>
+                <t t-call="web.external_layout_standard">
+                    <div class="page">
+                        <div style="width:100%">
+                            <table class="table table-condensed" style="border-collapse:collapse;border:0px;background:#fff" cellpadding="0" width="100%">
                                 <tr>
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Deductions</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
+                                    <td height="50">Slip Number:<span t-field="o.number"/></td>
+                                    <td height="50">Pay Period: <span t-field="o.date_from"/> - <span t-field="o.date_to"/></td>
                                 </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'WHT' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']"/>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'PAYPERMONTH'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDP')" />
-                                        </td>
-                                    </tr>
-                                </t>
-                                <!-- Other Allowances -->
+                                <tr style="border:0px;width:100%">
+                                    <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
+                                        <strong>Employee</strong>
+                                    </td>
+                                    
+                                    <td style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px;width:50%">
+                                        <strong>Department</strong>
+                                    </td>
+                                </tr>
                                 <tr>
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Other Allowances</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
+                                    <td style="padding:0;border:0;">
+                                        <span t-field="o.employee_id"/>, <span t-field="o.employee_id.job_id"/>
+                                    </td>
+                                    <td style="padding:0;border:0;">
+                                        <span t-field="o.employee_id.department_id"/>
+                                    </td>
                                 </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'RSV' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']"/>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'FURNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDFURNG')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'DRSSNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDDRS')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'FUELNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDFUEL')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'DDRE'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDDRE')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TTREAD'" style="padding:0;border:0;">
-                                            <span>IFE set TTREAD</span>
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TTRE'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDTTRE')" />
-                                        </td>
+                            </table>    
+                            <div style="width:60%; float:left;border:0px;">
+                                <table class="table" style="border:0px;background:#fff" cellpadding="0">
+                                    <tr style="border:0px">
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Earnings and Hours</th>
+                                        <th width="25%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Current</th>
+                                        <th width="25%" style="border-bottom:2px solid #000;padding:0px; border-top:0px; border-top:0px" class="text-right">YTD Amount</th>
                                     </tr>
-                                </t>
-                                <!-- Deductions from Gross Pay -->
-                                <tr>
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Deductions from Gross Pay</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
-                                </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'DGP' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']"/>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'SALDA'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDSALDA')" />
-                                        </td>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'EAH' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'BASIC'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDB'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'MLNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDM'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'ENNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDE'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'HRANG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDH'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TRNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDT'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'LANG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDL'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'BONUSNG'" style="padding:0;border:0;">
+                                                <span>Set YTD for BONUSNG</span>
+                                            </td>
+                                            <td t-if="line['code'] == 'OT'" style="padding:0;border:0;">
+                                                <span>Set YTD rule OT</span>
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'UTING'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDU'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'SALA'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDSALA'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TTEH'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDTE'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <!-- Deductions -->
+                                    <tr>
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Deductions</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
                                     </tr>
-                                </t>
-                                <!-- Adjustments to Net Pay -->
-                                <tr>
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Adjustments to Net Pay</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
-                                </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'ADJP' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']">
-                                                <span t-if="line['code'] == 'SALDA'" t-field="o.employee_id.pfa_id.name"/></span>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'NHFNG'" style="padding:0;border:0;">
-                                            <span>Set ytd NHFNG</span>
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'PENNG'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDPEN')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'SALD'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDSALD')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'STFL'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDSTFL')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'DOT'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDOT')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'CAPF'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDCAPF')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TELE'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDTELE')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'MACD'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDMAC')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'REIM'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDREIM')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'OTH'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDOTH')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'SCDF'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDSCDF')" />
-                                        </td>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'WHT' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'PAYPERMONTH'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDP'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <!-- Other Allowances -->
+                                    <tr>
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Other Allowances</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
                                     </tr>
-                                </t>
-                                <tr>
-                                    <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Net Pay</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Current</th>
-                                    <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">YTD Amount</th>
-                                </tr>
-                                <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
-                                    <tr t-if="line['rule_category'] == 'NEP' and line['amount'] != 0">
-                                        <td style="padding:0;border:0;">
-                                            <span t-esc="line['name']"/>
-                                        </td>
-                                        <td class="text-right" style="padding:0;border:0;">
-                                            <span t-esc="line['total']" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'NET'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDNET')" />
-                                        </td>
-                                        <td class="text-right" t-if="line['code'] == 'TOTNET'" style="padding:0;border:0;">
-                                            <span t-esc="o.get_total('YTDTOT')" />
-                                        </td>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'RSV' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'FURNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDFURNG'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'DRSSNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDDRS'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'FUELNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDFUEL'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'DDRE'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDDRE'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TTREAD'" style="padding:0;border:0;">
+                                                <span>IFE set TTREAD</span>
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TTRE'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDTTRE'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <!-- Deductions from Gross Pay -->
+                                    <tr>
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Deductions from Gross Pay</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
                                     </tr>
-                                </t>
-                            </table>
-                        </div>
-                        <div style="background:#fff;width:40%; float:right">
-                            <p style="text-align:center;font-size:17px">
-                                <strong>NOTES</strong>
-                            </p>
-                            <p style="text-align:center;font-size:12px">
-                                <span t-field="o.note"/>
-                            </p>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'DGP' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'SALDA'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDSALDA'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <!-- Adjustments to Net Pay -->
+                                    <tr>
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Adjustments to Net Pay</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">Current</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px">YTD Amount</th>
+                                    </tr>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'ADJP' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']">
+                                                    <span t-if="line['code'] == 'SALDA'" t-field="o.employee_id.pfa_id.name"/></span>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'NHFNG'" style="padding:0;border:0;">
+                                                <span>Set ytd NHFNG</span>
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'PENNG'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDPEN'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'SALD'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDSALD'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'STFL'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDSTFL'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'DOT'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDOT'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'CAPF'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDCAPF'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TELE'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDTELE'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'MACD'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDMAC'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'REIM'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDREIM'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'OTH'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDOTH'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'SCDF'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDSCDF'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr>
+                                        <th width="50%" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Net Pay</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">Current</th>
+                                        <th width="25%" class="text-right" style="border-bottom:2px solid #000;padding:0px; border-top:0px;border-top:0px">YTD Amount</th>
+                                    </tr>
+                                    <t t-foreach="get_payslip_lines.get(o.id, [])" t-as="line">
+                                        <tr t-if="line['rule_category'] == 'NEP' and line['amount'] != 0">
+                                            <td style="padding:0;border:0;">
+                                                <span t-esc="line['name']"/>
+                                            </td>
+                                            <td class="text-right" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(line['total'])" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'NET'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDNET'))" />
+                                            </td>
+                                            <td class="text-right" t-if="line['code'] == 'TOTNET'" style="padding:0;border:0;">
+                                                <span t-esc="'{0:,.2f}'.format(o.get_total('YTDTOT'))" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </div>
+                            <div style="background:#fff;width:40%; float:right">
+                                <p style="text-align:center;font-size:17px">
+                                    <strong>NOTES</strong>
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </t>
             </t>
         </t>
-    </t>
-</template>
+    </template>
 </odoo>
