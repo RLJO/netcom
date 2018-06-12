@@ -522,6 +522,65 @@ class PurchaseOrderLine(models.Model):
             for partner in self.order_id.message_partner_ids:
                 partner_ids.append(partner.id)
             self.order_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            
+class AccountInvoiceReport(models.Model):
+    _inherit = ['account.invoice.report']
+    
+    nrc_mrc = fields.Char('MRC/NRC', readonly=True)
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', readonly=True)
+    
+    _depends = {
+        'account.invoice': [
+            'account_id', 'amount_total_company_signed', 'commercial_partner_id', 'company_id',
+            'currency_id', 'date_due', 'date_invoice', 'fiscal_position_id',
+            'journal_id', 'partner_bank_id', 'partner_id', 'payment_term_id',
+            'residual', 'state', 'type', 'user_id',
+        ],
+        'account.invoice.line': [
+            'account_id', 'invoice_id', 'price_subtotal', 'product_id',
+            'quantity', 'uom_id', 'account_analytic_id', 'nrc_mrc', 'sub_account_id'
+        ],
+        'product.product': ['product_tmpl_id'],
+        'product.template': ['categ_id'],
+        'product.uom': ['category_id', 'factor', 'name', 'uom_type'],
+        'res.currency.rate': ['currency_id', 'name'],
+        'res.partner': ['country_id'],
+    }
+    
+    def _select(self):
+        select_str = """
+            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.partner_id, sub.country_id, sub.account_analytic_id,
+                sub.payment_term_id, sub.uom_name, sub.currency_id, sub.journal_id,
+                sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
+                sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
+                sub.product_qty, sub.price_total as price_total, sub.price_average as price_average,
+                COALESCE(cr.rate, 1) as currency_rate, sub.residual as residual, sub.commercial_partner_id as commercial_partner_id
+        """
+        return select_str
+
+    def _sub_select(self):
+        select_str = """
+                SELECT ail.id AS id,
+                    ai.date_invoice AS date,
+                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
+                    u2.name AS uom_name,
+                    ai.currency_id, ai.journal_id, ai.fiscal_position_id, ai.user_id, ai.company_id,
+                    1 AS nbr,
+                    ai.type, ai.state, pt.categ_id, ai.date_due, ai.account_id, ail.account_id AS account_line_id,
+                    ai.partner_bank_id,
+                    SUM ((invoice_type.sign * ail.quantity) / u.factor * u2.factor) AS product_qty,
+                    SUM(ail.price_subtotal_signed * invoice_type.sign) AS price_total,
+                    SUM(ABS(ail.price_subtotal_signed)) / CASE
+                            WHEN SUM(ail.quantity / u.factor * u2.factor) <> 0::numeric
+                               THEN SUM(ail.quantity / u.factor * u2.factor)
+                               ELSE 1::numeric
+                            END AS price_average,
+                    ai.residual_company_signed / (SELECT count(*) FROM account_invoice_line l where invoice_id = ai.id) *
+                    count(*) * invoice_type.sign AS residual,
+                    ai.commercial_partner_id as commercial_partner_id,
+                    partner.country_id
+        """
+        return select_str
     
 class AccountInvoice(models.Model):
     _name = "account.invoice"
