@@ -21,19 +21,19 @@
 #
 ##############################################################################
 {
-    'name': 'Netcom HR Contract',
-    'summary': """Extra functionalities on HR Contract""",
+    'name': 'Netcom HR',
+    'summary': """Extra functionalities on HR""",
     'version': '11.0.1.0.0',
-    'description': """Netcom HR Contract""",
+    'description': """Netcom HR""",
     'author': 'Tosin Komolafe',
     'company': 'Ballotnet Solutions Ltd',
     'category': 'Extra Tools',
     'license': 'AGPL-3',
     'website': 'http://tosinkomolafe.com',
-    'depends': ['hr_contract'],
+    'depends': ['hr'],
     'sequence': '1000',
     'data': [
-        'views/hr_contract_view.xml',
+        'views/hr_views.xml',
     ],
     'demo': [],
     'installable': True,

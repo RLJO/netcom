@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+    	<record id="netcom_hr_contract" model="ir.ui.view">
+            <field name="name">hr.contract.view.netcom.form</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='salary_and_advantages']" position="after">
+	                 <group col="2" colspan="2" name="right_column">
+	                    <separator colspan="2" string="Pension Rate (Percent)"/>
+	                        <field name="pen_contrib"/>
+	                 </group>                  
+                 </xpath>                
+            </field>
+        </record>
+    </data>
+</odoo>
+	
+
+
