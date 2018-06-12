@@ -23,7 +23,7 @@
 {
     'name': 'Netcom HR',
     'summary': """Extra functionalities on HR""",
-    'version': '11.0.1.0.0',
+    'version': '11.0.1.0.1',
     'description': """Netcom HR""",
     'author': 'Tosin Komolafe',
     'company': 'Ballotnet Solutions Ltd',
