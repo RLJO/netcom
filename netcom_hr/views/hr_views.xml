@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        
+        <record id="netcom_hr_employee_view_form" model="ir.ui.view">
+            <field name="name">Netcom HR Employee</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <field name="parent_id" position="replace">
+                    <field name="parent_id" options="{'no_open': True}"/>
+                </field>
+                <field name="coach_id" position="replace">
+                    <field name="coach_id" options="{'no_open': True}"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="netcom_open_view_employee_list_my" model="ir.actions.act_window">
+            <field name="name">Directory</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="hr.view_employee_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a new employee.
+              </p><p>
+                With just a quick glance on the Odoo employee screen, you
+                can easily find all the information you need for each person;
+                contact data, job position, availability, etc.
+              </p>
+            </field>
+        </record>
+
+        <record id="netcom_open_view_employee_profile" model="ir.actions.act_window">
+            <field name="name">My Profile</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+            <field name="search_view_id" ref="hr.view_employee_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a new employee.
+              </p><p>
+                With just a quick glance on the Odoo employee screen, you
+                can easily find all the information you need for each person;
+                contact data, job position, availability, etc.
+              </p>
+            </field>
+        </record>
+
+        <menuitem
+            id="hr.menu_open_view_employee_list_my"
+            name="Employees"
+            parent="hr.menu_hr_root"
+            sequence="3"
+            groups="hr.group_hr_user"/>
+
+        <menuitem 
+            name="Directory" 
+            id="netcom_hr_employee_directory_menu" 
+            parent="hr.menu_open_view_employee_list_my" 
+            action="netcom_open_view_employee_list_my"
+            sequence="1" 
+            groups="hr.group_hr_user"/>
+
+        <menuitem 
+            name="My Profile" 
+            id="netcom_hr_employee_profile_menu" 
+            parent="hr.menu_open_view_employee_list_my"
+            action="netcom_open_view_employee_profile" 
+            sequence="2"
+            groups="hr.group_hr_user"/>        
+
+        <menuitem
+            id="netcom_hr_employee_menu"
+            name="Employees"
+            action="hr.open_view_employee_list_my"
+            parent="hr.menu_open_view_employee_list_my"
+            sequence="3"
+            groups="hr.group_hr_manager"/> 
+    </data>
+</odoo>
