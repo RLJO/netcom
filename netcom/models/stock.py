@@ -305,6 +305,13 @@ class CrossoveredBudgetLines(models.Model):
     allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
     commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
     
+    dept_id = fields.Many2one(
+        comodel_name='account.budget.post')
+    department = fields.Many2one(
+        comodel_name='hr.department',
+        related = 'dept_id.department_id',
+        string='Department')
+    
     @api.multi
     def _compute_theoritical_amount(self):
         today = fields.Datetime.now()
@@ -951,4 +958,10 @@ class SaleOrderLine(models.Model):
                 self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
 
 
-
+class BudgetDept(models.Model):
+    _name = 'account.budget.post'
+    _inherit = 'account.budget.post'
+    
+    department_id = fields.Many2one(
+        comodel_name="hr.department",
+        string='Department')

@@ -671,6 +671,14 @@ class ExpenseRefSheet(models.Model):
     _inherit = 'hr.expense.sheet'
     
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
+    description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
+    
+    @api.one
+    def get_desc(self):
+        for expense in self.expense_line_ids:
+            if expense.description:
+                self.description = expense.description
+                break
     
 class JournalMailThread(models.Model):
     _name = "account.move"
