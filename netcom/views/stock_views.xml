@@ -76,6 +76,11 @@
         	<xpath expr="//button[@name='button_approve']" position="replace">
         		<button name="button_approve" type="object" states='to approve' string="Confirm Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
+        	
+        	<xpath expr="//button[@name='button_approve']" position="after">
+        		<button name="button_cancel" type="object" states='to approve' string="Cancel Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+        	</xpath>
+        	
         	<xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="after">
             	<field name="account_id" required = "1"/>
             </xpath>
@@ -153,9 +158,23 @@
         	<xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
             	<field name="commitments" sum="Commitments" widget="monetary"/>
             	<field name="allowed_amount" sum="Allowed Amount" widget="monetary"/>
+            	<field name="department"/>
             </xpath>	    
 	    </field>
 	</record>
+	
+	
+	<record id="netcom_budgetary_dept" model="ir.ui.view">
+        <field name="name">netcom.budgetary.dept</field>
+        <field name="model">account.budget.post</field>
+        <field name="priority" eval="7"/>
+        <field name="inherit_id" ref="account_budget.view_budget_post_form"/>
+        <field name="arch" type="xml">
+       		<field name="name" position="after">
+    			<field name="department_id"/>
+    		</field>
+        </field>
+    </record>
 	    
 	
     
@@ -297,7 +316,7 @@
                                     <field name="product_id" required="1" attrs="{'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}"/>
                                     <field name="is_initial_demand_editable" invisible="1"/>
                                     <field name="is_quantity_done_editable" invisible="1"/>
-                                    <field name="product_uom_qty" string="Initial Demand" attrs="{'readonly': [('is_initial_demand_editable', '=', True)]}"/>
+                                    <field name="product_uom_qty" string="Initial Demand" attrs="{'readonly': [('is_initial_demand_editable', '=', False)]}"/>
                                     <field name="reserved_availability" string="Reserved" attrs="{'column_invisible': ['|', ('parent.state','=', 'done'), ('parent.picking_type_code', '=', 'incoming')]}"/>
                                     <field name="quantity_done" string="Done" attrs="{'readonly': [('is_quantity_done_editable', '=', False)]}"/>
                                     <field name="product_uom" attrs="{'readonly': [('state', '!=', 'draft'), ('additional', '=', False)]}" options="{'no_open': True, 'no_create': True}" string="Unit of Measure" groups="product.group_uom"/>

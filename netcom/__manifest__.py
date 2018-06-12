@@ -20,7 +20,7 @@
 
 
     # any module necessary for this one to work correctly
-    'depends': ['base','account_budget','crm','sale_crm','hr_expense', 'purchase','sale_subscription','product','stock','sale','mail'],
+    'depends': ['base','account_budget','crm','sale_crm','hr_expense', 'purchase','sale_subscription','product','stock','sale','mail','hr_holidays'],
 
     # always loaded
     'data': [
