@@ -158,7 +158,7 @@
         	<xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
             	<field name="commitments" sum="Commitments" widget="monetary"/>
             	<field name="allowed_amount" sum="Allowed Amount" widget="monetary"/>
-            	<!-- <field name="department"/> -->
+            	<field name="dept_id"/>
             </xpath>	    
 	    </field>
 	</record>

@@ -304,6 +304,7 @@ class CrossoveredBudgetLines(models.Model):
     
     allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
     commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
+    dept_id = fields.Many2one('hr.department', 'Department',related='general_budget_id.department_id', store=True, readonly=False, copy=False)
     '''
     dept_id = fields.Many2one(
         comodel_name='account.budget.post')
@@ -534,7 +535,8 @@ class AccountInvoiceReport(models.Model):
     _inherit = ['account.invoice.report']
     
     nrc_mrc = fields.Char('MRC/NRC', readonly=True)
-    sub_account_id = fields.Many2one('sub.account', string='Child Account', readonly=True)
+    sub_account_id = fields.Many2one('sub.account', string='Sub Account', readonly=True)
+    activation_date = fields.Date(string='Activation Date', readonly=True)
     
     _depends = {
         'account.invoice': [
@@ -552,11 +554,12 @@ class AccountInvoiceReport(models.Model):
         'product.uom': ['category_id', 'factor', 'name', 'uom_type'],
         'res.currency.rate': ['currency_id', 'name'],
         'res.partner': ['country_id'],
+        'sub.account': ['activation_date']
     }
     
     def _select(self):
         select_str = """
-            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.partner_id, sub.country_id, sub.account_analytic_id,
+            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.activation_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
                 sub.payment_term_id, sub.uom_name, sub.currency_id, sub.journal_id,
                 sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
                 sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
@@ -569,7 +572,7 @@ class AccountInvoiceReport(models.Model):
         select_str = """
                 SELECT ail.id AS id,
                     ai.date_invoice AS date,
-                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
+                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, sa.activation_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
                     u2.name AS uom_name,
                     ai.currency_id, ai.journal_id, ai.fiscal_position_id, ai.user_id, ai.company_id,
                     1 AS nbr,
@@ -588,6 +591,38 @@ class AccountInvoiceReport(models.Model):
                     partner.country_id
         """
         return select_str
+    
+    def _from(self):
+        from_str = """
+                FROM account_invoice_line ail
+                JOIN account_invoice ai ON ai.id = ail.invoice_id
+                JOIN res_partner partner ON ai.commercial_partner_id = partner.id
+                LEFT JOIN product_product pr ON pr.id = ail.product_id
+                LEFT JOIN sub_account sa on sa.id = ail.sub_account_id
+                left JOIN product_template pt ON pt.id = pr.product_tmpl_id
+                LEFT JOIN product_uom u ON u.id = ail.uom_id
+                LEFT JOIN product_uom u2 ON u2.id = pt.uom_id
+                JOIN (
+                    -- Temporary table to decide if the qty should be added or retrieved (Invoice vs Credit Note)
+                    SELECT id,(CASE
+                         WHEN ai.type::text = ANY (ARRAY['in_refund'::character varying::text, 'in_invoice'::character varying::text])
+                            THEN -1
+                            ELSE 1
+                        END) AS sign
+                    FROM account_invoice ai
+                ) AS invoice_type ON invoice_type.id = ai.id
+        """
+        return from_str
+    
+    def _group_by(self):
+        group_by_str = """
+                GROUP BY ail.id, sa.activation_date, ail.product_id, ail.account_analytic_id, ai.date_invoice, ai.id,
+                    ai.partner_id, ai.payment_term_id, u2.name, u2.id, ai.currency_id, ai.journal_id,
+                    ai.fiscal_position_id, ai.user_id, ai.company_id, ai.type, invoice_type.sign, ai.state, pt.categ_id,
+                    ai.date_due, ai.account_id, ail.account_id, ai.partner_bank_id, ai.residual_company_signed,
+                    ai.amount_total_company_signed, ai.commercial_partner_id, partner.country_id
+        """
+        return group_by_str
     
 class AccountInvoice(models.Model):
     _name = "account.invoice"
