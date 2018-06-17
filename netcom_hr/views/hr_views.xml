@@ -53,6 +53,13 @@
                         <field name="payslip_count" widget="statinfo" string="Payslips"/>
                     </button>
                 </xpath>
+
+                <xpath expr="//page[@name='personal_information']" position="attributes">
+                    <attribute name="groups">base.group_user</attribute>
+                </xpath>
+                <xpath expr="//page[@name='hr_settings']" position="attributes">
+                    <attribute name="groups">base.group_user</attribute>
+                </xpath>
             </field>
         </record>
 
