@@ -53,6 +53,13 @@
                         <field name="payslip_count" widget="statinfo" string="Payslips"/>
                     </button>
                 </xpath>
+
+                <xpath expr="//page[@name='personal_information']" position="attributes">
+                    <attribute name="groups">base.group_user</attribute>
+                </xpath>
+                <xpath expr="//page[@name='hr_settings']" position="attributes">
+                    <attribute name="groups">base.group_user</attribute>
+                </xpath>
             </field>
         </record>
 
@@ -78,9 +85,22 @@
             </field>
         </record>
 
+        <record model="ir.actions.act_window.view" id="netcom_open_view_employee_profile_kanban">
+             <field name="sequence" eval="1"/>
+             <field name="view_mode">kanban</field>
+             <field name="view_id" ref="hr.hr_kanban_view_employees"/>
+             <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="netcom_open_view_employee_profile_tree">
+             <field name="sequence" eval="2"/>
+             <field name="view_mode">tree</field>
+             <field name="view_id" ref="hr.view_employee_tree"/>
+             <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
+        </record>
         
         <record model="ir.actions.act_window.view" id="netcom_open_view_employee_profile_form">
-             <field name="sequence" eval="2"/>
+             <field name="sequence" eval="3"/>
              <field name="view_mode">form</field>
              <field name="view_id" ref="my_profile_view_employee_form"/>
              <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
