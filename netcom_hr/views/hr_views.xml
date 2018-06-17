@@ -5,7 +5,7 @@
         <record id="netcom_hr_employee_view_form" model="ir.ui.view">
             <field name="name">Netcom HR Employee</field>
             <field name="model">hr.employee</field>
-            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="inherit_id" ref="hr_org_chart.hr_employee_view_form_inherit_org_chart"/>
             <field name="arch" type="xml">
                 <field name="parent_id" position="replace">
                     <field name="parent_id" options="{'no_open': True}"/>
@@ -13,6 +13,11 @@
                 <field name="coach_id" position="replace">
                     <field name="coach_id" options="{'no_open': True}"/>
                 </field>
+                <div id="o_employee_right" position="replace">
+                    <h4 class="o_org_chart_title mb16 mt0" groups="hr.group_hr_user">
+                        Organization Chart</h4>
+                    <field name="child_ids" widget="hr_org_chart" groups="hr.group_hr_user"/>
+                </div>
             </field>
         </record>
 
