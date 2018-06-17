@@ -13,10 +13,11 @@
                 <field name="coach_id" position="replace">
                     <field name="coach_id" options="{'no_open': True}"/>
                 </field>
-                <div id="o_employee_right" position="replace">
-                    <h4 class="o_org_chart_title mb16 mt0" groups="hr.group_hr_user">
-                        Organization Chart</h4>
-                    <field name="child_ids" widget="hr_org_chart" groups="hr.group_hr_user"/>
+                <div id="o_employee_main" position="after">
+                    <div id="o_employee_right" groups="hr.group_hr_user">
+                        <h4 class="o_org_chart_title mb16 mt0">Organization Chart</h4>
+                        <field name="child_ids" widget="hr_org_chart"/>
+                    </div>
                 </div>
             </field>
         </record>
