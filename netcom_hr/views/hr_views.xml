@@ -36,6 +36,28 @@
             </field>
         </record>
 
+        
+        <record id="my_profile_view_employee_form" model="ir.ui.view">
+            <field name="name">Netcom Employee Profile</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr_payroll.payroll_hr_employee_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='%(hr_contract.act_hr_employee_2_hr_contract)d']" position="replace">
+                    <button name="%(hr_contract.act_hr_employee_2_hr_contract)d" class="oe_stat_button" icon="fa-book" type="action" groups="base.group_user">
+                        <field name="contracts_count" widget="statinfo" string="Contracts"/>
+                    </button>
+                </xpath>
+
+                <xpath expr="//button[@name='%(hr_payroll.act_hr_employee_payslip_list)d']" position="replace">
+                    <button name="'%(hr_payroll.act_hr_employee_payslip_list)d'" class="oe_stat_button" icon="fa-money" type="action" groups="base.group_user">
+                        <field name="payslip_count" widget="statinfo" string="Payslips"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+
+        
+
         <record id="netcom_open_view_employee_profile" model="ir.actions.act_window">
             <field name="name">My Profile</field>
             <field name="res_model">hr.employee</field>
@@ -56,6 +78,15 @@
             </field>
         </record>
 
+        
+        <record model="ir.actions.act_window.view" id="netcom_open_view_employee_profile_form">
+             <field name="sequence" eval="2"/>
+             <field name="view_mode">form</field>
+             <field name="view_id" ref="my_profile_view_employee_form"/>
+             <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
+        </record>
+
+        
         <menuitem
             id="hr.menu_open_view_employee_list_my"
             name="Employees"
