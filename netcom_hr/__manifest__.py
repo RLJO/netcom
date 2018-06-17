@@ -30,7 +30,7 @@
     'category': 'Extra Tools',
     'license': 'AGPL-3',
     'website': 'http://tosinkomolafe.com',
-    'depends': ['netcom_hr_contract','netcom_hr_payroll'],
+    'depends': ['netcom_hr_contract','netcom_hr_payroll', 'hr_org_chart'],
     'sequence': '1000',
     'data': [
         'views/hr_views.xml',
