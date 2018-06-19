@@ -60,6 +60,13 @@
                 <xpath expr="//page[@name='hr_settings']" position="attributes">
                     <attribute name="groups">base.group_user</attribute>
                 </xpath>
+
+                <field name="parent_id" position="replace">
+                    <field name="parent_id" options="{'no_open': True}"/>
+                </field>
+                <field name="coach_id" position="replace">
+                    <field name="coach_id" options="{'no_open': True}"/>
+                </field>
             </field>
         </record>
 
