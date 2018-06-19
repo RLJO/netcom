@@ -240,6 +240,7 @@
                                 </p>
                                 <p style="text-align:center;font-size:12px">
                                     <span t-field="o.note"/>
+                                    
                                 </p>
                             </div>
                         </div>
