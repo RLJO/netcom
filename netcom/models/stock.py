@@ -506,6 +506,12 @@ class PurchaseOrder(models.Model):
             else:
                 order.write({'state': 'to approve'})
         return True
+    
+    @api.multi
+    def button_reset(self):
+        self.mapped('order_line')
+        self.write({'state': 'draft'})
+        return {}
         
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
