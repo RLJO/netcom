@@ -4,7 +4,7 @@ access_pen_type_user,pen.type,model_pen_type,hr.group_hr_user,1,1,1,1
 access_kin_type_emp,kin.type,model_kin_type,base.group_user,1,0,0,0
 access_kin_type_user,kin.type,model_kin_type,hr.group_hr_user,1,1,1,1
 access_customer_request_emp,customer.request,model_customer_request,base.group_user,1,1,1,0
-access_sub_account_emp,sub.account,model_sub_account,base.group_user,1,1,1,0
+access_sub_account_emp,sub.account,model_sub_account,base.group_user,1,0,0,0
 access_brand_type_emp,brand.type,model_brand_type,base.group_user,1,0,0,0
 access_brand_type_emp,brand.type,model_brand_type,stock.group_stock_manager,1,1,1,1
 access_equipment_type_emp,equipment.type,model_equipment_type,base.group_user,1,0,0,0

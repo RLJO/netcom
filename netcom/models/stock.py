@@ -7,6 +7,9 @@ from odoo.exceptions import UserError, AccessError
 from odoo.tools import float_is_zero
 
 from dateutil.relativedelta import relativedelta
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 
@@ -629,9 +632,26 @@ class AccountInvoice(models.Model):
     _inherit = ['account.invoice']
     _description = "Invoice"
     
+#     @api.multi
+#     def get_taxes_values(self):
+#         tax_grouped = {}
+#         for line in self.invoice_line_ids:
+#             price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+#             taxes = line.invoice_line_tax_ids.compute_all((price_unit * self.interval), self.currency_id, line.quantity, line.product_id, self.partner_id)['taxes']
+#             for tax in taxes:
+#                 val = self._prepare_tax_line_vals(line, tax)
+#                 key = self.env['account.tax'].browse(tax['id']).get_grouping_key(val)
+#   
+#                 if key not in tax_grouped:
+#                     tax_grouped[key] = val
+#                 else:
+#                     tax_grouped[key]['amount'] += val['amount']
+#                     tax_grouped[key]['base'] += val['base']
+#         return tax_grouped
+    
     @api.one
     @api.depends('invoice_line_ids.price_subtotal', 'tax_line_ids.amount', 'tax_line_ids.amount_rounding',
-                 'currency_id', 'company_id', 'date_invoice', 'type')
+                 'currency_id', 'company_id', 'date_invoice', 'type', 'interval')
     def _compute_amount(self):
         amount_nrc = amount_mrc = 0.0
         for line in self.invoice_line_ids:
@@ -644,6 +664,7 @@ class AccountInvoice(models.Model):
         round_curr = self.currency_id.round
         self.amount_untaxed = sum(line.price_subtotal for line in self.invoice_line_ids)
         self.amount_tax = sum(round_curr(line.amount_total) for line in self.tax_line_ids)
+#         self.amount_tax = self.amount_tax * self.interval
         self.amount_total = self.amount_untaxed + self.amount_tax
         amount_total_company_signed = self.amount_total
         amount_untaxed_signed = self.amount_untaxed
@@ -676,6 +697,39 @@ class AccountInvoice(models.Model):
              " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
              " * The 'Cancelled' status is used when user cancel invoice.")
     
+class AccountInvoiceTax(models.Model):
+    _name = "account.invoice.tax"
+    _inherit = ['account.invoice.tax']
+    
+    @api.depends('invoice_id.invoice_line_ids')
+    def _compute_base_amount(self):
+        tax_grouped = {}
+        for invoice in self.mapped('invoice_id'):
+            tax_grouped[invoice.id] = invoice.get_taxes_values()
+        for tax in self:
+            tax.base = 0.0
+            if tax.tax_id:
+                key = tax.tax_id.get_grouping_key({
+                    'tax_id': tax.tax_id.id,
+                    'account_id': tax.account_id.id,
+                    'account_analytic_id': tax.account_analytic_id.id,
+                })
+                if tax.invoice_id and key in tax_grouped[tax.invoice_id.id]:
+                    tax.base = tax_grouped[tax.invoice_id.id][key]['base']
+                    tax.base = (tax.base * tax.invoice_id.interval)
+                    print('.....')
+                    print(tax.base)
+                else:
+                    _logger.warning('Tax Base Amount not computable probably due to a change in an underlying tax (%s).', tax.tax_id.name)
+                    
+    base = fields.Monetary(string='Base', compute='_compute_base_amount', store=True)
+    amount_total = fields.Monetary(string="Amount", compute='_compute_amount_total')
+    
+    @api.depends('amount', 'amount_rounding')
+    def _compute_amount_total(self):
+        for tax_line in self:
+            tax_line.amount_total = (tax_line.amount + tax_line.amount_rounding) * tax_line.invoice_id.interval
+
 class AccountInvoiceLine(models.Model):
     _name = "account.invoice.line"
     _inherit = ['account.invoice.line']
@@ -690,11 +744,12 @@ class AccountInvoiceLine(models.Model):
     def _compute_price(self):
         currency = self.invoice_id and self.invoice_id.currency_id or None
         price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
+        price = price * self.invoice_id.interval
         taxes = False
         if self.invoice_line_tax_ids:
-            taxes = self.invoice_line_tax_ids.compute_all(price, currency, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
-        self.price_subtotal = price_subtotal_signed = (taxes['total_excluded']) * self.invoice_id.interval if taxes else self.quantity * price * self.invoice_id.interval
-        self.price_total = taxes['total_included'] * self.invoice_id.interval if taxes else self.price_subtotal * self.invoice_id.interval
+            taxes = self.invoice_line_tax_ids.compute_all((price), currency, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
+        self.price_subtotal = price_subtotal_signed = (taxes['total_excluded']) if taxes else self.quantity * price * self.invoice_id.interval
+        self.price_total = taxes['total_included'] if taxes else self.price_subtotal 
         if self.invoice_id.currency_id and self.invoice_id.currency_id != self.invoice_id.company_id.currency_id:
             price_subtotal_signed = self.invoice_id.currency_id.with_context(date=self.invoice_id._get_currency_rate_date()).compute(price_subtotal_signed, self.invoice_id.company_id.currency_id)
         sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
