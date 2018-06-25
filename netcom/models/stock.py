@@ -6,6 +6,9 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import float_is_zero
 
+from functools import partial
+from odoo.tools.misc import formatLang
+
 from dateutil.relativedelta import relativedelta
 import logging
 
@@ -631,6 +634,23 @@ class AccountInvoice(models.Model):
     _name = "account.invoice"
     _inherit = ['account.invoice']
     _description = "Invoice"
+    
+    @api.multi
+    def _get_tax_amount_by_group(self):
+        self.ensure_one()
+        currency = self.currency_id or self.company_id.currency_id
+        fmt = partial(formatLang, self.with_context(lang=self.partner_id.lang).env, currency_obj=currency)
+        res = {}
+        for line in self.tax_line_ids:
+            res.setdefault(line.tax_id.tax_group_id, {'base': 0.0, 'amount': 0.0})
+            res[line.tax_id.tax_group_id]['amount'] += (line.amount * line.invoice_id.interval)
+            res[line.tax_id.tax_group_id]['base'] += line.base
+        res = sorted(res.items(), key=lambda l: l[0].sequence)
+        res = [(
+            r[0].name, r[1]['amount'], r[1]['base'],
+            fmt(r[1]['amount']), fmt(r[1]['base']),
+        ) for r in res]
+        return res
     
 #     @api.multi
 #     def get_taxes_values(self):
