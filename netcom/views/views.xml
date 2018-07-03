@@ -335,6 +335,8 @@
                      
                      <field name="create_date" widget="date"/>
                      <field name="activation_date" widget="date"/>
+                     <field name="term_date" widget="date"/>
+                     <field name="perm_up_date" widget="date"/>
                      <field name="child_account" required="1" placeholder=""/>
                      <field name="addinfo" placeholder="Additional Information"/>
                      <field name="company_name" placeholder="Company Name"/>

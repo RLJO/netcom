@@ -549,6 +549,8 @@ class AccountInvoiceReport(models.Model):
     nrc_mrc = fields.Char('MRC/NRC', readonly=True)
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', readonly=True)
     activation_date = fields.Date(string='Activation Date', readonly=True)
+    term_date = fields.Date(string='Termination Date', readonly=True)
+    perm_up_date = fields.Date(string='Permanent Upgrade Date', readonly=True)
     
     _depends = {
         'account.invoice': [
@@ -566,12 +568,14 @@ class AccountInvoiceReport(models.Model):
         'product.uom': ['category_id', 'factor', 'name', 'uom_type'],
         'res.currency.rate': ['currency_id', 'name'],
         'res.partner': ['country_id'],
-        'sub.account': ['activation_date']
+        'sub.account': ['activation_date'],
+        'sub.account': ['term_date'],
+        'sub.account': ['perm_up_date']
     }
     
     def _select(self):
         select_str = """
-            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.activation_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
+            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.activation_date, sub.perm_up_date, sub.term_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
                 sub.payment_term_id, sub.uom_name, sub.currency_id, sub.journal_id,
                 sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
                 sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
@@ -584,7 +588,7 @@ class AccountInvoiceReport(models.Model):
         select_str = """
                 SELECT ail.id AS id,
                     ai.date_invoice AS date,
-                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, sa.activation_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
+                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, sa.activation_date, sa.perm_up_date, sa.term_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
                     u2.name AS uom_name,
                     ai.currency_id, ai.journal_id, ai.fiscal_position_id, ai.user_id, ai.company_id,
                     1 AS nbr,
@@ -628,7 +632,7 @@ class AccountInvoiceReport(models.Model):
     
     def _group_by(self):
         group_by_str = """
-                GROUP BY ail.id, sa.activation_date, ail.product_id, ail.account_analytic_id, ai.date_invoice, ai.id,
+                GROUP BY ail.id, sa.activation_date, sa.perm_up_date, sa.term_date, ail.product_id, ail.account_analytic_id, ai.date_invoice, ai.id,
                     ai.partner_id, ai.payment_term_id, u2.name, u2.id, ai.currency_id, ai.journal_id,
                     ai.fiscal_position_id, ai.user_id, ai.company_id, ai.type, invoice_type.sign, ai.state, pt.categ_id,
                     ai.date_due, ai.account_id, ail.account_id, ai.partner_bank_id, ai.residual_company_signed,
