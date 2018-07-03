@@ -478,6 +478,10 @@ class SubAccount(models.Model):
     
     activation_date = fields.Date(string='Activation Date', readonly=False, track_visibility='onchange')
     
+    term_date = fields.Date(string='Termination Date', readonly=True, track_visibility='onchange')
+    
+    perm_up_date = fields.Date(string='Permanent Activation Date', readonly=False, track_visibility='onchange')
+    
     contact_person = fields.Many2one('res.partner.title')
     
     company_name = fields.Many2many('Company Name')
@@ -560,6 +564,7 @@ class SubAccount(models.Model):
     @api.multi
     def button_terminate(self):
         self.write({'state': 'terminate'})
+        self.term_date = date.today()
         return {}
     
     @api.multi

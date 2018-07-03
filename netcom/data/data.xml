@@ -7,12 +7,14 @@
 	        <field name="on_change">1</field>
 	        <field name="sequence">4</field>
 	    </record>
+	    
+	    <!-- 
         <record id="stock_location_employee" model="stock.location">
             <field name="name">Employees</field>
             <field name="location_id" ref="stock.stock_location_locations_partner"/>
             <field name="usage">customer</field>
             <field name="company_id"></field>
-        </record>   
+        </record>    -->
         
        <record id="stock_picking_type_emp" model="stock.picking.type">
             <field name="name">Staff Store Requests</field>
