@@ -81,6 +81,10 @@
         		<button name="button_cancel" type="object" states='to approve' string="Cancel Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
         	
+        	<xpath expr="//button[@name='button_approve']" position="after">
+        		<button name="button_cancel" type="object" states='purchase' string="Cancel Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+        	</xpath>
+        	
         	<xpath expr="//button[@name='button_done']" position="after">
         		<button name="button_reset" type="object" states='purchase' string="Reset To Draft" groups="purchase.group_purchase_manager"/>
         	</xpath>
