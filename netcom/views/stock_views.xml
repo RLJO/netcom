@@ -78,7 +78,7 @@
         	</xpath>
         	
         	<xpath expr="//button[@name='button_approve']" position="after">
-        		<button name="button_cancel" type="object" states='to approve' string="Cancel Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
+        		<button name="button_cancel" type="object" states='to approve,purchase' string="Cancel Order" class="oe_highlight" groups="purchase.group_purchase_manager"/>
         	</xpath>
         	
         	<xpath expr="//button[@name='button_done']" position="after">
