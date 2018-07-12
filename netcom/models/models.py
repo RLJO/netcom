@@ -417,7 +417,7 @@ class CustomerRequest(models.Model):
             'customer': self.customer,
             'supplier' : self.supplier
         }
-        self.env['res.partner'].create(vals)
+        self.sudo().env['res.partner'].create(vals)
         return {}
     
     @api.multi
