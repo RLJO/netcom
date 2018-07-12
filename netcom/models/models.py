@@ -85,6 +85,8 @@ class SaleSubscription(models.Model):
     _name = "sale.subscription"
     _description = "Sale Subscription"
     _inherit = ['sale.subscription']
+
+    reference_des = fields.Char(string='Reference/Description')
     
     @api.depends('recurring_invoice_line_ids', 'recurring_invoice_line_ids.quantity', 'recurring_invoice_line_ids.price_subtotal', 'template_id')
     def _compute_recurring_total(self):
