@@ -67,6 +67,16 @@
             </field>
     </record>
 
+	<record model="ir.ui.view" id="netcom_sale_subscription_view_form">
+	    <field name="name">netcom.sale.subscription.form.view</field>
+	    <field name="model">sale.subscription</field>
+	    <field name="inherit_id" ref="sale_subscription.sale_subscription_view_form"/>
+	    <field name="arch" type="xml">
+        	<field name="date" position="after">
+            	<field name="reference_des"/>
+            </field>	    
+	    </field>
+	</record>
 
 	<record id="netcom_product_form_view" model="ir.ui.view">
         <field name="name">netcom.product.form</field>

@@ -512,6 +512,18 @@ class PurchaseOrder(models.Model):
         self.mapped('order_line')
         self.write({'state': 'draft'})
         return {}
+
+    @api.multi
+    def copy(self, default=None):
+        new_po = super(PurchaseOrder, self).copy(default=default)
+        for line in new_po.order_line:
+            seller = line.product_id._select_seller(
+                partner_id=line.partner_id, quantity=line.product_qty,
+                date=line.order_id.date_order and line.order_id.date_order[:10], uom_id=line.product_uom)
+            line.date_planned = line._get_date_planned(seller)
+            line.write({'need_override': False})
+            line.write({'override_budget': False})
+        return new_po
         
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
@@ -644,6 +656,9 @@ class AccountInvoice(models.Model):
     _name = "account.invoice"
     _inherit = ['account.invoice']
     _description = "Invoice"
+
+    name = fields.Char(related='invoice_line_ids.subscription_id.reference_des', string='Reference/Description', index=True,
+        readonly=True, states={'draft': [('readonly', False)]}, copy=False, help='The name that will be used on account move lines')
     
     @api.multi
     def _get_tax_amount_by_group(self):
