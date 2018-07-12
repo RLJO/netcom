@@ -117,6 +117,9 @@
             <field name="model">hr.expense.sheet</field>
             <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
             <field name="arch" type="xml">
+            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
+                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
+            </xpath>
             <field name="name" position="before">
             	<field name= "need_override" invisible = "1"/>
             	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>

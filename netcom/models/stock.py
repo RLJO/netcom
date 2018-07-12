@@ -233,6 +233,18 @@ class HrExpenseSheet(models.Model):
             return {}
         
         self.write({'state': 'approve', 'responsible_id': self.env.user.id})
+    
+    @api.multi
+    def unpost_expense_sheets(self):
+        self.mapped('expense_line_ids').write({'is_refused': False})
+        move_id = self.account_move_id
+        if self.account_move_id:
+            # cancel posted entry from Vendor Bills [account_move.py -> button_cancel()]
+            self.account_move_id.button_cancel()
+            self.account_move_id = False
+            # unlink/delete posted entry [account_move.py -> unlink()]
+            move_id.unlink()
+        return self.write({'state': 'approve'})
         
     @api.multi
     def _check_budget(self):
