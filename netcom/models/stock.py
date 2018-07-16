@@ -668,9 +668,8 @@ class AccountInvoice(models.Model):
     _name = "account.invoice"
     _inherit = ['account.invoice']
     _description = "Invoice"
-
-    name = fields.Char(related='invoice_line_ids.subscription_id.reference_des', string='Reference/Description', index=True,
-        readonly=True, states={'draft': [('readonly', False)]}, copy=False, help='The name that will be used on account move lines')
+    
+    reference = fields.Char(related='invoice_line_ids.subscription_id.reference_des', string='Reference/Description')
     
     @api.multi
     def _get_tax_amount_by_group(self):
