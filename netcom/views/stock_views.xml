@@ -629,10 +629,10 @@
          <field name="act_window_id" ref="store_req_action1_window"/>
      </record>
      
-	<!-- 
+
 	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root" groups="netcom.group_budget_report"/>
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="account_budget.act_crossovered_budget_lines_view"/> -->
+              action="account_budget.act_crossovered_budget_lines_view"/> 
 
     <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>
