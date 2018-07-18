@@ -231,7 +231,7 @@
               action="equipment_action_window"/>
 
     <menuitem name="Customer Request" id="customer_request" parent="sale.sale_order_menu"
-              action="CustomerRequest_action_window"/>
+              action="CustomerRequest_action_window" groups="base.group_no_one"/>
               
               
     <menuitem name="Vendor Request" id="Vendor_request" parent="purchase.menu_procurement_management"
