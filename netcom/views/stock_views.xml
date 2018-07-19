@@ -26,7 +26,7 @@
 	            <field name="amount_untaxed" position="before">
 	            	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
 	                <field name="amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-	                <field name="reference" readonly="1"/>
+	                <field name="reference_des" readonly="1"/>
 	            </field>
 	            <field name="team_id" position="after">
 	                <field name="reference" readonly="1"/>
