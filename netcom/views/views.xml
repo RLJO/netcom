@@ -202,7 +202,7 @@
             </xpath>
             <field name="move_raw_ids" position="after">
                 <group class="oe_subtotal_footer oe_left">
-	                  <field name="total_cost" widget="monetary"/>
+	                  <field name="total_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
 	            </group>
             </field>	
         </field>

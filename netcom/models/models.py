@@ -780,7 +780,7 @@ class HolidaysType(models.Model):
 class stockmoveManorder(models.Model):
     _inherit = "stock.move"
     
-    cost = fields.Float(string='Cost', related="product_id.lst_price", track_visibility='onchange', readonly=True)
+    cost = fields.Float(string='Cost', related="product_tmpl_id.standard_price", track_visibility='onchange', readonly=True)
     
 class ManOrder(models.Model):
     _inherit = "mrp.production"
