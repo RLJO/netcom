@@ -791,7 +791,7 @@ class ManOrder(models.Model):
     def _total_cost(self):
         total = 0.0
         for line in self.move_raw_ids:
-            self.total += line.cost
+            self.total_cost += line.cost
     
 #     name = fields.Char()
 #     value = fields.Integer()
