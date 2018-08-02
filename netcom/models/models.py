@@ -649,6 +649,7 @@ class ProductTemplate(models.Model):
 #             no = int(other[0].default_code[4:8]) + 1
 #         else:
 #             no = 1
+        
         no = self.env['ir.sequence'].next_by_code('product.template')
         item_code = code + str(no)
         vals['default_code'] = item_code
@@ -775,6 +776,22 @@ class HolidaysType(models.Model):
 
     remaining_leaves = fields.Float(compute='_compute_leaves', string='Remaining Leaves',
         help='Maximum Leaves Allowed - Leaves Already Taken', track_visibility='onchange')
+    
+class stockmoveManorder(models.Model):
+    _inherit = "stock.move"
+    
+    cost = fields.Float(string='Cost', related="product_tmpl_id.standard_price", track_visibility='onchange', readonly=True)
+    
+class ManOrder(models.Model):
+    _inherit = "mrp.production"
+        
+    total_cost = fields.Float(string='Total Cost',compute='_total_cost', track_visibility='onchange', readonly=True)
+    
+    @api.depends('move_raw_ids.cost')
+    def _total_cost(self):
+        total = 0.0
+        for line in self.move_raw_ids:
+            self.total_cost += line.cost
     
 #     name = fields.Char()
 #     value = fields.Integer()
