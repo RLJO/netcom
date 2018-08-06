@@ -773,8 +773,6 @@ class AccountInvoiceTax(models.Model):
                 if tax.invoice_id and key in tax_grouped[tax.invoice_id.id]:
                     tax.base = tax_grouped[tax.invoice_id.id][key]['base']
                     tax.base = (tax.base * tax.invoice_id.interval)
-                    print('.....')
-                    print(tax.base)
                 else:
                     _logger.warning('Tax Base Amount not computable probably due to a change in an underlying tax (%s).', tax.tax_id.name)
                     
@@ -1078,7 +1076,14 @@ class SaleOrderLine(models.Model):
         if self.order_id.pricelist_id and self.order_id.partner_id:
             vals['price_unit'] = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
         if self.type == "lease":
-            vals['price_unit'] = self.product_id.lease_price
+            lease_price = self.product_id.lease_price
+            currency_id = 124
+            if currency_id != self.order_id.pricelist_id.currency_id.id:
+                context_partner = dict(self.env.context, partner_id=self.order_id.partner_id.id, date=self.order_id.date_order)
+                vals['price_unit'] = self.env['res.currency'].browse(currency_id).with_context(context_partner).compute(lease_price, self.order_id.pricelist_id.currency_id)
+            else:
+                vals['price_unit'] = lease_price
+            
         self.update(vals)
 
         return result
@@ -1099,7 +1104,13 @@ class SaleOrderLine(models.Model):
                 fiscal_position=self.env.context.get('fiscal_position')
             )
             if self.type == "lease":
-                self.price_unit = self.product_id.lease_price
+                lease_price = self.product_id.lease_price
+                currency_id = 124
+                if currency_id != self.order_id.pricelist_id.currency_id.id:
+                    context_partner = dict(self.env.context, partner_id=self.order_id.partner_id.id, date=self.order_id.date_order)
+                    self.price_unit = self.env['res.currency'].browse(currency_id).with_context(context_partner).compute(lease_price, self.order_id.pricelist_id.currency_id)
+                else:
+                    self.price_unit = lease_price
             else:
                 self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
 
