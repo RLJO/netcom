@@ -553,7 +553,7 @@ class PurchaseOrderLine(models.Model):
 #         self.product_id = False
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic)
-    account_id = fields.Many2one('account.account', string='Account', domain = "[('user_type_id', '=', 'Expenses')]")
+    account_id = fields.Many2one('account.account', string='Account')
     need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
     override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
     
