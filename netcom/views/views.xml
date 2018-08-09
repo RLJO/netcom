@@ -217,11 +217,12 @@
 		    </xpath>
 		    <xpath expr="//header" position="inside">
 					<button name="action_override_budget" string="Approve" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}" groups="netcom.group_sale_billing"/>
+		    		<button name="request_approval" string="Request Billing Approval" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}"/>
 		    </xpath>
         	<field name="name" position="before">
             	<field name= "need_override" invisible = "1"/>
             	<field name= "override_done" invisible = "1"/>
-            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Cost Override, The Billing Dept. has been notified </b></h3>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Cost Override, Please Request Billing Approval</b></h3>
             </field>
 	        <xpath expr="//field[@name='move_raw_ids']/tree/field[@name='product_id']" position="after">
             	<field name="cost"/>
