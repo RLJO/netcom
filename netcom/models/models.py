@@ -686,9 +686,14 @@ class ProductTemplate(models.Model):
     @api.multi
     def button_approve(self):
         self.write({'billing_approval': True})
-        self.write({'active': True})
-        self.write({'state': 'approve'})
-        return {}
+        if self.billing_approval == True:
+            subject = "Product Approved, {} can be Used now".format(self.name)
+            partner_ids = []
+            for partner in self.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            self.write({'active': True})
+            self.write({'state': 'approve'})
     
     
 class ExpenseRef(models.Model):
@@ -832,7 +837,7 @@ class stockmoveManorder(models.Model):
 class ManOrder(models.Model):
     _inherit = "mrp.production"
     
-    need_override = fields.Boolean ('Need Billing Override?')
+    need_override = fields.Boolean ('Need Billing Override?', compute='_check_override')
     
     override_done = fields.Boolean ('Override Done?', track_visibility="onchange", store=True)
         
@@ -847,12 +852,35 @@ class ManOrder(models.Model):
             a.initial_cost += record.cost * record.product_uom_qty
         return a
     
+    @api.multi
+    def _check_override(self):
+        for self in self:
+            if self.total_cost > self.initial_cost and self.override_done == False:
+                self.need_override = True
+            else:
+                self.need_override = False
+    
     @api.multi    
     @api.depends('move_raw_ids.product_uom_qty')
     def _total_cost(self):
         for a in self:
             for line in a.move_raw_ids:
                 a.total_cost += line.cost * line.product_uom_qty
+    
+    @api.multi
+    def request_approval(self):
+        if self.total_cost > self.initial_cost and self.override_done == False:
+            self.need_override = True
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_billing')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Manufacturing Order {} needs a cost override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
     
     @api.multi
     def open_produce_product(self):
