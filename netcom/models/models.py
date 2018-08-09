@@ -686,9 +686,14 @@ class ProductTemplate(models.Model):
     @api.multi
     def button_approve(self):
         self.write({'billing_approval': True})
-        self.write({'active': True})
-        self.write({'state': 'approve'})
-        return {}
+        if self.billing_approval == True:
+            subject = "Product Approved, {} can be Used now".format(self.name)
+            partner_ids = []
+            for partner in self.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            self.write({'active': True})
+            self.write({'state': 'approve'})
     
     
 class ExpenseRef(models.Model):
