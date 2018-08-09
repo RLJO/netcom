@@ -653,12 +653,42 @@ class ProductTemplate(models.Model):
         no = self.env['ir.sequence'].next_by_code('product.template')
         item_code = code + str(no)
         vals['default_code'] = item_code
+        a = super(ProductTemplate, self).create(vals)
+        a.send_message()
+        return a
         return super(ProductTemplate, self).create(vals)
-
+    
+    @api.multi
+    def send_message(self):
+        if self.billing_approval == False:
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_billing')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Created Product {} needs Approval From Billing".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            
+    active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.")
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
+    billing_approval = fields.Boolean('Billing Approval', readonly=True)
+    
+    state = fields.Selection([
+        ('approve', 'Approved'),
+        ('reject', 'Rejected'),
+        ], string='Status', readonly=True, copy=False, track_visibility='onchange')
+    
+    @api.multi
+    def button_approve(self):
+        self.write({'billing_approval': True})
+        self.write({'active': True})
+        self.write({'state': 'approve'})
+        return {}
     
     
 class ExpenseRef(models.Model):
@@ -769,7 +799,24 @@ class Holidays(models.Model):
         states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
     date_to = fields.Date('End Date', readonly=True, copy=False,
         states={'draft': [('readonly', False)], 'confirm': [('readonly', False)]}, track_visibility='onchange')
-   
+    
+    @api.model
+    def create(self, vals):
+        result = super(Holidays, self).create(vals)
+        result.send_mail()
+        return result
+    
+    def send_mail(self):
+        if self.state in ['confirm']:
+            config = self.env['mail.template'].sudo().search([('name','=','Leave Approval Request Template')], limit=1)
+            mail_obj = self.env['mail.mail']
+            if config:
+                values = config.generate_email(self.id)
+                mail = mail_obj.create(values)
+                if mail:
+                    mail.send()
+    
+    
 class HolidaysType(models.Model):
     _name = "hr.holidays.status"
     _inherit = 'hr.holidays.status'
@@ -779,19 +826,62 @@ class HolidaysType(models.Model):
     
 class stockmoveManorder(models.Model):
     _inherit = "stock.move"
-    
-    cost = fields.Float(string='Cost', related="product_tmpl_id.standard_price", track_visibility='onchange', readonly=True)
+
+    cost = fields.Float(string='Cost', related="product_tmpl_id.standard_price", track_visibility='onchange', copy=False, readonly=True)
     
 class ManOrder(models.Model):
     _inherit = "mrp.production"
-        
-    total_cost = fields.Float(string='Total Cost',compute='_total_cost', track_visibility='onchange', readonly=True)
     
-    @api.depends('move_raw_ids.cost')
+    need_override = fields.Boolean ('Need Billing Override?')
+    
+    override_done = fields.Boolean ('Override Done?', track_visibility="onchange", store=True)
+        
+    initial_cost = fields.Float(string='Initial Cost', readonly=True)
+    
+    total_cost = fields.Float(string='Total Cost', compute='_total_cost', track_visibility='onchange', readonly=True)
+    
+    @api.model
+    def create(self, values):
+        a = super(ManOrder, self).create(values)
+        for record in a.move_raw_ids:
+            a.initial_cost += record.cost * record.product_uom_qty
+        return a
+    
+    @api.multi    
+    @api.depends('move_raw_ids.product_uom_qty')
     def _total_cost(self):
-        total = 0.0
-        for line in self.move_raw_ids:
-            self.total_cost += line.cost
+        for a in self:
+            for line in a.move_raw_ids:
+                a.total_cost += line.cost * line.product_uom_qty
+    
+    @api.multi
+    def open_produce_product(self):
+        if self.total_cost > self.initial_cost and self.override_done == False:
+            self.need_override = True
+            group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_billing')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Manufacturing Order {} needs a cost override".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
+        self.ensure_one()
+        action = self.env.ref('mrp.act_mrp_product_produce').read()[0]
+        return action
+    
+    @api.multi
+    def action_override_budget(self):
+        self.write({'override_done': True})
+        if self.need_override == True:
+            subject = "Cost Override Done, Manufacturing Order {} can be Produced now".format(self.name)
+            partner_ids = []
+            for partner in self.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            self.write({'need_override': False})
     
 #     name = fields.Char()
 #     value = fields.Integer()

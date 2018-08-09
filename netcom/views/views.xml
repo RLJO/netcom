@@ -84,6 +84,13 @@
         <field name="priority" eval="7" />
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
+        	<xpath expr="//button[@name='toggle_active']" position="replace">
+                 <button name="toggle_active" type="object"
+                         class="oe_stat_button" icon="fa-archive" attrs="{'invisible' : [('billing_approval', '!=',True)]}">
+                     <field name="active" widget="boolean_button"
+                         options='{"terminology": "archive"}'/>
+                 </button>
+             </xpath>
             <field name="categ_id" position="after">
                 <field name="brand"/>
                 <field name="equipment_type"/>
@@ -98,6 +105,14 @@
             <field name="property_account_expense_id" position="replace">
                 <field name="property_account_expense_id" domain="[('internal_type','=','other'),('deprecated','=',False)]"/>
             </field>
+            <field name="name" position="before">
+            		<field name="billing_approval" invisible="1"/>
+            </field>
+            
+            <xpath expr="//header" position="inside">
+					<button name="button_approve" string="Approve" type="object" class="btn btn-primary" attrs="{'invisible' : [('billing_approval', '=',True)]}" groups="netcom.group_sale_billing"/>
+		    		<field name="state" widget="statusbar" statusbar_visible="approve" readonly="1"/>
+		    </xpath>
         </field>
     </record>
     
@@ -197,14 +212,47 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
+        	 <xpath expr="//button[@name='button_scrap']" position="replace">
+					<button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', ('availability', '=', 'none'), ('state', 'in', ('cancel')), ('is_locked', '=', False)]}" invisible="1"/>
+		    </xpath>
+		    <xpath expr="//header" position="inside">
+					<button name="action_override_budget" string="Approve" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}" groups="netcom.group_sale_billing"/>
+		    </xpath>
+        	<field name="name" position="before">
+            	<field name= "need_override" invisible = "1"/>
+            	<field name= "override_done" invisible = "1"/>
+            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Cost Override, The Billing Dept. has been notified </b></h3>
+            </field>
 	        <xpath expr="//field[@name='move_raw_ids']/tree/field[@name='product_id']" position="after">
             	<field name="cost"/>
             </xpath>
+            <xpath expr="//notebook" position="before">
+                <group class="oe_subtotal oe_left">
+	                  <field name="initial_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+	            </group>
+            </xpath>
             <field name="move_raw_ids" position="after">
-                <group class="oe_subtotal_footer oe_left">
+	            <group class="oe_subtotal_footer oe_right">
 	                  <field name="total_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
 	            </group>
-            </field>	
+            </field>
+            <xpath expr="//field[@name='move_raw_ids']/tree" position="attributes">
+	                <attribute name="editable">1</attribute>
+	        </xpath>	
+        </field>
+    </record>
+	
+	<record id="netcom_product_view_template_property_form" model="ir.ui.view">
+        <field name="name">netcom.product.template.stock.property.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="stock_account.view_template_property_form"/>
+        <field name="arch" type="xml">
+	        <xpath expr="//button[@name='%(stock_account.action_view_change_standard_price)d']" position="replace">
+		       <button string="Update Cost" type="action"
+	                            name="%(stock_account.action_view_change_standard_price)d"
+	                            attrs="{'invisible':['|', '|', ('valuation','!=', 'real_time'), ('cost_method', 'not in', ['average', 'standard']), ('product_variant_count', '>', 1)]}"
+	                            class="oe_link oe_read_only" colspan="2" groups="netcom.group_sale_accountant_management"/>
+	        </xpath>
         </field>
     </record>
 
