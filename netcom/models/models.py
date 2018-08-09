@@ -555,7 +555,7 @@ class SubAccount(models.Model):
     @api.multi
     def button_activate(self):
         self.write({'state': 'activate'})
-        self.activation_date = date.today()
+#        self.activation_date = date.today()
         return {}
     
     @api.multi

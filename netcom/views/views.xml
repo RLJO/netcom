@@ -387,7 +387,7 @@
 				<button name="button_reject" states="new" string="Reject" type="object" groups="netcom.group_sale_billing"/>
 				<button name="button_new" states="reject,cancel" string="Renew" type="object" />
 				<button name="button_activate" states="approve,suspend" string="Activate" type="object" />
-				<button name="button_activate" states="terminate" string="Activate" type="object" groups="netcom.group_sale_accountant_management"/>
+				<button name="button_activate" states="terminate" string="Activate" type="object" groups="netcom.group_sale_accountant_management,netcom.group_sale_billing"/>
 				<button name="button_suspend" states="activate" string="Suspend" type="object" />
 				<button name="button_terminate" states="approve,activate,suspend" string="Terminate" type="object" />
 				<button name="button_cancel" states="approve, activate, terminate" string="Cancel" type="object" />
