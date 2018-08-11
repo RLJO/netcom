@@ -1,6 +1,22 @@
 <odoo>
   <data>
-  
+
+    <record id="netcom_company_bank_form_view" model="ir.ui.view">
+        <field name="name">netcom.res.company.form</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+	        <field name="report_footer" position="after">
+	        	<field name="netcom_company_bank_ids">
+                    <tree editable="bottom">
+                        <field name="naira_account"/>
+                        <field name="usd_account"/>
+                    </tree>
+                </field>
+	        </field>	
+        </field>
+    </record>
+
   	<record id="netcom_purchase_tree_view" model="ir.ui.view">
         <field name="name">netcom.purchase.tree</field>
         <field name="model">purchase.order</field>
