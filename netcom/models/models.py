@@ -18,7 +18,7 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     netcom_company_bank_ids = fields.One2many(
-        comodel_name='netcom.res.comnpany.bank',
+        comodel_name='netcom.res.company.bank',
         inverse_name='company_id',
         string='Netcom Banks'
     )
