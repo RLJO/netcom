@@ -1,6 +1,6 @@
 <odoo>
   <data>
-
+  
     <record id="netcom_company_bank_form_view" model="ir.ui.view">
         <field name="name">netcom.res.company.form</field>
         <field name="model">res.company</field>
