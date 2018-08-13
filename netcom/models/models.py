@@ -14,6 +14,25 @@ from odoo.tools import format_date
 
 from odoo.addons import decimal_precision as dp
 
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    netcom_company_bank_ids = fields.One2many(
+        comodel_name='netcom.res.company.bank',
+        inverse_name='company_id',
+        string='Banks'
+    )
+
+
+class ResCompanyBank(models.Model):
+    _name = 'netcom.res.company.bank'
+    _description = 'Netcom Banks'
+
+    naira_account = fields.Char(string='Naira Account')
+    usd_account = fields.Char(string='USD Account')
+    company_id = fields.Many2one(comodel_name='res.company', string='Company', ondelete='cascade')
+
+
 class Partner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
