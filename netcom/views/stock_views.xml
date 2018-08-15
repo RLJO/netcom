@@ -24,6 +24,9 @@
         <field name="arch" type="xml">
 	        <field name="state" position="before">
 	        	<field name="need_override"/>
+	        </field>
+	        <field name="date_planned" position="after">
+	        	<field name="client_id"/>
 	        </field>	
         </field>
     </record>
@@ -126,6 +129,10 @@
             	<field name="sub_account_id" domain="[('state','=','approve')]"/>
             	<field name="manager_approval"/>
             	 -->
+            </field>
+            <field name="company_id" position="after">
+            	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
+            	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]" required="1"/>
             </field>
         </field>
     </record>

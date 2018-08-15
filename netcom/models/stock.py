@@ -450,6 +450,7 @@ class PurchaseOrder(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
     approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
     manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
+    client_id = fields.Many2one('res.partner','Client', track_visibility='onchange')
     
     state = fields.Selection([
         ('draft', 'RFQ'),
@@ -553,7 +554,7 @@ class PurchaseOrderLine(models.Model):
 #         self.product_id = False
     
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic)
-    account_id = fields.Many2one('account.account', string='Account',  domain = [('user_type_id', 'in', [8,17,16])])
+    account_id = fields.Many2one('account.account', string='Account',  domain = [('user_type_id', 'in', [5,8,17,16])])
     need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
     override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
     
