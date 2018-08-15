@@ -692,12 +692,12 @@ class ProductTemplate(models.Model):
             return False
         return True
     
-    active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.")
+    active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.", copy=False)
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
-    billing_approval = fields.Boolean('Billing Approval', readonly=True)
+    billing_approval = fields.Boolean('Billing Approval', readonly=True, copy=False)
     
     state = fields.Selection([
         ('approve', 'Approved'),

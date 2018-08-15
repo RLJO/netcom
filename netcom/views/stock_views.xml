@@ -132,7 +132,7 @@
             </field>
             <field name="company_id" position="after">
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
-            	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]" required="1"/>
+            	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             </field>
         </field>
     </record>
