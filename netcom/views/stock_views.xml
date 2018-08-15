@@ -25,9 +25,9 @@
 	        <field name="state" position="before">
 	        	<field name="need_override"/>
 	        </field>
-	        <field name="date_planned" position="after">
+	        <!-- <field name="date_planned" position="after">
 	        	<field name="client_id"/>
-	        </field>	
+	        </field> -->
         </field>
     </record>
     
