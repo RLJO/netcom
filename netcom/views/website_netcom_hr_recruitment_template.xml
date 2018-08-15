@@ -233,7 +233,7 @@
                     </div>
                 </div>
             </xpath>
-            <xpath expr="//div[hasclass('form-group', 'form-field', 'o_website_form_required_custom')]" position="before">
+            <!-- <xpath expr="//div[hasclass('form-group', 'form-field', 'o_website_form_required_custom')]" position="before">
                 <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="cover_letter">Cover Letter</label>
@@ -258,7 +258,7 @@
                         <input type="file" class="form-control o_website_form_input" name="other_attachments" multiple=""/>
                     </div>
                 </div>
-            </xpath>
+            </xpath> -->
         </template>
 
         <!-- parsing function -->
