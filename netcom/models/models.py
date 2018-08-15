@@ -689,7 +689,9 @@ class ProductTemplate(models.Model):
             self.message_subscribe_users(user_ids=user_ids)
             subject = "Created Product {} needs Approval From Billing".format(self.name)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
-            
+            return False
+        return True
+    
     active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.")
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
