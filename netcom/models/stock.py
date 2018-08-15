@@ -450,6 +450,7 @@ class PurchaseOrder(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
     approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
     manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
+    client_id = fields.Many2one('res.partner','Client', track_visibility='onchange')
     
     state = fields.Selection([
         ('draft', 'RFQ'),
