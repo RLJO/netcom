@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Netcom',
-    'version': '0.129999992',
+    'version': '0.129999993',
 
 
     # any module necessary for this one to work correctly
@@ -30,6 +30,7 @@
         'views/views.xml',
         'views/stock_views.xml',
         'views/templates.xml',
+        'views/website_netcom_hr_recruitment_template.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
