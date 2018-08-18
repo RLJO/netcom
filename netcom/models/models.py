@@ -23,8 +23,6 @@ class ResCompany(models.Model):
         string='Banks'
     )
 
-    invoice_comment = fields.Text(string='Invoice Comment')
-
 
 class ResCompanyBank(models.Model):
     _name = 'netcom.res.company.bank'
@@ -61,7 +59,9 @@ class Partner(models.Model):
         return res
 
 class Lead(models.Model):
-    _inherit = 'crm.lead'    
+    _name = "crm.lead"
+    _inherit = 'crm.lead'
+    
 
     nrc = fields.Float('NRC', track_visibility='onchange')
     mrc = fields.Float('MRC', track_visibility='onchange')
@@ -94,7 +94,7 @@ class Lead(models.Model):
         self.message_subscribe(channel_ids=[channel_id.id])
         subject = "Oppurtunity {} has been assigned to Engineering".format(self.name)
         body = "Please Create the Quotation"
-        #channel_id.message_post(subject=subject,body=body)
+#         channel_id.message_post(subject=subject,body=body)
         self.message_post(subject=subject,body=subject,channel_ids=[(4, channel_id.id)])
         stage_id = self._stage_find(domain=[('probability', '=', 75.0), ('on_change', '=', True)])
         self.write({'stage_id': stage_id.id})
@@ -151,7 +151,11 @@ class SaleSubscription(models.Model):
             'fiscal_position_id': fpos_id,
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
-            'comment': _('''This invoice covers the following period: %s - %s \n %s ''') % (format_date(self.env, next_date), format_date(self.env, end_date), company.invoice_comment)
+            'comment': _('''This invoice covers the following period: %s - %s \n
+By making the payment for this Invoice, the Customer hereby agrees to the Netcom General Terms and Conditions
+as outlined in the Service Agreement which is available at http://www.netcomafrica.com/terms.pdf. Please pay the
+complete invoice value net of all statutory deductions. If you are entitled for any deductions, please gross up the
+invoice amount at your cost and provide us with associated Credit Notes with evidence of payment to Netcom.''') % (format_date(self.env, next_date), format_date(self.env, end_date)),
         }
     
     def _prepare_invoice_line(self, line, fiscal_position):
