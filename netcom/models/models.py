@@ -61,7 +61,6 @@ class Partner(models.Model):
         return res
 
 class Lead(models.Model):
-    _name = "crm.lead"
     _inherit = 'crm.lead'
     
 
@@ -96,7 +95,7 @@ class Lead(models.Model):
         self.message_subscribe(channel_ids=[channel_id.id])
         subject = "Oppurtunity {} has been assigned to Engineering".format(self.name)
         body = "Please Create the Quotation"
-#         channel_id.message_post(subject=subject,body=body)
+        #channel_id.message_post(subject=subject,body=body)
         self.message_post(subject=subject,body=subject,channel_ids=[(4, channel_id.id)])
         stage_id = self._stage_find(domain=[('probability', '=', 75.0), ('on_change', '=', True)])
         self.write({'stage_id': stage_id.id})
