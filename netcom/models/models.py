@@ -154,7 +154,7 @@ class SaleSubscription(models.Model):
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
             'comment': _('''This invoice covers the following period: %s - %s \n
-            %s''') % (format_date(self.env, next_date), format_date(self.env, end_date)), company.invoice_comment
+            %s ''') % (format_date(self.env, next_date), format_date(self.env, end_date), company.invoice_comment)
         }
     
     def _prepare_invoice_line(self, line, fiscal_position):
