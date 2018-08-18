@@ -61,9 +61,7 @@ class Partner(models.Model):
         return res
 
 class Lead(models.Model):
-    _inherit = 'crm.lead'
-    _inherits = ['mail.thread']
-    
+    _inherit = 'crm.lead'    
 
     nrc = fields.Float('NRC', track_visibility='onchange')
     mrc = fields.Float('MRC', track_visibility='onchange')
