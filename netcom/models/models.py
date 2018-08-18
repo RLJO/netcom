@@ -23,6 +23,8 @@ class ResCompany(models.Model):
         string='Banks'
     )
 
+    invoice_comment = fields.Text(string='Invoice Comment')
+
 
 class ResCompanyBank(models.Model):
     _name = 'netcom.res.company.bank'
