@@ -61,7 +61,6 @@ class Partner(models.Model):
         return res
 
 class Lead(models.Model):
-    _name = "crm.lead"
     _inherit = 'crm.lead'
     
 
