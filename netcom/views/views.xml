@@ -1,20 +1,20 @@
 <odoo>
   <data>
 
-  	<record id="partner_netcom" model="ir.ui.view">
+  	<!--record id="partner_netcom" model="ir.ui.view">
 	    <field name="name">partner.netcom</field>
 	    <field name="model">res.partner</field>
 	    <field name="inherit_id" ref="base.view_partner_form"/>
 	    <field name="arch" type="xml">
 	    <field name="function" position="before">
-    		<!--field name="parent_account_number" readonly="1"/-->
+    		<field name="parent_account_number" readonly="1">
     		<field name="contact_name" />
 		</field>
-<!-- 		<field name="phone" position="before">
+ 		<field name="phone" position="before">
     		<field name="contact_name" />
-		</field> -->
+		</field> 
 	    </field>
-	</record>
+	</record-->
 	
 	<record id="pipeline_netcom_form" model="ir.ui.view">
 	    <field name="name">pipeline.netcom.form</field>
