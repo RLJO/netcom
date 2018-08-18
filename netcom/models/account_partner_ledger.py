@@ -51,8 +51,8 @@ class ReportPartnerLedger(models.AbstractModel):
                 'trust': partner.trust,
                 'unfoldable': True,
                 'unfolded': 'partner_' + str(partner.id) in options.get('unfolded_lines') or unfold_all,
-                'colspan': 5,
-            })
+                'colspan': 2,
+            })            
             if 'partner_' + str(partner.id) in options.get('unfolded_lines') or unfold_all:
                 progress = initial_balance
                 domain_lines = []
@@ -104,6 +104,7 @@ class ReportPartnerLedger(models.AbstractModel):
                         'columns': [{}],
                     })
                 lines += domain_lines
+            
         if not line_id:
             lines.append({
                 'id': 'grouped_partners_total',
