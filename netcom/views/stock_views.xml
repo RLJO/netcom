@@ -13,6 +13,7 @@
                         <field name="usd_account"/>
                     </tree>
                 </field>
+                <field name="invoice_comment"/>
 	        </field>	
         </field>
     </record>
