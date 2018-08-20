@@ -215,14 +215,14 @@
         	 <xpath expr="//button[@name='button_scrap']" position="replace">
 					<button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', ('availability', '=', 'none'), ('state', 'in', ('cancel')), ('is_locked', '=', False)]}" invisible="1"/>
 		    </xpath>
-		    <xpath expr="//button[@name='open_produce_product']" position="replace">
+		    <!-- <xpath expr="//button[@name='open_produce_product']" position="replace">
 		    	<button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', 'not in', ['partially_available', 'assigned']), ('state', 'not in', ('confirmed','progress','ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object" class="oe_highlight"/>
 			</xpath>
 		    <xpath expr="//button[@name='open_produce_product']" position="replace">
 					<button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', '!=', 'waiting'), ('state', 'not in', ('confirmed','progress','ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object"/>
-            </xpath>
+            </xpath>-->
 		    <xpath expr="//header" position="inside">
-					<button name="button_ready" string="Ready to produce" type="object" class="btn btn-primary" attrs="{'invisible': ['|', ('state', 'in', ('ready_for_production', 'progress', 'done'))]}"/>
+					<button name="button_ready" string="Ready to produce" type="object" class="btn btn-primary" attrs="{'invisible': [('state', 'in', ('ready_for_production', 'progress', 'done'))]}"/>
 					<button name="action_override_budget" string="Approve" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}" groups="netcom.group_sale_billing"/>
 		    		<button name="request_approval" string="Request Billing Approval" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}"/>
 		    </xpath>
