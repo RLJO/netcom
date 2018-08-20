@@ -864,6 +864,31 @@ class ManOrder(models.Model):
     
     total_cost = fields.Float(string='Total Cost', compute='_total_cost', track_visibility='onchange', readonly=True)
     
+    state = fields.Selection([
+        ('confirmed', 'Confirmed'),
+        ('ready_for_production', 'Ready for Production'),
+        ('planned', 'Planned'),
+        ('progress', 'In Progress'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')], string='State',
+        copy=False, default='confirmed', track_visibility='onchange')
+    
+    @api.multi
+    def button_ready(self):
+        self.write({'state': 'ready_for_production'})
+        if self.state in ['ready_for_production']:
+            group_id = self.env['ir.model.data'].xmlid_to_object('stock.group_stock_manager')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Manufacturing Order {} is Ready for Production".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
+        return True
+    
     @api.model
     def create(self, values):
         a = super(ManOrder, self).create(values)
