@@ -930,6 +930,44 @@ class ManOrder(models.Model):
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             self.write({'need_override': False})
     
+
+class Hrrecruitment(models.Model):
+    _inherit = 'hr.applicant'
+
+    name = fields.Char(string='Application ID')
+
+    #partner_name = fields.Char(string='Full Name', required=1)
+    applicant_image = fields.Binary(string="Applicant Passport", attachment=True, store=True, help="This field holds the applicant's passport image")
+    preferred_name = fields.Char(string='Preferred Name')
+    gender = fields.Selection([('male', 'Male'), ('female', 'Female')], string='Gender')
+    date_of_birth = fields.Char(string='Date of Birth')
+    nationality = fields.Many2one('res.country', string='Nationality')
+    current_location = fields.Char(string='Current Location')
+    preferred_location = fields.Char(string='Preferred Location')
+    current_salary = fields.Float(string='Current Salary')
+
+    family_status = fields.Selection([('single', 'Single'), ('married', 'Married'), ('divorced','Divorced')], string='Family Status')
+    longest_employed = fields.Char(string='Longest duration as an Employee')
+    num_employment_10yrs = fields.Char(string='Number of jobs held in the last 10 years')
+    reason_for_career_change = fields.Char(string='Reason for current career change')
+    reason_for_leaving = fields.Char(string='Reasons for leaving each employer in the last 10 years')
+    employment_status = fields.Selection([('employed','Employed'), ('unemployed','Unemployed')], string='Employment status')
+    willingness_to_relocate = fields.Selection([('yes','Yes'), ('no','No')], string='Willingness to Relocate')
+    
+    commercial_exp = fields.Char(string='Total years commercial experience')
+    industry_exp = fields.Char(string='Key Industry/Sector Experience')
+    country_exp = fields.Char(string='International/Country Experience')
+    highest_level_edu = fields.Selection([('ond','OND'), ('hnd','HND'), ('bsc','BSc'), ('msc','MSc'), ('above','Above')], string='Highest Level of Education')
+    professional_cert = fields.Char(string='Professional Certification(s)/Affiliation(s)')
+    notice_period = fields.Char(string='Notice Period')
+    skype_id = fields.Char(string='Skype ID')
+    last_3_employers = fields.Char(string='Last three(3) employers')
+
+#    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
+#    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
+#    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
+    
+    
 #     name = fields.Char()
 #     value = fields.Integer()
 #     value2 = fields.Float(compute="_value_pc", store=True)
