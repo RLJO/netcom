@@ -14,6 +14,10 @@ from odoo.tools import format_date
 
 from odoo.addons import decimal_precision as dp
 
+#for manufacturing order production
+from odoo.tools import float_compare, float_round
+from datetime import datetime
+
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
@@ -954,7 +958,41 @@ class ManOrder(models.Model):
                 partner_ids.append(partner.id)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             self.write({'need_override': False})
+
+class NetcomMrpProductProduce(models.TransientModel):
+    _name = "mrp.product.produce"
+    _inherit = "mrp.product.produce"
     
+    @api.multi
+    def do_produce(self):
+        # Nothing to do for lots since values are created using default data (stock.move.lots)
+        quantity = self.product_qty
+        if float_compare(quantity, 0, precision_rounding=self.product_uom_id.rounding) <= 0:
+            raise UserError(_("The production order for '%s' has no quantity specified") % self.product_id.display_name)
+        for move in self.production_id.move_raw_ids:
+            # TODO currently not possible to guess if the user updated quantity by hand or automatically by the produce wizard.
+            if move.product_id.tracking == 'none' and move.state not in ('done', 'cancel') and move.unit_factor:
+                rounding = move.product_uom.rounding
+                if self.product_id.tracking != 'none':
+                    qty_to_add = float_round(quantity * move.unit_factor, precision_rounding=rounding)
+                    move._generate_consumed_move_line(qty_to_add, self.lot_id)
+                else:
+                    move.quantity_done += float_round(quantity * move.unit_factor, precision_rounding=rounding)
+        for move in self.production_id.move_finished_ids:
+            if move.product_id.tracking == 'none' and move.state not in ('done', 'cancel'):
+                rounding = move.product_uom.rounding
+                if move.product_id.id == self.production_id.product_id.id:
+                    move.quantity_done += float_round(quantity, precision_rounding=rounding)
+                elif move.unit_factor:
+                    # byproducts handling
+                    move.quantity_done += float_round(quantity * move.unit_factor, precision_rounding=rounding)
+        self.check_finished_move_lots()
+        if self.production_id.state == 'confirmed' or self.production_id.state == 'ready_for_production':
+            self.production_id.write({
+                'state': 'progress',
+                'date_start': datetime.now(),
+            })
+        return {'type': 'ir.actions.act_window_close'}
 
 class Hrrecruitment(models.Model):
     _inherit = 'hr.applicant'
