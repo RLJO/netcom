@@ -131,6 +131,7 @@
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <select class="form-control o_website_form_input" name="longest_employed" widget="radio"> 
+                            <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option> 
@@ -155,6 +156,7 @@
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <select class="form-control o_website_form_input" name="num_employment_10yrs" widget="radio"> 
+                            <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option> 
@@ -206,6 +208,7 @@
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <select class="form-control o_website_form_input" name="commercial_exp" widget="radio"> 
+                            <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option> 
