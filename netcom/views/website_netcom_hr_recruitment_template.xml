@@ -240,7 +240,7 @@
                         <input type="text" class="form-control o_website_form_input" name="country_exp"/>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_custom">
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="current_salary">Current Salary</label>
                     </div>
