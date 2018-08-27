@@ -1011,14 +1011,19 @@ class Hrrecruitment(models.Model):
     salary_expected = fields.Char("Expected Salary", help="Salary Expected by Applicant")
 
     family_status = fields.Selection([('single', 'Single'), ('married', 'Married'), ('divorced','Divorced')], string='Family Status')
-    longest_employed = fields.Char(string='Longest duration as an Employee')
-    num_employment_10yrs = fields.Char(string='Number of jobs held in the last 10 years')
+    
+    longest_employed = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Longest duration as an Employee')
+    num_employment_10yrs = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Number of jobs held in the last 10 years')
     reason_for_career_change = fields.Char(string='Reason for current career change')
     reason_for_leaving = fields.Char(string='Reasons for leaving each employer in the last 10 years')
     employment_status = fields.Selection([('employed','Employed'), ('unemployed','Unemployed')], string='Employment status')
     willingness_to_relocate = fields.Selection([('yes','Yes'), ('no','No')], string='Willingness to Relocate')
     
-    commercial_exp = fields.Char(string='Total years commercial experience')
+    commercial_exp = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Total years commercial experience')
+    
     industry_exp = fields.Char(string='Key Industry/Sector Experience')
     country_exp = fields.Char(string='International/Country Experience')
     highest_level_edu = fields.Selection([('ond','OND'), ('hnd','HND'), ('bsc','BSc'), ('msc','MSc'), ('above','Above')], string='Highest Level of Education')

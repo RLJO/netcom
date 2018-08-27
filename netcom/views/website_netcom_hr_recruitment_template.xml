@@ -130,7 +130,24 @@
                         <label class="control-label" for="longest_employed">Longest duration as an Employee</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="longest_employed"/>
+                        <select class="form-control o_website_form_input" name="longest_employed" widget="radio"> 
+                            <option value="none"></option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option> 
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option> 
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option> 
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option> 
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15_and_above">15 and Above</option> 
+                        </select>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_custom">
@@ -138,7 +155,24 @@
                         <label class="control-label" for="num_employment_10yrs">Number of jobs held in the last 10 years</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="num_employment_10yrs"/>
+                        <select class="form-control o_website_form_input" name="num_employment_10yrs" widget="radio"> 
+                            <option value="none"></option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option> 
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option> 
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option> 
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option> 
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15_and_above">15 and Above</option> 
+                        </select>
                     </div>
                 </div>
                 <div class="form-group form-field">
@@ -173,7 +207,24 @@
                         <label class="control-label" for="commercial_exp">Total years commercial experience</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="commercial_exp"/>
+                        <select class="form-control o_website_form_input" name="commercial_exp" widget="radio"> 
+                            <option value="none"></option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option> 
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option> 
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option> 
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option> 
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15_and_above">15 and Above</option> 
+                        </select>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_custom">
@@ -192,12 +243,12 @@
                         <input type="text" class="form-control o_website_form_input" name="country_exp"/>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_custom">
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="current_salary">Current Salary</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="float" class="form-control o_website_form_input" name="current_salary"/>
+                        <input type="float" class="form-control o_website_form_input" name="current_salary" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">

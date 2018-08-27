@@ -308,6 +308,7 @@ class Picking(models.Model):
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
+    net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     
     @api.multi
     def button_reset(self):
