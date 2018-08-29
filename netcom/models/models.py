@@ -15,8 +15,8 @@ from odoo.tools import format_date
 from odoo.addons import decimal_precision as dp
 
 #for manufacturing order production
-from odoo.tools import float_compare, float_round
-from datetime import datetime
+#from odoo.tools import float_compare, float_round
+#from datetime import datetime
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
@@ -958,7 +958,7 @@ class ManOrder(models.Model):
                 partner_ids.append(partner.id)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             self.write({'need_override': False})
-
+'''
 class NetcomMrpProductProduce(models.TransientModel):
     _name = "mrp.product.produce"
     _inherit = "mrp.product.produce"
@@ -993,7 +993,7 @@ class NetcomMrpProductProduce(models.TransientModel):
                 'date_start': datetime.now(),
             })
         return {'type': 'ir.actions.act_window_close'}
-
+'''
 class Hrrecruitment(models.Model):
     _inherit = 'hr.applicant'
 
