@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from . import payroll_register
+#from . import payroll_register
