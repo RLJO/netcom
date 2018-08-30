@@ -46,14 +46,14 @@
             <field name="target">new</field>
         </record>
 
+        <menuitem id="menu_hr_payroll_reporting" name="Reporting" parent="hr_payroll.menu_hr_payroll_root"/>
         <menuitem
             name="Payroll Register"
-            parent="hr.menu_human_resources_configuration"
+            parent="menu_hr_payroll_reporting"
             sequence="5" icon="STOCK_PRINT"
             action="action_payroll_register_month"
             id="menu_payroll_register_month"
             groups="hr.group_hr_user" 
            />
-
     </data>
 </odoo>
