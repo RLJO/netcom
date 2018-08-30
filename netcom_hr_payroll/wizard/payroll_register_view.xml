@@ -46,7 +46,10 @@
             <field name="target">new</field>
         </record>
 
-        <menuitem id="menu_hr_payroll_reporting" name="Reporting" parent="hr_payroll.menu_hr_payroll_root"/>
+        <menuitem id="menu_hr_payroll_reporting" 
+        name="Reporting" 
+        parent="hr_payroll.menu_hr_payroll_root"/>
+        
         <menuitem
             name="Payroll Register"
             parent="menu_hr_payroll_reporting"
