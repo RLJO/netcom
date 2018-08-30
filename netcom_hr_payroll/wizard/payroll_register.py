@@ -4,7 +4,6 @@ import time
 import xlwt
 # import cStringIO
 import base64
-import cStringIO
 import StringIO
 
 from odoo import api, fields, models
