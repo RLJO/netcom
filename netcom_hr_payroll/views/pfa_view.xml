@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_pfa_tree" model="ir.ui.view">
+        <field name="name">pfa.tree</field>
+        <field name="model">pfa</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Pension Funds Administrators">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="name_person"/>
+                <field name="email"/>
+                <field name="phone"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_pfa_form" model="ir.ui.view">
+        <field name="name">pfa.form</field>
+        <field name="model">pfa</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Pension Funds Administrators">
+            	<group name="pfa_detail">
+	                <field name="name"/>
+	                <field name="code"/>
+	                <field name="name_person"/>
+	                <field name="email"/>
+	                <field name="phone"/><newline/>
+	                <field name="contact_address" placeholder="Add contact address of PFA..." colspan="4"/><newline/>
+	                <field name="notes" placeholder="Add internal note..." colspan="4"/>
+	            </group>
+            </form>
+        </field>
+    </record>
+   
+   <record id="action_pfa" model="ir.actions.act_window">
+        <field name="name">Pension Funds Administrators</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pfa</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <template id="report_payrollregister">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <div class="row" style="text-align: center">
+                    <h2>Payroll Register</h2>
+                    <h2><span t-esc="data['form']['name']"/></h2>
+                        <div>
+                            <strong>From  :</strong> <span t-esc="data['form']['start_date']"/>
+                            <strong>To  :</strong> <span t-esc="data['form']['end_date']"/>
+                        </div>
+                    </div>
+                    <table class="table table-condensed mt32">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <t t-value="docs.get_periods(data['form'])" t-set="rules" />
+                                <t t-foreach="rules[0]" t-as="r" >
+                                    <th>
+                                        <span t-esc="r"></span>
+                                   </th>
+                                </t>
+                                <t t-if="len(rules[0])&lt;9">
+                                    <th t-foreach="range(9-len(rules[0]))" t-as="a">
+                                        <span></span>
+                                   </th>
+                               </t>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-value="docs.get_employee(data['form'])" t-set="salaries"/>
+
+                            <tr t-foreach="salaries" t-as="s1">
+                                <td t-foreach="s1" t-as="s" >
+                                    <t t-if="not isinstance(s, float) and not isinstance(s, int)">
+                                        <span t-esc="s"/>
+                                    </t>
+                                    <t t-if="isinstance(s, float) or isinstance(s, int)">
+                                        <span t-esc="s" t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'></span>
+                                    </t>
+                               </td>
+                            </tr>
+                            <tr>
+                                <th  t-foreach="docs.get_months_tol()" t-as="s">
+                                    <t t-if="isinstance(s, str)">
+                                        <span t-esc="s"/>
+                                    </t>
+                                    <t t-if="isinstance(s, float) or isinstance(s, int)">
+                                        <span t-esc="s" t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'></span>
+                                    </t>
+                               </th>
+                               <th t-esc="docs.get_total()" t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+     <report
+            id="action_report_payroll_register"
+            model="payroll.register"
+            string="Payroll Register"
+            menu="False"
+            report_type="qweb-pdf"
+            name="ng_hr_payroll.report_payrollregister"
+            file="ng_hr_payroll.report_payrollregister"
+        />
+    
+    <menuitem action="action_pfa" sequence="10" id="pfamenu" parent="hr.menu_human_resources_configuration" name="Pension Funds Administrators"/>
+</odoo>
