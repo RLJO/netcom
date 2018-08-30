@@ -4,7 +4,7 @@ import time
 import xlwt
 # import cStringIO
 import base64
-import StringIO
+from io import StringIO
 
 from odoo import api, fields, models
 # from ng_hr_payroll.report import payroll_register_report
