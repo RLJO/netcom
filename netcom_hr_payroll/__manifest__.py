@@ -13,7 +13,7 @@
         'views/hr_payslip_view.xml',
         'views/hr_payroll_report.xml',
         'views/report_netcompayslipdetails_templates.xml',
-        'wizard/payroll_register_view.xml',
-        'views/pfa_view.xml',
+       # 'wizard/payroll_register_view.xml',
+       # 'views/pfa_view.xml',
     ],
 }
