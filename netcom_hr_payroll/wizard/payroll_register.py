@@ -11,7 +11,7 @@ from odoo import api, fields, models
 # from ng_hr_payroll.report import payroll_register_report
 
 class report_payrollregister(models.AbstractModel):
-    _name = 'report.ng_hr_payroll.report_payrollregister'
+    _name = 'report.netcom_hr_payroll.report_payrollregister'
 
     @api.model
     def render_html(self, docids, data=None):
@@ -20,7 +20,7 @@ class report_payrollregister(models.AbstractModel):
            'doc_model': self.model,
            'data': data,
         }
-        return self.env['report'].render('ng_hr_payroll.report_payrollregister', docargs)
+        return self.env['report'].render('netcom_hr_payroll.report_payrollregister', docargs)
 
     @api.model
     def get_report_values(self, docids, data=None):
@@ -295,7 +295,7 @@ class payroll_reg(models.TransientModel):
 
 
         data = {'data': datas}
-        return self.env.ref('ng_hr_payroll.action_report_payroll_register').report_action(self, data=datas, config=False)
+        return self.env.ref('netcom_hr_payroll.action_report_payroll_register').report_action(self, data=datas, config=False)
        #  return {
        #      'type': 'ir.actions.report.xml',
        #      'report_name': 'hr.payroll.register',
