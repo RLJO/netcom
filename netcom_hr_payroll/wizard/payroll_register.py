@@ -217,15 +217,15 @@ class payroll_reg(models.TransientModel):
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id           
+                    pen_comp = emp_ids[0].pfa_id and emp_ids[0].pfa_id.name or False
                     thevalue = emp_data[inds[0]]
-                    if thevalue == '' :
+                    if not thevalue:
                         thevalue = 0.0
                     
                     data_len = len(emp_data)
                     
                     #Pad the list with empty spaces
-                    for i in xrange(0,len(pfa_list)) :            
+                    for i in range(0,len(pfa_list)) :            
                         emp_data.insert(data_len,'')
                          
                     if pen_comp :
@@ -240,7 +240,7 @@ class payroll_reg(models.TransientModel):
                             pass
                             # emp_data[0] = 0
                         # emp_data[ind[0]] = float(thevalue)                   
-                        pfa_total = pfa_dict.get("Pension - " + pen_comp)
+                        pfa_total = pfa_dict.get("Pension - " + pen_comp) or 0.0
                         pfa_dict["Pension - " + pen_comp] = pfa_total + thevalue
                     
             value_style = xlwt.easyxf('font: name Helvetica', num_format_str = '#,##0.00')
