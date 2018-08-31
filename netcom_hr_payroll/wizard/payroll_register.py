@@ -217,7 +217,7 @@ class payroll_reg(models.TransientModel):
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id               
+                    pen_comp = emp_ids[0].pfa_id           
                     thevalue = emp_data[inds[0]]
                     if thevalue == '' :
                         thevalue = 0.0
@@ -233,8 +233,13 @@ class payroll_reg(models.TransientModel):
                         ind = []
                         for i, ele in enumerate(comp_list):
                             if "Pension - " + pen_comp == ele:
-                                ind.append(i)                            
-                        emp_data[ind[0]] = float(thevalue)                   
+                                ind.append(i)
+                        try:
+                            emp_data[ind[0]] = float(thevalue)
+                        except Exception as e:
+                            pass
+                            # emp_data[0] = 0
+                        # emp_data[ind[0]] = float(thevalue)                   
                         pfa_total = pfa_dict.get("Pension - " + pen_comp)
                         pfa_dict["Pension - " + pen_comp] = pfa_total + thevalue
                     
@@ -277,16 +282,13 @@ class payroll_reg(models.TransientModel):
             result = base64.b64encode(stream.read()) 
             base_url = self.env['ir.config_parameter'].get_param('web.base.url')
             attachment_obj = self.env['ir.attachment']
-            attachment_id = attachment_obj.create({'name': 'PayrollRegister.xls', 'datas_fname': 'PayrollRegister.xlsx', 'datas': result})
+            attachment_id = attachment_obj.create({'name': self.name+'.xls', 'datas_fname': self.name+'.xlsx', 'datas': result})
             download_url = '/web/content/' + str(attachment_id.id) + '?download=true'
             return {
                     "type": "ir.actions.act_url",
                     "url": str(base_url) + str(download_url),
                     "target": "self",
                 }
-
-
-
         data = {'data': datas}
         return self.env.ref('netcom_hr_payroll.action_report_payroll_register').report_action(self, data=datas, config=False)
         
@@ -304,5 +306,3 @@ class payroll_reg(models.TransientModel):
               continue
           self.total += self.mnths_total[count]
         return self.total
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
