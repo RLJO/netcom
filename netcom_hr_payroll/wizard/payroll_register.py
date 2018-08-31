@@ -217,7 +217,7 @@ class payroll_reg(models.TransientModel):
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id.name                
+                    pen_comp = emp_ids[0].pfa_id             
                     thevalue = emp_data[inds[0]]
                     if thevalue == '' :
                         thevalue = 0.0
