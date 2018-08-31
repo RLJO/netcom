@@ -2,12 +2,10 @@
 
 import time
 import xlwt
-# import cStringIO
 import base64
-from io import StringIO
+from io import BytesIO
 
 from odoo import api, fields, models
-# from ng_hr_payroll.report import payroll_register_report
 
 class report_payrollregister(models.AbstractModel):
     _name = 'report.netcom_hr_payroll.report_payrollregister'
@@ -219,15 +217,15 @@ class payroll_reg(models.TransientModel):
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id.name                
+                    pen_comp = emp_ids[0].pfa_id
                     thevalue = emp_data[inds[0]]
-                    if thevalue == '' :
+                    if not thevalue:
                         thevalue = 0.0
                     
                     data_len = len(emp_data)
                     
                     #Pad the list with empty spaces
-                    for i in xrange(0,len(pfa_list)) :            
+                    for i in range(0,len(pfa_list)) :            
                         emp_data.insert(data_len,'')
                          
                     if pen_comp :
@@ -235,9 +233,14 @@ class payroll_reg(models.TransientModel):
                         ind = []
                         for i, ele in enumerate(comp_list):
                             if "Pension - " + pen_comp == ele:
-                                ind.append(i)                            
-                        emp_data[ind[0]] = float(thevalue)                   
-                        pfa_total = pfa_dict.get("Pension - " + pen_comp)
+                                ind.append(i)
+                        try:
+                            emp_data[ind[0]] = float(thevalue)
+                        except Exception as e:
+                            pass
+                            # emp_data[0] = 0
+                        # emp_data[ind[0]] = float(thevalue)                   
+                        pfa_total = pfa_dict.get("Pension - " + pen_comp) or 0.0
                         pfa_dict["Pension - " + pen_comp] = pfa_total + thevalue
                     
             value_style = xlwt.easyxf('font: name Helvetica', num_format_str = '#,##0.00')
@@ -252,7 +255,6 @@ class payroll_reg(models.TransientModel):
             total_datas = self.get_months_tol()
             
             cell_count = 1
-            # row += 1
             for value in [total_datas]:
                 row += 1
                 for v in value[1:]:
@@ -263,9 +265,7 @@ class payroll_reg(models.TransientModel):
             total = self.get_total()
             sheet.write(row,cell_count,total,value_style)
             cell_count = 0
-            
-            #write the total values
-            # row -= 1  # return back to the Total row
+
             col = 0
             ind = []            
             for pfa in pfa_list :
@@ -276,30 +276,21 @@ class payroll_reg(models.TransientModel):
                         sheet.write(row,col,pfa_total,value_style)
             row += 1
             
-            stream = StringIO.StringIO()
+            stream = BytesIO()
             workbook.save(stream)
-            # workbook.close()
             stream.seek(0)
             result = base64.b64encode(stream.read()) 
             base_url = self.env['ir.config_parameter'].get_param('web.base.url')
             attachment_obj = self.env['ir.attachment']
-            attachment_id = attachment_obj.create({'name': 'PayrollRegister.xls', 'datas_fname': 'PayrollRegister.xlsx', 'datas': result})
+            attachment_id = attachment_obj.create({'name': self.name+'.xls', 'datas_fname': self.name+'.xlsx', 'datas': result})
             download_url = '/web/content/' + str(attachment_id.id) + '?download=true'
             return {
                     "type": "ir.actions.act_url",
                     "url": str(base_url) + str(download_url),
                     "target": "self",
                 }
-
-
-
         data = {'data': datas}
         return self.env.ref('netcom_hr_payroll.action_report_payroll_register').report_action(self, data=datas, config=False)
-       #  return {
-       #      'type': 'ir.actions.report.xml',
-       #      'report_name': 'hr.payroll.register',
-       #      'datas': datas,
-       # }
         
     def render_header(self, ws, fields, first_row=0):
         header_style = xlwt.easyxf('font: name Helvetica,bold on')
@@ -315,158 +306,3 @@ class payroll_reg(models.TransientModel):
               continue
           self.total += self.mnths_total[count]
         return self.total
-
-
-
-    # def print_report(self, cr, uid, ids, context=None):
-    #     """
-    #      To get the date and print the report
-    #      @param self: The object pointer.
-    #      @param cr: A database cursor
-    #      @param uid: ID of the user currently logged in
-    #      @param context: A standard dictionary
-    #      @return: return report
-    #     """
-    #     if context is None:
-    #         context = {}
-    #     datas = {'ids': context.get('active_ids', [])}
-
-    #     res = self.read(cr, uid, ids, context=context)
-    #     res = res and res[0] or {}
-    #     datas.update({'form': res})
-    #     obj_pr = payroll_register_report.payroll_reg(cr, uid, 'hr.payroll.register', context=context)
-        
-    #     if datas['form'].get('xls_output', False):
-    #         workbook = xlwt.Workbook()
-    #         sheet = workbook.add_sheet('Payroll Register')
-    #         sheet.row(0).height = 256*3
-
-    #         title_style = xlwt.easyxf('font: name Times New Roman,bold on, italic on, height 600')
-    #         title_style1 = xlwt.easyxf('font: name Times New Roman,bold on')
-    #         al = xlwt.Alignment()
-    #         al.horz = xlwt.Alignment.HORZ_CENTER
-    #         title_style.alignment = al
-            
-    #         sheet.write_merge(0, 0, 5, 9, 'Payroll Register', title_style)
-    #         sheet.write(1, 6, datas['form']['name'], title_style1)
-    #         sheet.write(2, 4, 'From', title_style1)
-    #         sheet.write(2, 5, datas['form']['start_date'], title_style1)
-    #         sheet.write(2, 6, 'To', title_style1)
-    #         sheet.write(2, 7, datas['form']['end_date'], title_style1)
-    #         main_header = obj_pr.get_periods(datas['form']) 
-            
-    #         # Add the PFA LIST
-    #         pfa_list = []
-    #         zip_pfa_list = []
-    #         pfa_dict = {}
-    #         pfa_obj = self.env['pfa')
-    #         pfa_ids = pfa_obj.search(cr,uid,[])
-    #         pfas = pfa_obj.browse(cr,uid,pfa_ids)
-    #         pfa_list = ["Pension - " + pfa.name for pfa in pfas]            
-    #         zip_pfa_list = [0.0 for pfa in pfas] # Creates an empty list filled with zeros
-            
-    #         pfa_dict = dict(zip(pfa_list,zip_pfa_list))
-            
-    #         bf_pfa_list = ['Name'] + main_header[0]
-    #         count_bf_pfa_list = len(bf_pfa_list)            
-    #         af_pfa_list = ['Total']            
-    #         comp_list = bf_pfa_list +  af_pfa_list + pfa_list
-            
-    #         row = self.render_header(sheet, comp_list, first_row=5)
-    #         emp_datas = obj_pr.get_employee(datas['form'], excel=True)
-            
-    #         emp_ids = datas['form']['employee_ids']
-    #         employee_obj = self.env['hr.employee')
-    #         employees = employee_obj.browse(cr,uid,emp_ids)
-            
-    #         # Search for the Pension Field
-    #         inds = []               
-    #         for i, ele in enumerate(comp_list):
-    #             if "Employee's Pension Contribution"  == ele:
-    #                 inds.append(i)
-            
-    #         if inds :                    
-    #             for emp_data in emp_datas :
-    #                 emp_ids = employee_obj.search(cr,uid,[('name','=',emp_data[0])])
-    #                 pen_comp = employee_obj.browse(cr,uid,emp_ids)[0].pfa_id.name                
-    #                 thevalue = emp_data[inds[0]]
-    #                 if thevalue == '' :
-    #                     thevalue = 0.0
-                    
-    #                 data_len = len(emp_data)
-                    
-    #                 #Pad the list with empty spaces
-    #                 for i in xrange(0,len(pfa_list)) :            
-    #                     emp_data.insert(data_len,'')
-                         
-    #                 if pen_comp :
-    #                     # Search for the index of the column
-    #                     ind = []
-    #                     for i, ele in enumerate(comp_list):
-    #                         if "Pension - " + pen_comp == ele:
-    #                             ind.append(i)                            
-    #                     emp_data[ind[0]] = float(thevalue)                   
-    #                     pfa_total = pfa_dict.get("Pension - " + pen_comp)
-    #                     pfa_dict["Pension - " + pen_comp] = pfa_total + thevalue
-                    
-    #         # print "SFSAFAFSDFD EEEE",emp_datas
-    #         value_style = xlwt.easyxf('font: name Helvetica', num_format_str = '#,##0.00')
-    #         cell_count = 0
-    #         for value in emp_datas:
-    #             for v in value:
-    #                 sheet.write(row,cell_count,v,value_style)
-    #                 cell_count += 1
-    #             row += 1
-    #             cell_count = 0
-    #         sheet.write(row+1, 0, 'Total',value_style)
-    #         total_datas = obj_pr.get_months_tol()
-            
-    #         # print "ASFDFFSDAFDSFAFAFDFAFDSF",total_datas
-    #         cell_count = 1
-    #         row += 1
-    #         for value in total_datas:
-    #             for v in value[1:]:
-    #                 sheet.write(row,cell_count,v,value_style)
-    #                 cell_count += 1
-    #             row += 1
-    #             cell_count = 0
-                
-            
-    #         #write the total values
-    #         row -= 1  # return back to the Total row
-    #         col = 0
-    #         ind = []            
-    #         for pfa in pfa_list :
-    #             for i, ele in enumerate(comp_list):
-    #                 if pfa == ele:
-    #                     pfa_total = pfa_dict.get(pfa)
-    #                     col = i
-    #                     sheet.write(row,col,pfa_total,value_style)
-    #         row += 1
-            
-    #         stream = cStringIO.StringIO()
-    #         workbook.save(stream)
-    #         ctx = {'default_xls_output':base64.encodestring(stream.getvalue())}
-    #         return {
-    #             'context':ctx,
-    #             'view_type': 'form',
-    #             'view_mode': 'form',
-    #             'res_model': 'account.xls.output.wiz',
-    #             'type': 'ir.actions.act_window',
-    #             'target': 'new',
-    #             }
-    #     return {
-    #         'type': 'ir.actions.report.xml',
-    #         'report_name': 'hr.payroll.register',
-    #         'datas': datas,
-    #    }
-        
-    # def render_header(self, ws, fields, first_row=0):
-    #     header_style = xlwt.easyxf('font: name Helvetica,bold on')
-    #     col = 0
-    #     for hdr in fields:
-    #         ws.write(first_row, col, hdr, header_style)
-    #         col += 1
-    #     return first_row + 2
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

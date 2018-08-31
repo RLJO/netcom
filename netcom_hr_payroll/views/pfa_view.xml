@@ -108,9 +108,9 @@
             string="Payroll Register"
             menu="False"
             report_type="qweb-pdf"
-            name="ng_hr_payroll.report_payrollregister"
-            file="ng_hr_payroll.report_payrollregister"
+            name="netcom_hr_payroll.report_payrollregister"
+            file="netcom_hr_payroll.report_payrollregister"
         />
     
-    <menuitem action="action_pfa" sequence="10" id="pfamenu" parent="hr.menu_human_resources_configuration" name="Pension Funds Administrators"/>
+    <!--menuitem action="action_pfa" sequence="10" id="pfamenu" parent="hr.menu_human_resources_configuration" name="Pension Funds Administrators"/-->
 </odoo>
