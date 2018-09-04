@@ -10,6 +10,7 @@
         'hr_payroll',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'views/hr_payslip_view.xml',
         'views/hr_payroll_report.xml',
         'views/report_netcompayslipdetails_templates.xml',
