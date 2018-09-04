@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-	<record id="view_pfa_tree" model="ir.ui.view">
+	<!--record id="view_pfa_tree" model="ir.ui.view">
         <field name="name">pfa.tree</field>
         <field name="model">pfa</field>
         <field name="type">tree</field>
@@ -40,7 +40,7 @@
         <field name="res_model">pfa</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-    </record>
+    </record-->
     <template id="report_payrollregister">
         <t t-call="web.html_container">
             <t t-call="web.internal_layout">
