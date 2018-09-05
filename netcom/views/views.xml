@@ -270,6 +270,21 @@
         </field>
     </record>
     
+    <record model="ir.ui.view" id="netcom_view_purchase_requisition_form">
+	    <field name="name">netcom.purchase.requisition.form</field>
+	    <field name="model">purchase.requisition</field>
+	    <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form"/>
+	    <field name="arch" type="xml">
+        	<xpath expr="//button[@name='action_in_progress']" position="replace">
+        		<button name="action_in_progress" states="submit" string="Confirm" type="object" class="btn-primary" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        	</xpath>
+        	<xpath expr="//button[@name='action_in_progress']" position="after">
+        		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
+        		<button name="action_cancel" type="object" states="submit" string="Reject" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        	</xpath>    
+	    </field>
+	</record>
+    
     <!-- job_recruitment -->
     <record id="netcom_hr_recruitment_form_view" model="ir.ui.view">
 		<field name="name">netcom.hr.recruitment.form</field>

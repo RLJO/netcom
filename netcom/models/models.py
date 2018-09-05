@@ -1061,6 +1061,21 @@ class Hrrecruitment(models.Model):
     skype_id = fields.Char(string='Skype ID')
     last_3_employers = fields.Char(string='Last three(3) employers')
 
+class netcomPurchaseRequisition(models.Model):
+    _name = "purchase.requisition"
+    _inherit = 'purchase.requisition'
+    
+    state = fields.Selection([('draft', 'Draft'), ('submit', 'Manager Approval'), ('in_progress', 'Confirmed'),
+                               ('open', 'Bid Selection'), ('done', 'Done'),
+                               ('cancel', 'Cancelled')],
+                              'Status', track_visibility='onchange', required=True,
+                              copy=False, default='draft')
+    
+    @api.multi
+    def button_submit(self):
+        self.write({'state': 'submit'})
+        return {}
+
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
 #    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
