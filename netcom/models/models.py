@@ -15,7 +15,7 @@ from odoo.tools import format_date
 from odoo.addons import decimal_precision as dp
 
 #for manufacturing order production
-#from odoo.tools import float_compare, float_round
+from odoo.tools import float_compare, float_round
 #from datetime import datetime
 
 class ResCompany(models.Model):
@@ -648,6 +648,35 @@ class Employee(models.Model):
     serpac = fields.Char(string='SERPAC REnewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
+    @api.multi
+    def send_birthday_mail(self):
+        test = False
+        employees = self.env['hr.employee'].search([])
+        
+        for self in employees:
+            if self.birthday:
+                test = datetime.datetime.strptime(self.birthday, "%Y-%m-%d")
+                
+                birthday_day = test.day
+                birthday_month = test.month
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                birthday_day_today = test_today.day
+                birthday_month_today = test_today.month
+                
+                if birthday_month == birthday_month_today:
+                    if birthday_day == birthday_day_today:
+                        config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
+                        mail_obj = self.env['mail.mail']
+                        if config:
+                            values = config.generate_email(self.id)
+                            mail = mail_obj.create(values)
+                            if mail:
+                                mail.send()
+                            return True
+        return
            
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -958,7 +987,7 @@ class ManOrder(models.Model):
                 partner_ids.append(partner.id)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             self.write({'need_override': False})
-'''
+
 class NetcomMrpProductProduce(models.TransientModel):
     _name = "mrp.product.produce"
     _inherit = "mrp.product.produce"
@@ -990,10 +1019,10 @@ class NetcomMrpProductProduce(models.TransientModel):
         if self.production_id.state == 'confirmed' or self.production_id.state == 'ready_for_production':
             self.production_id.write({
                 'state': 'progress',
-                'date_start': datetime.now(),
+                'date_start': datetime.datetime.now(),
             })
         return {'type': 'ir.actions.act_window_close'}
-'''
+
 class Hrrecruitment(models.Model):
     _inherit = 'hr.applicant'
 
