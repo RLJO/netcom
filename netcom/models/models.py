@@ -1082,7 +1082,7 @@ class NetcomPurchaseRequisition(models.Model):
     def _get_picking_in(self):
         _logger.info('Get Picking In')
         #pick_in = self.env.ref('stock.picking_type_in')
-       # _logger.info('Pick-IN: %s'%pick_in)
+        #_logger.info('Pick-IN: %s'%pick_in)
         company = self.env['res.company']._company_default_get('purchase.requisition')
         _logger.info('Company: %s'%company.name)
         pick_in = self.env['stock.picking.type'].search(
