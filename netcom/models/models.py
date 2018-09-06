@@ -1079,7 +1079,6 @@ class NetcomPurchaseRequisition(models.Model):
         self.write({'state': 'submit'})
         return {}
 
-    @api.model
     def _get_picking_in(self):
         _logger.info('Get Picking In')
         pick_in = self.env.sudo().ref('stock.picking_type_in')
@@ -1093,9 +1092,8 @@ class NetcomPurchaseRequisition(models.Model):
             )
             _logger.info('Pick-in: %s'%pick_in)
         return pick_in
-    
-    def _get_type_id(self):
-        return self.env['purchase.requisition.type'].sudo().search([], limit=1)
+
+    picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', required=True, default=_get_picking_in)
 
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
