@@ -1079,6 +1079,7 @@ class NetcomPurchaseRequisition(models.Model):
         self.write({'state': 'submit'})
         return {}
 
+    @api.model
     def _get_picking_in(self):
         _logger.info('Get Picking In')
         pick_in = self.env.sudo().ref('stock.picking_type_in')
