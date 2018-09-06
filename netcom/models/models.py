@@ -18,6 +18,10 @@ from odoo.addons import decimal_precision as dp
 from odoo.tools import float_compare, float_round
 #from datetime import datetime
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
@@ -1061,8 +1065,7 @@ class Hrrecruitment(models.Model):
     skype_id = fields.Char(string='Skype ID')
     last_3_employers = fields.Char(string='Last three(3) employers')
 
-class netcomPurchaseRequisition(models.Model):
-    _name = "purchase.requisition"
+class NetcomPurchaseRequisition(models.Model):
     _inherit = 'purchase.requisition'
     
     state = fields.Selection([('draft', 'Draft'), ('submit', 'Manager Approval'), ('in_progress', 'Confirmed'),
@@ -1075,6 +1078,18 @@ class netcomPurchaseRequisition(models.Model):
     def button_submit(self):
         self.write({'state': 'submit'})
         return {}
+
+    def _get_picking_in(self):
+        _logger.info('Get Picking In')
+        company = self.env['res.company']._company_default_get('purchase.requisition')
+        _logger.info('Company: %s'%company.name)
+        pick_in = self.env['stock.picking.type'].search(
+            [('warehouse_id.company_id', '=', company.id), ('code', '=', 'incoming')],
+            limit=1,
+        )
+        return pick_in
+
+    picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', required=True, default=_get_picking_in)
 
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
