@@ -1085,6 +1085,9 @@ class netcomPurchaseRequisition(models.Model):
                 limit=1,
             )
         return pick_in
+    
+     def _get_type_id(self):
+        return self.env['purchase.requisition.type'].sudo().search([], limit=1)
 
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
