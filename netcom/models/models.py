@@ -1076,6 +1076,16 @@ class netcomPurchaseRequisition(models.Model):
         self.write({'state': 'submit'})
         return {}
 
+    def _get_picking_in(self):
+        pick_in = self.env.ref('stock.picking_type_in')
+        if not pick_in:
+            company = self.env['res.company'].sudo()._company_default_get('purchase.requisition')
+            pick_in = self.env['stock.picking.type'].sudo().search(
+                [('warehouse_id.company_id', '=', company.id), ('code', '=', 'incoming')],
+                limit=1,
+            )
+        return pick_in
+
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
 #    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
