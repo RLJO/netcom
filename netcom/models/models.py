@@ -1065,8 +1065,7 @@ class Hrrecruitment(models.Model):
     skype_id = fields.Char(string='Skype ID')
     last_3_employers = fields.Char(string='Last three(3) employers')
 
-class netcomPurchaseRequisition(models.Model):
-    _name = "purchase.requisition"
+class NetcomPurchaseRequisition(models.Model):
     _inherit = 'purchase.requisition'
     
     state = fields.Selection([('draft', 'Draft'), ('submit', 'Manager Approval'), ('in_progress', 'Confirmed'),
