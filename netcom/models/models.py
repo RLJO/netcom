@@ -18,6 +18,10 @@ from odoo.addons import decimal_precision as dp
 from odoo.tools import float_compare, float_round
 #from datetime import datetime
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
@@ -1077,13 +1081,17 @@ class netcomPurchaseRequisition(models.Model):
         return {}
 
     def _get_picking_in(self):
+        _logger.info('Get Picking In')
         pick_in = self.env.sudo().ref('stock.picking_type_in')
+        _logger.info('Pick-IN: %s'%pick_in)
         if not pick_in:
             company = self.env['res.company'].sudo()._company_default_get('purchase.requisition')
+            _logger.info('Company: %s'%company)
             pick_in = self.env['stock.picking.type'].sudo().search(
                 [('warehouse_id.company_id', '=', company.id), ('code', '=', 'incoming')],
                 limit=1,
             )
+            _logger.info('Pick-in: %s'%pick_in)
         return pick_in
     
     def _get_type_id(self):
