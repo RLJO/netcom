@@ -1081,15 +1081,12 @@ class NetcomPurchaseRequisition(models.Model):
 
     def _get_picking_in(self):
         _logger.info('Get Picking In')
-        #pick_in = self.env.ref('stock.picking_type_in')
-        #_logger.info('Pick-IN: %s'%pick_in)
         company = self.env['res.company']._company_default_get('purchase.requisition')
         _logger.info('Company: %s'%company.name)
         pick_in = self.env['stock.picking.type'].search(
             [('warehouse_id.company_id', '=', company.id), ('code', '=', 'incoming')],
             limit=1,
         )
-        _logger.info('Pick-in: %s'%pick_in)
         return pick_in
 
     picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', required=True, default=_get_picking_in)
