@@ -14,6 +14,14 @@ from odoo.tools import format_date
 
 from odoo.addons import decimal_precision as dp
 
+#for manufacturing order production
+from odoo.tools import float_compare, float_round
+#from datetime import datetime
+
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
@@ -22,6 +30,8 @@ class ResCompany(models.Model):
         inverse_name='company_id',
         string='Banks'
     )
+
+    invoice_comment = fields.Text(string='Invoice Comment')
 
 
 class ResCompanyBank(models.Model):
@@ -151,11 +161,7 @@ class SaleSubscription(models.Model):
             'fiscal_position_id': fpos_id,
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
-            'comment': _('''This invoice covers the following period: %s - %s \n
-By making the payment for this Invoice, the Customer hereby agrees to the Netcom General Terms and Conditions
-as outlined in the Service Agreement which is available at http://www.netcomafrica.com/terms.pdf. Please pay the
-complete invoice value net of all statutory deductions. If you are entitled for any deductions, please gross up the
-invoice amount at your cost and provide us with associated Credit Notes with evidence of payment to Netcom.''') % (format_date(self.env, next_date), format_date(self.env, end_date)),
+            'comment': _('''This invoice covers the following period: %s - %s \n%s''') % (format_date(self.env, next_date), format_date(self.env, end_date),company.invoice_comment),
         }
     
     def _prepare_invoice_line(self, line, fiscal_position):
@@ -646,6 +652,35 @@ class Employee(models.Model):
     serpac = fields.Char(string='SERPAC REnewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
+    @api.multi
+    def send_birthday_mail(self):
+        test = False
+        employees = self.env['hr.employee'].search([])
+        
+        for self in employees:
+            if self.birthday:
+                test = datetime.datetime.strptime(self.birthday, "%Y-%m-%d")
+                
+                birthday_day = test.day
+                birthday_month = test.month
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                birthday_day_today = test_today.day
+                birthday_month_today = test_today.month
+                
+                if birthday_month == birthday_month_today:
+                    if birthday_day == birthday_day_today:
+                        config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
+                        mail_obj = self.env['mail.mail']
+                        if config:
+                            values = config.generate_email(self.id)
+                            mail = mail_obj.create(values)
+                            if mail:
+                                mail.send()
+                            return True
+        return
            
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -689,13 +724,15 @@ class ProductTemplate(models.Model):
             self.message_subscribe_users(user_ids=user_ids)
             subject = "Created Product {} needs Approval From Billing".format(self.name)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
-            
-    active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.")
+            return False
+        return True
+    
+    active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.", copy=False)
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
     desc = fields.Text('Remarks/Description')
     lease_price = fields.Float('Lease Price')
-    billing_approval = fields.Boolean('Billing Approval', readonly=True)
+    billing_approval = fields.Boolean('Billing Approval', readonly=True, copy=False)
     
     state = fields.Selection([
         ('approve', 'Approved'),
@@ -864,6 +901,31 @@ class ManOrder(models.Model):
     
     total_cost = fields.Float(string='Total Cost', compute='_total_cost', track_visibility='onchange', readonly=True)
     
+    state = fields.Selection([
+        ('confirmed', 'Confirmed'),
+        ('ready_for_production', 'Ready for Production'),
+        ('planned', 'Planned'),
+        ('progress', 'In Progress'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')], string='State',
+        copy=False, default='confirmed', track_visibility='onchange')
+    
+    @api.multi
+    def button_ready(self):
+        self.write({'state': 'ready_for_production'})
+        if self.state in ['ready_for_production']:
+            group_id = self.env['ir.model.data'].xmlid_to_object('stock.group_stock_manager')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "Manufacturing Order {} is Ready for Production".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
+        return True
+    
     @api.model
     def create(self, values):
         a = super(ManOrder, self).create(values)
@@ -929,6 +991,110 @@ class ManOrder(models.Model):
                 partner_ids.append(partner.id)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             self.write({'need_override': False})
+
+class NetcomMrpProductProduce(models.TransientModel):
+    _name = "mrp.product.produce"
+    _inherit = "mrp.product.produce"
+    
+    @api.multi
+    def do_produce(self):
+        # Nothing to do for lots since values are created using default data (stock.move.lots)
+        quantity = self.product_qty
+        if float_compare(quantity, 0, precision_rounding=self.product_uom_id.rounding) <= 0:
+            raise UserError(_("The production order for '%s' has no quantity specified") % self.product_id.display_name)
+        for move in self.production_id.move_raw_ids:
+            # TODO currently not possible to guess if the user updated quantity by hand or automatically by the produce wizard.
+            if move.product_id.tracking == 'none' and move.state not in ('done', 'cancel') and move.unit_factor:
+                rounding = move.product_uom.rounding
+                if self.product_id.tracking != 'none':
+                    qty_to_add = float_round(quantity * move.unit_factor, precision_rounding=rounding)
+                    move._generate_consumed_move_line(qty_to_add, self.lot_id)
+                else:
+                    move.quantity_done += float_round(quantity * move.unit_factor, precision_rounding=rounding)
+        for move in self.production_id.move_finished_ids:
+            if move.product_id.tracking == 'none' and move.state not in ('done', 'cancel'):
+                rounding = move.product_uom.rounding
+                if move.product_id.id == self.production_id.product_id.id:
+                    move.quantity_done += float_round(quantity, precision_rounding=rounding)
+                elif move.unit_factor:
+                    # byproducts handling
+                    move.quantity_done += float_round(quantity * move.unit_factor, precision_rounding=rounding)
+        self.check_finished_move_lots()
+        if self.production_id.state == 'confirmed' or self.production_id.state == 'ready_for_production':
+            self.production_id.write({
+                'state': 'progress',
+                'date_start': datetime.datetime.now(),
+            })
+        return {'type': 'ir.actions.act_window_close'}
+
+class Hrrecruitment(models.Model):
+    _inherit = 'hr.applicant'
+
+    name = fields.Char(string='Application ID')
+
+    #partner_name = fields.Char(string='Full Name', required=1)
+    applicant_image = fields.Binary(string="Applicant Passport", attachment=True, store=True, help="This field holds the applicant's passport image")
+    preferred_name = fields.Char(string='Preferred Name')
+    gender = fields.Selection([('male', 'Male'), ('female', 'Female')], string='Gender')
+    date_of_birth = fields.Char(string='Date of Birth')
+    nationality = fields.Many2one('res.country', string='Nationality')
+    current_location = fields.Char(string='Current Location')
+    preferred_location = fields.Char(string='Preferred Location')
+    current_salary = fields.Char(string='Current Salary')
+    salary_expected = fields.Char("Expected Salary", help="Salary Expected by Applicant")
+
+    family_status = fields.Selection([('single', 'Single'), ('married', 'Married'), ('divorced','Divorced')], string='Family Status')
+    
+    longest_employed = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Longest duration as an Employee')
+    num_employment_10yrs = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Number of jobs held in the last 10 years')
+    reason_for_career_change = fields.Char(string='Reason for current career change')
+    reason_for_leaving = fields.Char(string='Reasons for leaving each employer in the last 10 years')
+    employment_status = fields.Selection([('employed','Employed'), ('unemployed','Unemployed')], string='Employment status')
+    willingness_to_relocate = fields.Selection([('yes','Yes'), ('no','No')], string='Willingness to Relocate')
+    
+    commercial_exp = fields.Selection([('none',''), ('1','1'), ('2','2'),('3','3'), ('4','4'),('5','5'), ('6','6'),('7','7'), ('8','8'),('9','9'), ('10','10'),('11','11'), ('12','12'),('13','13'), ('14','14'),('15_and_above','15 and Above')], 
+                                        string='Total years commercial experience')
+    
+    industry_exp = fields.Char(string='Key Industry/Sector Experience')
+    country_exp = fields.Char(string='International/Country Experience')
+    highest_level_edu = fields.Selection([('ond','OND'), ('hnd','HND'), ('bsc','BSc'), ('msc','MSc'), ('above','Above')], string='Highest Level of Education')
+    professional_cert = fields.Char(string='Professional Certification(s)/Affiliation(s)')
+    notice_period = fields.Char(string='Notice Period')
+    skype_id = fields.Char(string='Skype ID')
+    last_3_employers = fields.Char(string='Last three(3) employers')
+
+class NetcomPurchaseRequisition(models.Model):
+    _inherit = 'purchase.requisition'
+    
+    state = fields.Selection([('draft', 'Draft'), ('submit', 'Manager Approval'), ('in_progress', 'Confirmed'),
+                               ('open', 'Bid Selection'), ('done', 'Done'),
+                               ('cancel', 'Cancelled')],
+                              'Status', track_visibility='onchange', required=True,
+                              copy=False, default='draft')
+    
+    @api.multi
+    def button_submit(self):
+        self.write({'state': 'submit'})
+        return {}
+
+    def _get_picking_in(self):
+        _logger.info('Get Picking In')
+        company = self.env['res.company']._company_default_get('purchase.requisition')
+        _logger.info('Company: %s'%company.name)
+        pick_in = self.env['stock.picking.type'].search(
+            [('warehouse_id.company_id', '=', company.id), ('code', '=', 'incoming')],
+            limit=1,
+        )
+        return pick_in
+
+    picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', required=True, default=_get_picking_in)
+
+#    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
+#    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
+#    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
+    
     
 #     name = fields.Char()
 #     value = fields.Integer()

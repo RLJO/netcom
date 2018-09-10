@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_payroll_register_month" model="ir.ui.view">
+            <field name="name">Paryroll Register</field>
+            <field name="model">payroll.register</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+            <form string="Employee Payroll Register" version="7.0">
+                <label string="This wizard will print report of payroll register for given dates"/>
+                <group colspan="4">
+                    <field name="name"/><newline/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="xls_output" colspan="2"/>
+                </group>
+                <notebook colspan="4">
+                    <page string="Salary Rules">
+                    <group colspan="4" >
+                        <separator string="Salary Rules" colspan="4"/>
+                        <field name="rule_ids" nolabel="1"/>
+                    </group>
+                    </page>
+                    <page string="Employees">
+                    <group colspan="4" >
+                        <separator string="Employees" colspan="4"/>
+                        <field name="employee_ids" nolabel="1"/>
+                    </group>
+                    </page>
+                </notebook>
+                    <footer>
+                        <button name="print_report" string="Print" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+            </form>
+            </field>
+        </record>
+
+        <record id="action_payroll_register_month" model="ir.actions.act_window">
+            <field name="name">Payroll Register</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">payroll.register</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_hr_payroll_reporting" 
+        name="Reporting" 
+        parent="hr_payroll.menu_hr_payroll_root"/>
+        
+        <menuitem
+            name="Payroll Register"
+            parent="menu_hr_payroll_reporting"
+            sequence="5" icon="STOCK_PRINT"
+            action="action_payroll_register_month"
+            id="menu_payroll_register_month"
+            groups="hr.group_hr_user" 
+           />
+    </data>
+</odoo>

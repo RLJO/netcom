@@ -215,7 +215,20 @@
         	 <xpath expr="//button[@name='button_scrap']" position="replace">
 					<button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', ('availability', '=', 'none'), ('state', 'in', ('cancel')), ('is_locked', '=', False)]}" invisible="1"/>
 		    </xpath>
+		    <!-- <xpath expr="//button[@name='open_produce_product']" position="replace">
+		    	<button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', 'not in', ['partially_available', 'assigned']), ('state', 'not in', ('confirmed','progress','ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object" class="oe_highlight"/>
+			</xpath>
+		    <xpath expr="//button[@name='open_produce_product']" position="replace">
+					<button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', '!=', 'waiting'), ('state', 'not in', ('confirmed','progress','ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object"/>
+            </xpath>-->
+            
+            <xpath expr="//button[@name='open_produce_product']" position="after">
+		    		<button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', 'not in', ['partially_available', 'assigned']), ('state', 'not in', ('ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object" class="oe_highlight"/>
+                    <button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', '|', ('is_locked', '=', False), ('check_to_done', '=', True), ('availability', '!=', 'waiting'), ('state', 'not in', ('ready_for_production')), ('routing_id', '!=', False)]}" string="Produce" type="object"/>
+		    </xpath>
+            
 		    <xpath expr="//header" position="inside">
+					<button name="button_ready" string="Ready to produce" type="object" class="btn btn-primary" attrs="{'invisible': [('state', 'in', ('ready_for_production', 'progress', 'done'))]}"/>
 					<button name="action_override_budget" string="Approve" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}" groups="netcom.group_sale_billing"/>
 		    		<button name="request_approval" string="Request Billing Approval" type="object" class="btn btn-primary" attrs="{'invisible' : ['|', ('need_override', '!=',True), ('override_done', '=',True)]}"/>
 		    </xpath>
@@ -256,6 +269,70 @@
 	        </xpath>
         </field>
     </record>
+    
+    <record model="ir.ui.view" id="netcom_view_purchase_requisition_form">
+	    <field name="name">netcom.purchase.requisition.form</field>
+	    <field name="model">purchase.requisition</field>
+	    <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form"/>
+	    <field name="arch" type="xml">
+        	<xpath expr="//button[@name='action_in_progress']" position="replace">
+        		<button name="action_in_progress" states="submit" string="Confirm" type="object" class="btn-primary" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        	</xpath>
+        	<xpath expr="//button[@name='action_in_progress']" position="after">
+        		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
+        		<button name="action_cancel" type="object" states="submit" string="Reject" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        	</xpath>    
+	    </field>
+	</record>
+    
+    <!-- job_recruitment -->
+    <record id="netcom_hr_recruitment_form_view" model="ir.ui.view">
+		<field name="name">netcom.hr.recruitment.form</field>
+		<field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.crm_case_form_view_job"/>
+		<field name="arch" type="xml">
+            <!-- <field name="image" widget="image" class="oe_avatar" options="{&quot;preview_image&quot;: &quot;image_medium&quot;, &quot;size&quot;: [90, 90]}"/> -->
+		    <!-- <img t-att-src="image('res.users', 'image', record.user_id.raw_value)" t-att-title="record.user_id.value" width="90" height="90" class="oe_avatar"/> -->
+            <!-- <img t-att-src="kanban_image('res.users', 'image_small', record.user_id.raw_value)" t-att-title="record.user_id.value" width="30" height="30" class="oe_kanban_avatar mr8"/> -->
+            <field name="partner_id" position="before">
+                <field name="applicant_image" widget="image" class="oe_avatar"/>
+            </field>
+            <field name="partner_id" position="after">
+                <field name="preferred_name"/>
+                <field name="gender" widget="radio"/>
+                <field name="date_of_birth"/>
+                <field name="nationality"/>
+                <field name="current_location"/>
+                <field name="preferred_location"/>
+                <field name="willingness_to_relocate"/>
+
+                <field name="commercial_exp"/>
+                <field name="industry_exp"/>
+                <field name="highest_level_edu"/>
+                <field name="professional_cert"/>
+			</field>
+            <field name="user_id" position="before">
+                <field name="family_status" widget="radio"/>
+                <field name="longest_employed"/>
+                <field name="num_employment_10yrs"/>
+                <field name="reason_for_career_change"/>
+                <field name="reason_for_leaving"/>
+                <field name="employment_status"/>
+
+                <field name="notice_period"/>
+                <field name="skype_id"/>
+                <field name="last_3_employers"/>
+                <field name="current_salary"/>
+
+                <!-- <field name="cover_letter"/>
+                <field name="certificates"/>
+                <field name="other_attachments"/> -->
+			</field>
+            <!-- <field name="salary_expected" position="after">
+                <field name="current_salary"/>
+            </field> -->
+		</field>
+	</record>
 
     <record model="ir.actions.act_window" id="brands_action_window">
       <field name="name">Brand Types</field>

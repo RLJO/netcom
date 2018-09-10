@@ -308,6 +308,7 @@ class Picking(models.Model):
     
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
+    net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     
     @api.multi
     def button_reset(self):
@@ -440,6 +441,7 @@ class PurchaseOrder(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
     approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
     manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
+    client_id = fields.Many2one('res.partner','Client', track_visibility='onchange')
     
     state = fields.Selection([
         ('draft', 'RFQ'),

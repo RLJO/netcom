@@ -13,6 +13,7 @@
                         <field name="usd_account"/>
                     </tree>
                 </field>
+                <field name="invoice_comment"/>
 	        </field>	
         </field>
     </record>
@@ -24,7 +25,10 @@
         <field name="arch" type="xml">
 	        <field name="state" position="before">
 	        	<field name="need_override"/>
-	        </field>	
+	        </field>
+	        <!-- <field name="date_planned" position="after">
+	        	<field name="client_id"/>
+	        </field> -->
         </field>
     </record>
     
@@ -126,6 +130,10 @@
             	<field name="sub_account_id" domain="[('state','=','approve')]"/>
             	<field name="manager_approval"/>
             	 -->
+            </field>
+            <field name="company_id" position="after">
+            	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
+            	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             </field>
         </field>
     </record>
@@ -343,7 +351,7 @@
                                     <field name="additional" invisible="1"/>
                                     <field name="has_move_lines" invisible="1"/>
                                     <field name="is_locked" invisible="1"/>
-                                    <field name="product_id" required="1" attrs="{'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}"/>
+                                    <field name="product_id" required="1" attrs="{'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Network Equipment (Customer)','All / Network Equipment (Netcom)','All / Radio (Customer)','All / Radio (Netcom)'))]"/>
                                     <field name="is_initial_demand_editable" invisible="1"/>
                                     <field name="is_quantity_done_editable" invisible="1"/>
                                     <field name="product_uom_qty" string="Initial Demand" attrs="{'readonly': [('is_initial_demand_editable', '=', False)]}"/>
