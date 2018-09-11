@@ -1090,6 +1090,42 @@ class NetcomPurchaseRequisition(models.Model):
         return pick_in
 
     picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', required=True, default=_get_picking_in)
+    
+class NetcomContract(models.Model):
+    _name = 'hr.contract'
+    _inherit = 'hr.contract'
+    
+    @api.multi
+    def send_anniversary_mail(self):
+        
+        test = False
+        employees = self.env['hr.contract'].search([])
+        
+        for self in employees:
+            if self.date_start:
+                test = datetime.datetime.strptime(self.date_start, "%Y-%m-%d")
+                
+                date_start_day = test.day
+                date_start_month = test.month
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        config = self.env['mail.template'].sudo().search([('name','=','Work Anniversary')], limit=1)
+                        mail_obj = self.env['mail.mail']
+                        if config:
+                            values = config.generate_email(self.id)
+                            mail = mail_obj.create(values)
+                            if mail:
+                                mail.send()
+                            return True
+        return
 
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
