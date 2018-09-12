@@ -648,6 +648,15 @@
       <field name="context" eval='{"default_is_locked":False,"default_internal_transfer":True,"default_picking_type_id":ref("netcom.stock_picking_type_engineer")}'/>
     </record>
     
+	<record model="ir.actions.act_window" id="netcom_act_crossovered_budget_lines_view">
+            <field name="name">Budgets</field>
+            <field name="res_model">crossovered.budget.lines</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('general_budget_id.department_id.manager_id.user_id','=',uid)]</field>
+            <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
+        </record>
+    
     <record id="store_req_action_form" model="ir.actions.act_window.view">
          <field eval="2" name="sequence"/>
          <field name="view_mode">form</field>
@@ -678,7 +687,7 @@
 
 	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root" groups="netcom.group_budget_report"/>
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="account_budget.act_crossovered_budget_lines_view"/> 
+              action="netcom_act_crossovered_budget_lines_view"/> 
 
     <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>
