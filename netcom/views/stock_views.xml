@@ -352,8 +352,7 @@
                                     <field name="additional" invisible="1"/>
                                     <field name="has_move_lines" invisible="1"/>
                                     <field name="internal_transfer" invisible="1"/>
-                                    <field name="product_id" string="Store Request Products" required="1" attrs="{'invisible': [('internal_transfer', '=', True)], 'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Inventory'))]"/>
-                                    <field name="product_id" string="Internal Transfer Products" required="1" attrs="{'invisible': [('internal_transfer', '!=', True)], 'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Network Equipment (Customer)','All / Network Equipment (Netcom)','All / Radio (Customer)','All / Radio (Netcom)'))]"/>
+                                    <field name="product_id" required="1" attrs="{'invisible': [('internal_transfer', '=', True)], 'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Inventory'))]"/>
                                     <field name="is_locked" invisible="1"/>
                                     <field name="is_initial_demand_editable" invisible="1"/>
                                     <field name="is_quantity_done_editable" invisible="1"/>
