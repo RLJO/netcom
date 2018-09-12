@@ -309,6 +309,7 @@ class Picking(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
+    internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
     
     @api.multi
     def button_reset(self):
@@ -867,7 +868,7 @@ class StockMove(models.Model):
         
     
     account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
-
+    internal_transfer = fields.Boolean('Internal Transfer?', related='picking_id.internal_transfer', readonly=1, track_visibility='onchange')
 
 
 class SaleOrder(models.Model):
