@@ -686,7 +686,7 @@ class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     active = fields.Boolean(
-        'Active', related='product_tmpl_id.active', default=False,
+        'Active', default=False,
         help="If unchecked, it will allow you to hide the product without removing it.")
            
 class ProductTemplate(models.Model):
