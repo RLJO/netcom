@@ -681,6 +681,13 @@ class Employee(models.Model):
                                 mail.send()
                             return True
         return
+
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
+
+    active = fields.Boolean(
+        'Active', related='product_tmpl_id.active', default=False,
+        help="If unchecked, it will allow you to hide the product without removing it.")
            
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
