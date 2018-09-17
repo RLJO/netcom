@@ -664,26 +664,12 @@
          <field name="act_window_id" ref="store_req_action1_window"/>
      </record>
      
-         <record id="store_req_action_tree" model="ir.actions.act_window.view">
+   	 <record id="store_req_action_tree" model="ir.actions.act_window.view">
          <field eval="1" name="sequence"/>
          <field name="view_mode">tree</field>
          <field name="view_id" ref="stock.vpicktree"/>
          <field name="act_window_id" ref="store_req_action1_window"/>
      </record>
-     
-    <record id="internal_req_action_form" model="ir.actions.act_window.view">
-        <field eval="2" name="sequence"/>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="netcom_stock_form_view"/>
-        <field name="act_window_id" ref="internal_transfer_action_window"/>
-    </record>
-     
-     <record id="internal_req_action_tree" model="ir.actions.act_window.view">
-        <field eval="1" name="sequence"/>
-        <field name="view_mode">tree</field>
-        <field name="view_id" ref="stock.vpicktree"/>
-        <field name="act_window_id" ref="internal_transfer_action_window"/>
-    </record>
 
 	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root" groups="netcom.group_budget_report"/>
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
