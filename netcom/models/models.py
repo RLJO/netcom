@@ -681,14 +681,14 @@ class Employee(models.Model):
                                 mail.send()
                             return True
         return
-
+'''
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     active = fields.Boolean(
         'Active', default=False,
         help="If unchecked, it will allow you to hide the product without removing it.")
-           
+'''           
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
     
@@ -734,6 +734,7 @@ class ProductTemplate(models.Model):
             return False
         return True
     
+    name = fields.Char('Name', index=True, required=True, translate=True, track_visibility='always')
     active = fields.Boolean('Active', default=False, help="If unchecked, it will allow you to hide the product without removing it.", copy=False)
     brand = fields.Many2one('brand.type', string='Brand', track_visibility='onchange', index=True)
     equipment_type = fields.Many2one('equipment.type', string='Equipment Type', track_visibility='onchange', index=True)
