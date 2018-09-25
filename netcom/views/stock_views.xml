@@ -465,7 +465,8 @@
                                             context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
                                             attrs="{'readonly': [('product_updatable', '=', False)]}"
                                             force_save="1"
-                                           />
+                                           	domain="[('product_tmpl_id.active','=',True)]"
+                                           	/>
                                         <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                         <field name="nrc_mrc"/>
                                         <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id), ('state','in',('approve','activate'))]"/>
@@ -525,6 +526,7 @@
                                     attrs="{'readonly': [('product_updatable', '=', False)]}"
                                     force_save="1"
                                     context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
+                                   	domain="[('product_tmpl_id.active','=',True)]"
                                    />
                                 <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                 <field name="name"/>
