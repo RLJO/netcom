@@ -440,9 +440,10 @@ class CustomerRequest(models.Model):
             'mobile' : self.mobile,
             'email' : self.email,
             'customer': self.customer,
-            'supplier' : self.supplier
+            'supplier' : self.supplier,
+            'supplier' : self.company_id.id
         }
-        self.sudo().env['res.partner'].create(vals)
+        self.env['res.partner'].create(vals)
         return {}
     
     @api.multi
