@@ -910,6 +910,8 @@ class ManOrder(models.Model):
     
     total_cost = fields.Float(string='Total Cost', compute='_total_cost', track_visibility='onchange', readonly=True)
     
+    ready_engineer_id = fields.Many2one('res.users','Ready Engineer Name', readonly=True, track_visibility='onchange')
+    
     state = fields.Selection([
         ('confirmed', 'Confirmed'),
         ('ready_for_production', 'Ready for Production'),
@@ -922,6 +924,7 @@ class ManOrder(models.Model):
     @api.multi
     def button_ready(self):
         self.write({'state': 'ready_for_production'})
+        self.ready_engineer_id = self._uid
         if self.state in ['ready_for_production']:
             group_id = self.env['ir.model.data'].xmlid_to_object('stock.group_stock_manager')
             user_ids = []
