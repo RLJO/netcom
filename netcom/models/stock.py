@@ -322,9 +322,13 @@ class CrossoveredBudgetLines(models.Model):
     _inherit = ['crossovered.budget.lines']
     _order = "general_budget_id"
     
-    allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0)
-    commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0)
+    allowed_amount = fields.Float(compute='_compute_allowed_amount', string='Allowed Amount', digits=0, store=True)
+    commitments = fields.Float(compute='_compute_commitments', string='Commitments', digits=0, store=True)
     dept_id = fields.Many2one('hr.department', 'Department',related='general_budget_id.department_id', store=True, readonly=False, copy=False)
+    
+    practical_amount = fields.Float(compute='_compute_practical_amount', string='Practical Amount', digits=0, store=True)
+    theoritical_amount = fields.Float(compute='_compute_theoritical_amount', string='Theoretical Amount', digits=0, store=True)
+    percentage = fields.Float(compute='_compute_percentage', string='Achievement', store=True)
     '''
     dept_id = fields.Many2one(
         comodel_name='account.budget.post')
