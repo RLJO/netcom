@@ -445,11 +445,17 @@
                     <field name="phone" widget="phone"/>
                     <field name="mobile" widget="phone"/>
                     <field name="email" widget="email" context="{'gravatar_image': True}"/>
+                    <field name="company_id" groups="base.group_system"/>
                     <field name="customer" invisible="1"/>
                     <field name="supplier" invisible="1"/>
                 </group>
             </group>
         </sheet>
+        <div class="oe_chatter">
+             <field name="message_follower_ids" widget="mail_followers"/>
+             <field name="activity_ids" widget="mail_activity"/>
+             <field name="message_ids" widget="mail_thread"/>
+        </div>
         </form>
     </field>
     </record>
