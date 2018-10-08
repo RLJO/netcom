@@ -79,6 +79,19 @@ class Lead(models.Model):
     name = fields.Char('Services', required=True, index=True)
     acc_executive = fields.Many2one('res.users', string='Account Executive', index=True, track_visibility='onchange')
     
+    risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', track_visibility='onchange')
+    risk_adjusted_mrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_mrc', track_visibility='onchange')
+      
+    @api.one
+    @api.depends('nrc','mrc')    
+    def _compute_risk_adjusted_nrc(self):
+        self.risk_adjusted_nrc = self.probability * self.nrc
+        
+    @api.one
+    @api.depends('nrc','mrc')    
+    def _compute_risk_adjusted_mrc(self):
+        self.risk_adjusted_mrc = self.probability * self.mrc
+    
     @api.one
     @api.depends('nrc','mrc')    
     def _compute_planned_revenue(self):

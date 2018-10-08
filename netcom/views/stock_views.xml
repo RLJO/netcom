@@ -679,6 +679,13 @@
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view"/> 
 	
+	<menuitem id="sale.menu_sale_report"
+            name="Reporting"
+            parent="sale.sale_menu_root"
+            sequence="5"
+            groups="sales_team.group_sale_manager,netcom.group_module_report"/>
+	
+	<!-- 
 	<menuitem name="Modules Reports" id="netcom_module_report" parent="hr.menu_hr_root" groups="netcom.group_module_report"/>
 	
 	<menuitem name="CRM" id="netcom_crm_module_report" parent="netcom_module_report"/>
@@ -716,7 +723,7 @@
               action="hr_expense.hr_expense_actions_all"/>
     <menuitem name="Expenses Reports Analysis" id="netcom_expenses_report_module" parent="netcom_expenses_module_report"
               action="hr_expense.action_hr_expense_sheet_all_all"/>
-	
+	 -->
 	
     <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>

@@ -44,6 +44,8 @@
 	    <field name="planned_revenue" position="before">
     		<field name="nrc"/>
     		<field name="mrc"/>
+    		<field name="risk_adjusted_nrc"/>
+    		<field name="risk_adjusted_mrc"/>
 		</field>
 		<field name="name" position="replace">
 			<field name="name" string="Services"/>
