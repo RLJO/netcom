@@ -657,7 +657,9 @@
             <field name="view_mode">tree,form</field>
             <field name="domain">[('general_budget_id.department_id.manager_id.user_id','=',uid)]</field>
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
-        </record>
+   	</record>
+   	
+   	
     
     <record id="store_req_action_form" model="ir.actions.act_window.view">
          <field eval="2" name="sequence"/>
@@ -676,7 +678,53 @@
 	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root" groups="netcom.group_budget_report"/>
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view"/> 
-
+	
+	<menuitem id="sale.menu_sale_report"
+            name="Reporting"
+            parent="sale.sale_menu_root"
+            sequence="5"
+            groups="sales_team.group_sale_manager,netcom.group_module_report"/>
+	
+	<!-- 
+	<menuitem name="Modules Reports" id="netcom_module_report" parent="hr.menu_hr_root" groups="netcom.group_module_report"/>
+	
+	<menuitem name="CRM" id="netcom_crm_module_report" parent="netcom_module_report"/>
+   	<menuitem name="Pipeline" id="netcom_crm_pipeline_module_report" parent="netcom_crm_module_report"
+              action="crm.crm_opportunity_report_action"/>
+    <menuitem name="Activities" id="netcom_crm_activities_module_report" parent="netcom_crm_module_report"
+              action="crm.crm_activity_report_action"/>
+    
+    <menuitem name="SALES" id="netcom_sales_module_report" parent="netcom_module_report"/>
+    <menuitem name="Sales" id="netcom_sales_report_module" parent="netcom_sales_module_report"
+              action="sale.action_order_report_all"/>
+    
+    <menuitem name="PURCHASES" id="netcom_purchases_module_report" parent="netcom_module_report"/>
+    <menuitem name="Reporting" id="netcom_purchases_report_module" parent="netcom_purchases_module_report"
+              action="purchase.action_purchase_order_report_all"/>
+    
+    <menuitem name="SUBSCRIPTION" id="netcom_sales_subscription_module_report" parent="netcom_module_report"/>
+    <menuitem name="Reporting" id="netcom_sales_subscription_report_module" parent="netcom_sales_subscription_module_report"
+              action="sale_subscription.action_subscription_report_all"/>
+              
+    <menuitem name="MANUFACTURING" id="netcom_manufacturing_module_report" parent="netcom_module_report"/>
+    <menuitem name="Manufacturing Order" id="netcom_sales_subscription_report_module" parent="netcom_manufacturing_module_report"
+              action="mrp.mrp_production_report"/>
+    
+    <menuitem name="RECRUITMENT" id="netcom_recruitment_module_report" parent="netcom_module_report"/>
+    <menuitem name="Reports" id="netcom_recruitment_report_module" parent="netcom_recruitment_module_report"
+              action="hr_recruitment.hr_applicant_action_analysis"/>
+              
+    <menuitem name="LEAVES" id="netcom_leaves_module_report" parent="netcom_module_report"/>
+    <menuitem name="Reports" id="netcom_recruitment_report_module" parent="netcom_leaves_module_report"
+              action="hr_holidays.action_hr_available_holidays_report"/>
+              
+   	<menuitem name="EXPENSES" id="netcom_expenses_module_report" parent="netcom_module_report"/>
+   	<menuitem name="Expenses Analysis" id="netcom_expenses_analysis_module_report" parent="netcom_expenses_module_report"
+              action="hr_expense.hr_expense_actions_all"/>
+    <menuitem name="Expenses Reports Analysis" id="netcom_expenses_report_module" parent="netcom_expenses_module_report"
+              action="hr_expense.action_hr_expense_sheet_all_all"/>
+	 -->
+	
     <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>
               
