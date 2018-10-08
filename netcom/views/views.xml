@@ -33,6 +33,10 @@
     		<field name="nrc"/>
     		<field name="mrc"/>
 		</field>
+		<field name="tag_ids" position="after">
+			<field name="risk_adjusted_nrc"/>
+    		<field name="risk_adjusted_mrc"/>
+		</field>
 	    </field>
 	</record>
 	
