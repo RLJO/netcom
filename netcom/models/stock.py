@@ -951,7 +951,7 @@ class SaleOrder(models.Model):
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange')
-    account_executive_id = fields.Many2one(string='Account Executive', comodel_name='res.users', related='user_id')
+    account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     
 class SaleOrderLine(models.Model):
