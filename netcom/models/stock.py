@@ -533,6 +533,12 @@ class PurchaseOrder(models.Model):
             line.write({'need_override': False})
             line.write({'override_budget': False})
         return new_po
+
+class NetcomPurchaseRequisitionLine(models.Model):
+    _name = "purchase.requisition.line"
+    _inherit = ['purchase.requisition.line']
+    
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', required=True)
         
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"

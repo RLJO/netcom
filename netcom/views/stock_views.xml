@@ -618,8 +618,8 @@
                                 <field name="date_order" attrs="{'invisible': [('state', 'in', ['sale', 'done', 'cancel'])]}"/>
                                 <field name="fiscal_position_id" options="{'no_create': True}"/>
                                 <field name="invoice_status" states="sale,done" invisible="1"/>
-                                <field name="account_executive_id"/>
-                                <field name="account_manager_id"/>
+                                <field name="account_executive_id" groups="base.group_system"/>
+                                <field name="account_manager_id" groups="base.group_system"/>
                             </group>
                             <group string="Reporting" name="technical" groups="base.group_no_one">
                                 <field groups="base.group_no_one" name="origin"/>
