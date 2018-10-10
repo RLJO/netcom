@@ -533,6 +533,12 @@ class PurchaseOrder(models.Model):
             line.write({'need_override': False})
             line.write({'override_budget': False})
         return new_po
+
+class NetcomPurchaseRequisitionLine(models.Model):
+    _name = "purchase.requisition.line"
+    _inherit = ['purchase.requisition.line']
+    
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', required=True)
         
 class PurchaseOrderLine(models.Model):
     _name = "purchase.order.line"
@@ -951,6 +957,8 @@ class SaleOrder(models.Model):
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange')
+    account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
+    account_manager_id = fields.Char(string='Account Manager')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
