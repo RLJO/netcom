@@ -83,14 +83,14 @@ class Lead(models.Model):
     risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', group_operator="avg", track_visibility='onchange', store=True)
       
     @api.one
-    @api.depends('nrc','mrc')    
+    @api.depends('nrc')    
     def _compute_risk_adjusted_nrc(self):
-        self.risk_adjusted_nrc = self.probability / 100 * self.nrc
+        self.risk_adjusted_nrc = self.stage_id.probability / 100 * self.nrc
         
     @api.one
-    @api.depends('nrc','mrc')    
+    @api.depends('mrc')    
     def _compute_risk_adjusted_mrc(self):
-        self.risk_adjusted_mrc = self.probability / 100 * self.mrc
+        self.risk_adjusted_mrc = self.stage_id.probability / 100 * self.mrc
     
     @api.one
     @api.depends('nrc','mrc')    
