@@ -174,6 +174,7 @@ class SaleSubscription(models.Model):
             'fiscal_position_id': fpos_id,
             'payment_term_id': self.partner_id.property_payment_term_id.id,
             'company_id': company.id,
+            'name':self.reference_des,
             'comment': _('''This invoice covers the following period: %s - %s \n%s''') % (format_date(self.env, next_date), format_date(self.env, end_date),company.invoice_comment),
         }
     
