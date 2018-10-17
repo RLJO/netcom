@@ -19,6 +19,8 @@ from odoo.tools import float_compare, float_round
 #from datetime import datetime
 
 import logging
+import csv
+import base64
 
 _logger = logging.getLogger(__name__)
 
@@ -83,14 +85,14 @@ class Lead(models.Model):
     risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', group_operator="avg", track_visibility='onchange', store=True)
       
     @api.one
-    @api.depends('nrc','mrc')    
+    @api.depends('nrc', 'stage_id')    
     def _compute_risk_adjusted_nrc(self):
-        self.risk_adjusted_nrc = self.probability / 100 * self.nrc
+        self.risk_adjusted_nrc = self.stage_id.probability / 100 * self.nrc
         
     @api.one
-    @api.depends('nrc','mrc')    
+    @api.depends('mrc','stage_id')    
     def _compute_risk_adjusted_mrc(self):
-        self.risk_adjusted_mrc = self.probability / 100 * self.mrc
+        self.risk_adjusted_mrc = self.stage_id.probability / 100 * self.mrc
     
     @api.one
     @api.depends('nrc','mrc')    
@@ -667,6 +669,65 @@ class Employee(models.Model):
     serpac = fields.Char(string='SERPAC REnewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
+    @api.multi
+    def activate_user(self, action):
+        self.ensure_one()
+        if not self.user_id:
+            raise Warning('Add Related User!')
+        file_name = str(self.id)+'.csv'
+        with open(file_name, 'w') as csvfile:
+            fieldnames = ['Name', 'Surname','Odoo User ID','Email','Password',
+            'Telephone No','Department','Job Position','Manager','Action']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            try:
+                name = self.name and self.name.split(' ')
+                first_name = name[0]
+                last_name = name[1]
+            except:
+                first_name = self.name
+                last_name = False
+            
+            csv_details = {
+                'Name':first_name or '', 
+                'Surname':last_name or '',
+                'Odoo User ID':self.user_id.login or '',
+                'Email':self.work_email or '',
+                'Password':self.user_id.password or '',
+                'Telephone No':self.work_phone or self.mobile_phone or '',
+                'Department':self.department_id.name or '',
+                'Job Position':self.job_id.name or '',
+                'Manager':self.parent_id.name or '',
+                'Action':action
+            }
+            writer.writerow(csv_details)
+        file = open(file_name,'r')
+        datas = file.read()
+        att = self.env['ir.attachment'].create({
+            'name': file_name,
+            'datas_fname':file_name,
+            'datas':base64.b64encode(datas.encode("utf-8")),
+            'res_model': 'hr.employee',
+            'res_id': self.id
+        })
+        partner_ids = [4142]
+        body = datas
+        subject = 'Activate User' if action=='activate' else 'Deactivate User'
+        mail_details = {
+            'subject': subject,
+            'body': body,
+            'partner_ids': partner_ids,
+            'attachment_ids':[att.id],
+            'res_id':self.id,
+            'model':'hr.employee',
+            'record_name':self.name
+        }
+
+        mail = self.env['mail.thread']
+        mail.message_post(message_type="email", subtype="mt_comment", **mail_details)    
+        return True
+
+
     @api.multi
     def send_birthday_mail(self):
         test = False
