@@ -666,7 +666,7 @@ class Employee(models.Model):
     expiry_date = fields.Date(string='Passport Expiry Date', index=True)
     renewal_date = fields.Date(string='Visa Renewal Date', index=True)
     probation_period = fields.Integer(string='Probation Period',  index=True)
-    serpac = fields.Date(string='SERPAC Renewal Date')
+    serpac = fields.Char(string='SERPAC Renewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
     @api.multi
