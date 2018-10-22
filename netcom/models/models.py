@@ -81,8 +81,8 @@ class Lead(models.Model):
     name = fields.Char('Services', required=True, index=True)
     acc_executive = fields.Many2one('res.users', string='Account Executive', index=True, track_visibility='onchange')
     
-    risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', group_operator="avg", track_visibility='onchange', store=True)
-    risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', group_operator="avg", track_visibility='onchange', store=True)
+    risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', track_visibility='onchange', store=True)
+    risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', track_visibility='onchange', store=True)
       
     @api.one
     @api.depends('nrc', 'stage_id')    
@@ -666,7 +666,7 @@ class Employee(models.Model):
     expiry_date = fields.Date(string='Passport Expiry Date', index=True)
     renewal_date = fields.Date(string='Visa Renewal Date', index=True)
     probation_period = fields.Integer(string='Probation Period',  index=True)
-    serpac = fields.Char(string='SERPAC REnewal Date')
+    serpac = fields.Char(string='SERPAC Renewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
     @api.multi

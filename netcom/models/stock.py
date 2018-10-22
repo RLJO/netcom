@@ -1127,3 +1127,19 @@ class BudgetDept(models.Model):
     department_id = fields.Many2one(
         comodel_name="hr.department",
         string='Department')
+    
+class SaleSubscription(models.Model):
+    _inherit = "sale.subscription"
+
+    @api.multi
+    def _prepare_invoice_line(self, line, fiscal_position):
+        res = super(SaleSubscription, self)._prepare_invoice_line(line, fiscal_position)
+        default_analytic_account = self.env['account.analytic.default'].account_get(line.product_id.id, self.partner_id.id, self.user_id.id, fields.Date.today())
+        if default_analytic_account:
+            res.update({'account_analytic_id': default_analytic_account.analytic_id.id})
+        return res
+    
+  
+    
+    
+    
