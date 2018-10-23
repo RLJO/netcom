@@ -475,7 +475,7 @@ class PurchaseOrder(models.Model):
                     (line.account_id.id,line.account_analytic_id.id, line.order_id.date_order))
             result = self.env.cr.fetchone()
             if result:
-                result = self.env['crossovered.budget.lines'].browse(result[0]) 
+                result = self.env['crossovered.budget.lines'].browse(result[0])  
                 if line.price_total > result.allowed_amount and line.override_budget == False:
                     override = True
                     line.write({'need_override': True})
