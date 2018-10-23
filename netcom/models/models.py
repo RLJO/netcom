@@ -42,7 +42,7 @@ class ResCompanyBank(models.Model):
 
     naira_account = fields.Char(string='Naira Account')
     usd_account = fields.Char(string='USD Account')
-    company_id = fields.Many2one(comodel_name='res.company', string='Company', ondelete='cascade')
+    company_id = fields.Many2one(comodel_name='res.company', string='Company', ondelete='cascade') 
 
 
 class Partner(models.Model):
