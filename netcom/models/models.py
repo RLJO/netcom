@@ -666,7 +666,7 @@ class Employee(models.Model):
     expiry_date = fields.Date(string='Passport Expiry Date', index=True)
     renewal_date = fields.Date(string='Visa Renewal Date', index=True)
     probation_period = fields.Integer(string='Probation Period',  index=True)
-    serpac = fields.Char(string='SERPAC Renewal Date')
+    serpac = fields.Date(string='SERPAC Renewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
     @api.multi
@@ -756,6 +756,82 @@ class Employee(models.Model):
                             if mail:
                                 mail.send()
                             return True
+        return
+    
+    @api.multi
+    def send_serpac_renewal_mail(self):
+        employees = self.env['hr.employee'].search([])
+        
+        current_dates = False
+        
+        for self in employees:
+            if self.serpac:
+                
+                current_dates = datetime.datetime.strptime(self.serpac, "%Y-%m-%d")
+                current_datesz = current_dates - relativedelta(weeks=4)
+                
+                date_start_day = current_datesz.day
+                date_start_month = current_datesz.month
+                date_start_year = current_datesz.year
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                date_start_year_today = test_today.year
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        if date_start_year == date_start_year_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','SERPAC Renewal')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
+        return
+    
+    @api.multi
+    def send_birthday_reminder_mail(self):
+
+        employees = self.env['hr.employee'].search([])
+        
+        current_dates = False
+        
+        for self in employees:
+            if self.birthday:
+                
+                current_dates = datetime.datetime.strptime(self.birthday, "%Y-%m-%d")
+                current_datesz = current_dates - relativedelta(days=3)
+                print(current_datesz)
+                
+                date_start_day = current_datesz.day
+                date_start_month = current_datesz.month
+                date_start_year = current_datesz.year
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                date_start_year_today = test_today.year
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        if date_start_year == date_start_year_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder HR')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
         return
 '''
 class ProductProduct(models.Model):
@@ -1213,7 +1289,44 @@ class NetcomContract(models.Model):
                                 mail.send()
                             return True
         return
+    
+    @api.multi
+    def send_contract_renewal_mail(self):
 
+        employees = self.env['hr.contract'].search([])
+        
+        current_dates = False
+        
+        for self in employees:
+            if self.date_end:
+                
+                current_dates = datetime.datetime.strptime(self.date_end, "%Y-%m-%d")
+                current_datesz = current_dates - relativedelta(weeks=2)
+                
+                date_start_day = current_datesz.day
+                date_start_month = current_datesz.month
+                date_start_year = current_datesz.year
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                date_start_year_today = test_today.year
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        if date_start_year == date_start_year_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Contract Renewal')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
+        return
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
 #    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
