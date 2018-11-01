@@ -316,7 +316,38 @@ class Picking(models.Model):
         self.mapped('move_lines')._action_cancel()
         self.write({'state': 'draft'})
         return {}
-
+    
+    @api.model
+    def create(self, vals):
+        a = super(Picking, self).create(vals)
+        a.send_store_request_mail()
+        return a
+        return super(Picking, self).create(vals)
+    
+    @api.multi
+    def send_store_request_mail(self):
+        if self.state in ['draft','waiting','confirmed']:
+            group_id = self.env['ir.model.data'].xmlid_to_object('stock.group_stock_manager')
+            user_ids = []
+            partner_ids = []
+            for user in group_id.users:
+                user_ids.append(user.id)
+                partner_ids.append(user.partner_id.id)
+            self.message_subscribe_users(user_ids=user_ids)
+            subject = "A new store request {} has been made".format(self.name)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            return False
+        return True
+    
+    @api.multi
+    def send_store_request_done_mail(self):
+        if self.state in ['done']:
+            subject = "Store request {} has been approved and validated".format(self.name)
+            partner_ids = []
+            for partner in self.sheet_id.message_partner_ids:
+                partner_ids.append(partner.id)
+            self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+    
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
