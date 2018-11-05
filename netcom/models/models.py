@@ -823,15 +823,14 @@ class Employee(models.Model):
                 
                 if date_start_month == date_start_month_today:
                     if date_start_day == date_start_day_today:
-                        if date_start_year == date_start_year_today:
-                            config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder HR')], limit=1)
-                            mail_obj = self.env['mail.mail']
-                            if config:
-                                values = config.generate_email(self.id)
-                                mail = mail_obj.create(values)
-                                if mail:
-                                    mail.send()
-                                return True
+                        config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder HR')], limit=1)
+                        mail_obj = self.env['mail.mail']
+                        if config:
+                            values = config.generate_email(self.id)
+                            mail = mail_obj.create(values)
+                            if mail:
+                                mail.send()
+                            return True
         return
 '''
 class ProductProduct(models.Model):
@@ -1037,6 +1036,44 @@ class Holidays(models.Model):
                 if mail:
                     mail.send()
     
+    
+    @api.multi
+    def send_leave_notification_mail(self):
+
+        employees = self.env['hr.holidays'].search([])
+        
+        current_dates = False
+        
+        for self in employees:
+            if self.date_from:
+                
+                current_dates = datetime.datetime.strptime(self.date_from, "%Y-%m-%d")
+                current_datesz = current_dates - relativedelta(days=3)
+                
+                date_start_day = current_datesz.day
+                date_start_month = current_datesz.month
+                date_start_year = current_datesz.year
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                date_start_year_today = test_today.year
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        if date_start_year == date_start_year_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Leave Reminder')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
+        return
     
 class HolidaysType(models.Model):
     _name = "hr.holidays.status"
@@ -1319,6 +1356,44 @@ class NetcomContract(models.Model):
                     if date_start_day == date_start_day_today:
                         if date_start_year == date_start_year_today:
                             config = self.env['mail.template'].sudo().search([('name','=','Contract Renewal')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
+        return
+    
+    @api.multi
+    def send_employee_confirmation_mail(self):
+
+        employees = self.env['hr.contract'].search([])
+        
+        current_dates = False
+        
+        for self in employees:
+            if self.trial_date_end:
+                
+                current_dates = datetime.datetime.strptime(self.trial_date_end, "%Y-%m-%d")
+                current_datesz = current_dates - relativedelta(days=5)
+                
+                date_start_day = current_datesz.day
+                date_start_month = current_datesz.month
+                date_start_year = current_datesz.year
+                
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+                
+                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                date_start_day_today = test_today.day
+                date_start_month_today = test_today.month
+                date_start_year_today = test_today.year
+                
+                
+                if date_start_month == date_start_month_today:
+                    if date_start_day == date_start_day_today:
+                        if date_start_year == date_start_year_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Confirmation')], limit=1)
                             mail_obj = self.env['mail.mail']
                             if config:
                                 values = config.generate_email(self.id)
