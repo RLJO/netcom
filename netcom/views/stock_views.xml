@@ -1,5 +1,19 @@
 <odoo>
   <data>
+
+   <record id="netcom_product_product_update_cost_form_view" model="ir.ui.view">
+        <field name="name">netcom.product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="stock_account.view_template_property_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@string='Update Cost']">
+                    <button string="Update Cost" type="action"
+                            name="%(action_view_change_standard_price)d"
+                            class="oe_link oe_read_only" colspan="2"/>
+                </xpath>
+            </field>	
+        </field>
+   </record>
   
     <record id="netcom_company_bank_form_view" model="ir.ui.view">
         <field name="name">netcom.res.company.form</field>
