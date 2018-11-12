@@ -547,6 +547,16 @@ class PurchaseOrder(models.Model):
                 order.write({'state': 'to approve'})
         return True
     
+    #NOT TO BE USED YET AND DO NOT DELETE THIS 
+    """@api.multi
+    def button_approve(self):
+        super(PurchaseOrder, self).button_approve()
+        for order in self:
+            for order_line in order.order_line:
+                order_line.product_id.standard_price = order_line.price_unit
+    """
+
+    
     @api.multi
     def button_reset(self):
         self.mapped('order_line')
