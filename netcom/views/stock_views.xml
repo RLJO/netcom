@@ -1,9 +1,9 @@
 <odoo>
   <data>
 
-   <record id="netcom_product_product_update_cost_form_view" model="ir.ui.view">
-        <field name="name">netcom.product.product.form</field>
-        <field name="model">product.product</field>
+   <record id="netcom_product_template_form_view" model="ir.ui.view">
+        <field name="name">netcom.product.template.form</field>
+        <field name="model">product.template</field>
         <field name="inherit_id" ref="stock_account.view_template_property_form"/>
         <field name="arch" type="xml">
             <xpath expr="//button[@name='%(stock_account.action_view_change_standard_price)d']" position="replace">
