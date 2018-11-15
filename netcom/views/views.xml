@@ -261,7 +261,13 @@
 	        </xpath>
 		    <field name="bom_id" position="after">
 	    		<field name="ready_engineer_id"/>
-			</field>	
+			</field>
+			<!-- <xpath expr="//field[@name='location_src_id']" position="replace">
+	                <field name="location_src_id" domain="[('usage','=','internal')]" attrs="{'readonly': [('has_moves', '=', False)]}"/>
+	        </xpath>
+	        <xpath expr="//field[@name='location_dest_id']" position="replace">
+	                <field name="location_dest_id" domain="[('usage','=','internal')]" attrs="{'readonly': [('has_moves', '=', False)]}"/>
+	        </xpath> -->
         </field>
     </record>
 	
