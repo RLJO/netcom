@@ -747,6 +747,14 @@
               
    	<menuitem name="Internal Transfer" id="internal_transfer" parent="stock.menu_stock_root"
               action="internal_transfer_action_window"/>
-
+              
+    <menuitem
+            id="netcom_hr_employee_tag_menu"
+            name="Employees Tag"
+            action="hr.open_view_categ_form"
+            parent="hr.menu_open_view_employee_list_my"
+            sequence="4"
+            groups="hr.group_hr_manager"/> 
+	
   </data>
 </odoo>

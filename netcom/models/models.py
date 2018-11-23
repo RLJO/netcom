@@ -1090,6 +1090,24 @@ class stockmoveManorder(models.Model):
 class ManOrder(models.Model):
     _inherit = "mrp.production"
     
+    @api.model
+    def _get_default_location_src_id(self):
+        location = False
+        if self._context.get('default_picking_type_id'):
+            location = self.env['stock.picking.type'].browse(self.env.context['default_picking_type_id']).default_location_src_id
+        if not location:
+            location = self.env.ref('stock.stock_location_stock', raise_if_not_found=False)
+        return location and location.id or False
+
+    @api.model
+    def _get_default_location_dest_id(self):
+        location = False
+        if self._context.get('default_picking_type_id'):
+            location = self.env['stock.picking.type'].browse(self.env.context['default_picking_type_id']).default_location_dest_id
+        if not location:
+            location = self.env.ref('stock.stock_location_stock', raise_if_not_found=False)
+        return location and location.id or False
+    
     need_override = fields.Boolean ('Need Billing Override?', compute='_check_override')
     
     override_done = fields.Boolean ('Override Done?', track_visibility="onchange", store=True)
@@ -1108,6 +1126,19 @@ class ManOrder(models.Model):
         ('done', 'Done'),
         ('cancel', 'Cancelled')], string='State',
         copy=False, default='confirmed', track_visibility='onchange')
+    
+    location_src_id = fields.Many2one(
+        'stock.location', 'Raw Materials Location',
+        default=_get_default_location_src_id,
+        readonly=True,  required=True,
+        states={'confirmed': [('readonly', False)], 'progress': [('readonly', False)]},
+        help="Location where the system will look for components.")
+    location_dest_id = fields.Many2one(
+        'stock.location', 'Finished Products Location',
+        default=_get_default_location_dest_id,
+        readonly=True,  required=True,
+        states={'confirmed': [('readonly', False)], 'progress': [('readonly', False)]},
+        help="Location where the system will stock the finished products.")
     
     @api.multi
     def button_ready(self):
