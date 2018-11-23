@@ -747,6 +747,6 @@
               
    	<menuitem name="Internal Transfer" id="internal_transfer" parent="stock.menu_stock_root"
               action="internal_transfer_action_window"/>
-
+	
   </data>
 </odoo>
