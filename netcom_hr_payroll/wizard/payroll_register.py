@@ -188,7 +188,7 @@ class payroll_reg(models.TransientModel):
             pfa_list = []
             zip_pfa_list = []
             pfa_dict = {}
-            pfa_obj = self.env['pfa']
+            pfa_obj = self.env['pen.type']
             pfa_ids = pfa_obj.search([])
             pfas = pfa_ids
             pfa_list = ["Pension - " + pfa.name for pfa in pfas]            
