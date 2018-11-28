@@ -238,6 +238,7 @@ class payroll_reg(models.TransientModel):
                         # Search for the index of the column
                         ind = []
                         for i, ele in enumerate(comp_list):
+                            _logger.info('Pen comp: %s:%s'%(pen_comp,ele))
                             if "Pension - " + pen_comp == ele:
                                 ind.append(i)
                         try:
