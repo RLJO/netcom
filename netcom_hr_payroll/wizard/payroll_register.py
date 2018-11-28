@@ -221,7 +221,7 @@ class payroll_reg(models.TransientModel):
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id
+                    pen_comp = emp_ids[0].pf_id.name
                     _logger.info('Emp data %s: %s'%(emp_data[0], pen_comp))
                     thevalue = emp_data[inds[0]]
                     _logger.info('Value: %s'%thevalue)
