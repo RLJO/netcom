@@ -979,7 +979,6 @@ class SaleOrder(models.Model):
     
     @api.multi
     def copy_data(self, default=None):
-        self.bill_confirm = False
         if default is None:
             default = {}
         if 'order_line' not in default:
@@ -997,7 +996,7 @@ class SaleOrder(models.Model):
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
     amount_nrc = fields.Monetary(string='Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     amount_mrc = fields.Monetary(string='Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
-    bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange')
+    bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange', copy=False,)
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     
