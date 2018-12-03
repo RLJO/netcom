@@ -669,6 +669,26 @@ class Employee(models.Model):
     serpac = fields.Date(string='SERPAC Renewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
+    @api.model
+    def create(self, vals):
+        a = super(Employee, self).create(vals)
+        a.send_mail()
+        return a
+        return super(Employee, self).create(vals)
+    
+    @api.multi
+    def send_mail(self):
+        employees = self.env['hr.employee'].search([])
+        
+        for self in employees:
+            config = self.env['mail.template'].sudo().search([('name','=','Applicant: Welcome new employee')], limit=1)
+            mail_obj = self.env['mail.mail']
+            if config:
+                values = config.generate_email(self.id)
+                mail = mail_obj.create(values)
+                if mail:
+                    mail.send()
+    
     @api.multi
     def activate_user(self, action):
         self.ensure_one()
@@ -1026,6 +1046,7 @@ class Holidays(models.Model):
         result.send_mail()
         return result
     
+    @api.multi
     def send_mail(self):
         if self.state in ['confirm']:
             config = self.env['mail.template'].sudo().search([('name','=','Leave Approval Request Template')], limit=1)
