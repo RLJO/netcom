@@ -1091,10 +1091,23 @@ class Holidays(models.Model):
         return False
     
     @api.multi
+    def _check_security_action_validate(self):
+        #current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if not self.env.user.has_group('hr_holidays.group_hr_holidays_user'):
+            raise UserError(_('Only an HR Officer or Manager can approve leave requests.'))
+    
+    @api.multi
+    def _check_line_manager(self):
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if current_employee == self.employee_id:
+            raise UserError(_('Only your line manager can approve your leave request.'))
+    
+    @api.multi
     def action_approve(self):
         # if double_validation: this method is the first approval approval
         # if not double_validation: this method calls action_validate() below
         self._check_security_action_approve()
+        self._check_line_manager()
 
         current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
         for holiday in self:
