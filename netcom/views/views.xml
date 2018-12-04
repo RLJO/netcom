@@ -205,14 +205,31 @@
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
            <page name="personal_information" string="Private Information">
-           <group >
-                <field name="next_ofkin"/>
-           </group>
-            </page>
-        
+	           <group >
+	                <field name="next_ofkin"/>
+	           </group>
+           </page>
         </field>
     </record>    
 `	
+	<record id="netcom_edit_holiday_new" model="ir.ui.view">
+        <field name="name">netcom.Leave Request</field>
+        <field name="model">hr.holidays</field>
+        <field name="priority" eval="7" />
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_new"/>
+        <field name="arch" type="xml">
+        	<field name="can_reset" position="after">
+                <field name="double_validation" invisible="1"/>
+            </field>
+           <xpath expr="//button[@name='action_approve']" position="replace">
+					<button string="Approve" name="action_approve" type="object" groups="hr_holidays.group_hr_holidays_user" class="oe_highlight" attrs="{'invisible': ['|', ('double_validation', '=', False), ('state','!=','confirm')]}"/>
+		    </xpath>
+		    <xpath expr="//button[@name='action_approve']" position="after">
+					<button string="Approve" name="action_approve" type="object" groups="hr_holidays.group_hr_holidays_manager" class="oe_highlight" attrs="{'invisible': ['|', ('double_validation', '=', True), ('state','!=','confirm')]}"/>
+		    </xpath>
+        </field>
+    </record>
+
 	<record id="netcom_mrp_production_tree_view" model="ir.ui.view">
         <field name="name">netcom.mrp.production.tree</field>
         <field name="model">mrp.production</field>
