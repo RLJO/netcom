@@ -1077,6 +1077,18 @@ class Holidays(models.Model):
             if mail:
                 mail.send()
     
+    @api.multi
+    def send_hr_notification(self):
+        group_id = self.env['ir.model.data'].xmlid_to_object('hr_holidays.group_hr_holidays_manager')
+        user_ids = []
+        partner_ids = []
+        for user in group_id.users:
+            user_ids.append(user.id)
+            partner_ids.append(user.partner_id.id)
+        self.message_subscribe_users(user_ids=user_ids)
+        subject = "Leave Request for {} is Ready for Second Approval".format(self.display_name)
+        self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+        return False
     
     @api.multi
     def action_approve(self):
@@ -1091,6 +1103,7 @@ class Holidays(models.Model):
 
             if holiday.double_validation:
                 holiday.send_manager_approved_mail()
+                holiday.send_hr_notification()
                 return holiday.write({'state': 'validate1', 'first_approver_id': current_employee.id})
             else:
                 holiday.action_validate()
