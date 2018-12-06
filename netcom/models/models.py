@@ -1079,7 +1079,7 @@ class Holidays(models.Model):
     
     @api.multi
     def send_hr_notification(self):
-        group_id = self.env['ir.model.data'].xmlid_to_object('hr_holidays.group_hr_holidays_manager')
+        group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_hr_leave_manager')
         user_ids = []
         partner_ids = []
         for user in group_id.users:
