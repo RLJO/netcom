@@ -834,6 +834,7 @@ class AccountInvoiceLine(models.Model):
     
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=False, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    discount_amount = fields.Float(string="Discount Amount", compute="_compute_discount_amount", store=False)
     
     @api.one
     @api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
@@ -860,6 +861,11 @@ class AccountInvoiceLine(models.Model):
             self.nrc_mrc = "MRC"
         else:
             self.nrc_mrc = "NRC"
+    
+    @api.multi
+    def _compute_discount_amount(self):
+        for line in self:
+            line.discount_amount = line.price_unit * line.quantity - line.price_subtotal
     
 class StockMove(models.Model):
     _inherit = "stock.move"
@@ -1181,5 +1187,8 @@ class SaleSubscription(models.Model):
     
   
     
-    
-    
+class HrPayslipWorkedDays(models.Model):
+    _inherit = 'hr.payslip.worked_days'
+
+    name = fields.Char(string='Description', required=False)
+    code = fields.Char(required=False, help="The code that can be used in the salary rules")

@@ -64,6 +64,9 @@
 	            <field name="team_id" position="after">
 	                <field name="reference" readonly="1"/>
 	            </field>
+	            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='discount']" position="after">
+	            	<field name="discount_amount"/>
+	            </xpath>
             </field>
    	</record>
   
