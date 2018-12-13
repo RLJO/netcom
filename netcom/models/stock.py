@@ -631,7 +631,7 @@ class AccountInvoiceReport(models.Model):
         ],
         'account.invoice.line': [
             'account_id', 'invoice_id', 'price_subtotal', 'product_id',
-            'quantity', 'uom_id', 'account_analytic_id', 'nrc_mrc', 'sub_account_id','asset_category_id','discount_amount'
+            'quantity', 'uom_id', 'account_analytic_id', 'nrc_mrc', 'sub_account_id','asset_category_id',
         ],
         'product.product': ['product_tmpl_id'],
         'product.template': ['categ_id'],
@@ -645,7 +645,7 @@ class AccountInvoiceReport(models.Model):
     
     def _select(self):
         select_str = """
-            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.discount_amount,sub.sub_account_id, sub.activation_date, sub.asset_category_id, sub.perm_up_date, sub.term_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
+            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.activation_date, sub.asset_category_id, sub.perm_up_date, sub.term_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
                 sub.payment_term_id, sub.uom_name, sub.currency_id, sub.journal_id,
                 sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
                 sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
@@ -658,7 +658,7 @@ class AccountInvoiceReport(models.Model):
         select_str = """
                 SELECT ail.id AS id,
                     ai.date_invoice AS date,
-                    ail.product_id,ail.nrc_mrc,ail.discount_amount,ail.sub_account_id, ail.asset_category_id, sa.activation_date, sa.perm_up_date, sa.term_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
+                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, ail.asset_category_id, sa.activation_date, sa.perm_up_date, sa.term_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
                     u2.name AS uom_name,
                     ai.currency_id, ai.journal_id, ai.fiscal_position_id, ai.user_id, ai.company_id,
                     1 AS nbr,
