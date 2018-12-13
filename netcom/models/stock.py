@@ -620,6 +620,7 @@ class AccountInvoiceReport(models.Model):
     term_date = fields.Date(string='Termination Date', readonly=True)
     perm_up_date = fields.Date(string='Permanent Upgrade Date', readonly=True)
     asset_category_id = fields.Many2one('account.asset.category', string='Deferred Revenue Type', readonly=True)
+    discount_amount = fields.Float(string="Discount Amount", readonly=True)
     
     _depends = {
         'account.invoice': [
@@ -630,7 +631,7 @@ class AccountInvoiceReport(models.Model):
         ],
         'account.invoice.line': [
             'account_id', 'invoice_id', 'price_subtotal', 'product_id',
-            'quantity', 'uom_id', 'account_analytic_id', 'nrc_mrc', 'sub_account_id','asset_category_id'
+            'quantity', 'uom_id', 'account_analytic_id', 'nrc_mrc', 'sub_account_id','asset_category_id','discount_amount'
         ],
         'product.product': ['product_tmpl_id'],
         'product.template': ['categ_id'],
@@ -644,7 +645,7 @@ class AccountInvoiceReport(models.Model):
     
     def _select(self):
         select_str = """
-            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.sub_account_id, sub.activation_date, sub.asset_category_id, sub.perm_up_date, sub.term_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
+            SELECT sub.id, sub.date, sub.product_id,sub.nrc_mrc,sub.discount_amount,sub.sub_account_id, sub.activation_date, sub.asset_category_id, sub.perm_up_date, sub.term_date, sub.partner_id, sub.country_id, sub.account_analytic_id,
                 sub.payment_term_id, sub.uom_name, sub.currency_id, sub.journal_id,
                 sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
                 sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
@@ -657,7 +658,7 @@ class AccountInvoiceReport(models.Model):
         select_str = """
                 SELECT ail.id AS id,
                     ai.date_invoice AS date,
-                    ail.product_id,ail.nrc_mrc,ail.sub_account_id, ail.asset_category_id, sa.activation_date, sa.perm_up_date, sa.term_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
+                    ail.product_id,ail.nrc_mrc,ail.discount_amount,ail.sub_account_id, ail.asset_category_id, sa.activation_date, sa.perm_up_date, sa.term_date, ai.partner_id, ai.payment_term_id, ail.account_analytic_id,
                     u2.name AS uom_name,
                     ai.currency_id, ai.journal_id, ai.fiscal_position_id, ai.user_id, ai.company_id,
                     1 AS nbr,
@@ -796,7 +797,14 @@ class AccountInvoice(models.Model):
              " * The 'Open' status is used when user creates invoice, an invoice number is generated. It stays in the open status till the user pays the invoice.\n"
              " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
              " * The 'Cancelled' status is used when user cancel invoice.")
+    total_discount_amount = fields.Float(string="Total Discount Amount", compute="_total_discount_amount")
     
+    @api.depends('invoice_line_ids.discount_amount')
+    def _total_discount_amount(self):
+        total_discount_amount = 0.0
+        for line in self.invoice_line_ids:
+            self.total_discount_amount += line.discount_amount
+            
 class AccountInvoiceTax(models.Model):
     _name = "account.invoice.tax"
     _inherit = ['account.invoice.tax']
