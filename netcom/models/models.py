@@ -678,9 +678,8 @@ class Employee(models.Model):
     
     @api.multi
     def send_mail(self):
-        employees = self.env['hr.employee'].search([])
-        
-        for self in employees:
+        self.ensure_one()
+        if self.create_date == self.create_date:
             config = self.env['mail.template'].sudo().search([('name','=','Applicant: Welcome new employee')], limit=1)
             mail_obj = self.env['mail.mail']
             if config:
