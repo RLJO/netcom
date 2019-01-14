@@ -60,10 +60,19 @@
 	            	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
 	                <field name="amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
 	                <field name="reference_des" readonly="1"/>
+	                
 	            </field>
 	            <field name="team_id" position="after">
 	                <field name="reference" readonly="1"/>
 	            </field>
+	            <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='discount']" position="after">
+	            	<field name="discount_amount" groups="base.group_system"/>
+	            </xpath>
+	            <xpath expr="//page[@name='other_info']" position="inside">
+	            	<group>
+	            		<field name="total_discount_amount"/>
+	            	</group>
+	            </xpath>
             </field>
    	</record>
   

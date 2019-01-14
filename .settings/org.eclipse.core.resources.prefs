@@ -11,4 +11,5 @@ encoding//netcom_hr/__init__.py=utf-8
 encoding//netcom_hr/__manifest__.py=utf-8
 encoding//netcom_hr/models/__init__.py=utf-8
 encoding//netcom_hr_payroll/__manifest__.py=utf-8
+encoding//netcom_hr_payroll/models/hr_payslip.py=utf-8
 encoding//netcom_hr_payroll/report/report_payslip_details.py=utf-8

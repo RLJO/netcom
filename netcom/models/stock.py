@@ -796,7 +796,14 @@ class AccountInvoice(models.Model):
              " * The 'Open' status is used when user creates invoice, an invoice number is generated. It stays in the open status till the user pays the invoice.\n"
              " * The 'Paid' status is set automatically when the invoice is paid. Its related journal entries may or may not be reconciled.\n"
              " * The 'Cancelled' status is used when user cancel invoice.")
+    total_discount_amount = fields.Float(string="Total Discount Amount", compute="_total_discount_amount")
     
+    @api.depends('invoice_line_ids.discount_amount')
+    def _total_discount_amount(self):
+        total_discount_amount = 0.0
+        for line in self.invoice_line_ids:
+            self.total_discount_amount += line.discount_amount
+            
 class AccountInvoiceTax(models.Model):
     _name = "account.invoice.tax"
     _inherit = ['account.invoice.tax']
@@ -834,6 +841,7 @@ class AccountInvoiceLine(models.Model):
     
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=False, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    discount_amount = fields.Float(string="Discount Amount", compute="_compute_discount_amount", store=False)
     
     @api.one
     @api.depends('price_unit', 'discount', 'invoice_line_tax_ids', 'quantity',
@@ -860,6 +868,11 @@ class AccountInvoiceLine(models.Model):
             self.nrc_mrc = "MRC"
         else:
             self.nrc_mrc = "NRC"
+    
+    @api.multi
+    def _compute_discount_amount(self):
+        for line in self:
+            line.discount_amount = line.price_unit * line.quantity - line.price_subtotal
     
 class StockMove(models.Model):
     _inherit = "stock.move"
@@ -1181,5 +1194,8 @@ class SaleSubscription(models.Model):
     
   
     
-    
-    
+class HrPayslipWorkedDays(models.Model):
+    _inherit = 'hr.payslip.worked_days'
+
+    name = fields.Char(string='Description', required=False)
+    code = fields.Char(required=False, help="The code that can be used in the salary rules")

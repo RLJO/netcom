@@ -74,7 +74,7 @@
     </record>
     
     <record id="group_hr_leave_manager" model="res.groups">
-        <field name="name">Leave Manager</field>
+        <field name="name">HR Leave Manager</field>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
