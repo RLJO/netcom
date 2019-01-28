@@ -1547,6 +1547,17 @@ class NetcomContract(models.Model):
                                     mail.send()
                                 return True
         return
+    
+
+class HrPayslipRun(models.Model):
+    _inherit = 'hr.payslip.run'
+    
+    
+    @api.multi
+    def close_payslip_run(self):
+        for line in self.slip_ids:
+            line.write({'state': 'done'})
+        return self.write({'state': 'close'})
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
 #    other_attachments = fields.Binary(string="Other(s)", attachment=True, store=True, help="This field holds any other attachments the applicant may want to present")
