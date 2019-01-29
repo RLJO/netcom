@@ -1555,8 +1555,7 @@ class HrPayslipRun(models.Model):
     
     @api.multi
     def close_payslip_run(self):
-        for line in self.slip_ids:
-            line.action_payslip_done()
+        self.slip_ids.action_payslip_done()
         return self.write({'state': 'close'})
 #    cover_letter = fields.Binary(string="Cover Letter", attachment=True, store=True, help="This field holds the applicant's cover letter")
 #    certificates = fields.Binary(string="Certificate(s)", attachment=True, store=True, help="This field holds the applicant's certificates")
