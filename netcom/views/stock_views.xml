@@ -464,7 +464,7 @@
                         <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}" options='{"always_reload": True}'/>
                         <field name="bill_confirm" readonly="1"/>
                         <field name="upsell_sub" readonly="1"/>
-                        <field name="sub_account_id" domain="[('parent_id','=',parent.partner_id), ('state','in',('approve','activate'))]"/>
+                        <field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
                         <field name="report_date" readonly="1"/>
                     </group>
                     <group>
