@@ -70,6 +70,12 @@ class Partner(models.Model):
             res.append((partner.id, result))
         return res
 
+class Users(models.Model):
+    _name = "res.users"
+    _inherit = "res.users"
+    
+    sales_target = fields.Float(string='Sales Target', track_visibility='onchange')
+
 class Lead(models.Model):
     _name = "crm.lead"
     _inherit = 'crm.lead'

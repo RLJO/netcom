@@ -16,6 +16,17 @@
 	    </field>
 	</record>
 	
+	<record id="user_netcom" model="ir.ui.view">
+	    <field name="name">user.netcom</field>
+	    <field name="model">res.users</field>
+	    <field name="inherit_id" ref="base.view_users_simple_form"/>
+	    <field name="arch" type="xml">
+	    <field name="mobile" position="after">
+    		<field name="sales_target"/>
+		</field>
+	    </field>
+	</record>
+	
 	<record id="pipeline_netcom_form" model="ir.ui.view">
 	    <field name="name">pipeline.netcom.form</field>
 	    <field name="model">crm.lead</field>
