@@ -1006,14 +1006,6 @@ class SaleOrder(models.Model):
             order.write({'bill_confirm': True})
         return True
     
-    @api.multi
-    def _compute_report_date(self):
-        for line in self:
-            if line.upsell_sub == True:
-                line.report_date = line.sub_account_id.activation_date
-            else:
-                line.report_date = line.sub_account_id.perm_up_date
-    
     remarks = fields.Char('Remarks', track_visibility='onchange')
     date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
@@ -1024,7 +1016,6 @@ class SaleOrder(models.Model):
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False,)
     report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
-    sub_account_id = fields.Many2one('sub.account', string='Primary Child Account', index=True, ondelete='cascade')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1037,6 +1028,7 @@ class SaleOrderLine(models.Model):
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     
     reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date')
     
     @api.one
     @api.depends('report_nrc_mrc')
@@ -1048,6 +1040,14 @@ class SaleOrderLine(models.Model):
                 line.reports_price_subtotal = report_price_subtotal
             else:
                 line.reports_price_subtotal = line.price_subtotal
+    
+    @api.multi
+    def _compute_report_date(self):
+        for line in self:
+            if line.order_id.upsell_sub == True:
+                line.report_date = line.sub_account_id.perm_up_date
+            else:
+                line.report_date = line.sub_account_id.activation_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
@@ -1268,8 +1268,7 @@ class SaleSubscriptionWizard(models.TransientModel):
         }
     
     
-    
-'''    
+'''  
 class SaleReport(models.Model):
     _name = "sale.report"
     _inherit = "sale.report"
@@ -1282,9 +1281,9 @@ class SaleReport(models.Model):
     def _compute_report_date(self):
         for line in self:
             if line.order_id.upsell_sub == True:
-                line.report_date = line.sub_account_id.activation_date
-            else:
                 line.report_date = line.sub_account_id.perm_up_date
+            else:
+                line.report_date = line.sub_account_id.activation_date
     
     name = fields.Char('Order Reference', readonly=True)
     date = fields.Datetime('Date Order', readonly=True)
@@ -1341,7 +1340,7 @@ class SaleReport(models.Model):
                     s.name as name,
                     s.date_order as date,
                     s.confirmation_date as confirmation_date,
-                    s.report_date as report_date,
+                    l.report_date as report_date,
                     s.state as state,
                     s.partner_id as partner_id,
                     s.user_id as user_id,
@@ -1385,7 +1384,7 @@ class SaleReport(models.Model):
                     s.name,
                     s.date_order,
                     s.confirmation_date,
-                    s.report_date,
+                    l.report_date,
                     s.partner_id,
                     s.user_id,
                     s.state,
@@ -1409,5 +1408,4 @@ class SaleReport(models.Model):
             %s
             )""" % (self._table, self._select(), self._from(), self._group_by()))
 
-
-'''    
+'''
