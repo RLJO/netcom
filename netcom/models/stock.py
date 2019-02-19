@@ -1271,7 +1271,7 @@ class SaleSubscriptionWizard(models.TransientModel):
     
     
     
-    
+'''    
 class SaleReport(models.Model):
     _name = "sale.report"
     _inherit = "sale.report"
@@ -1279,10 +1279,6 @@ class SaleReport(models.Model):
     _auto = False
     _rec_name = 'date'
     _order = 'date desc'
-    
-    order_id = fields.Many2one('sale.order', 'Product', readonly=True)
-    sub_account_id = fields.Many2one(comodel_name='sub.account', string='Sub Account', readonly=True)
-    report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
     
     @api.multi
     def _compute_report_date(self):
@@ -1325,7 +1321,10 @@ class SaleReport(models.Model):
         ], string='Status', readonly=True)
     weight = fields.Float('Gross Weight', readonly=True)
     volume = fields.Float('Volume', readonly=True)
-
+    order_id = fields.Many2one('sale.order', 'Product', readonly=True)
+    sub_account_id = fields.Many2one(comodel_name='sub.account', string='Sub Account', readonly=True)
+    report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
+    
     def _select(self):
         select_str = """
             WITH currency_rate as (%s)
@@ -1413,4 +1412,4 @@ class SaleReport(models.Model):
             )""" % (self._table, self._select(), self._from(), self._group_by()))
 
 
-    
+'''    
