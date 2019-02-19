@@ -1010,9 +1010,9 @@ class SaleOrder(models.Model):
     def _compute_report_date(self):
         for line in self:
             if line.upsell_sub == True:
-                line.report_date = line.order_line.sub_account_id.activation_date
+                line.report_date = line.sub_account_id.activation_date
             else:
-                line.report_date = line.order_line.sub_account_id.perm_up_date
+                line.report_date = line.sub_account_id.perm_up_date
     
     remarks = fields.Char('Remarks', track_visibility='onchange')
     date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
@@ -1024,6 +1024,7 @@ class SaleOrder(models.Model):
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False,)
     report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
+    sub_account_id = fields.Many2one('sub.account', string='Primary Child Account', index=True, ondelete='cascade')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
