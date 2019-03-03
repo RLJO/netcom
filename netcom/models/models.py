@@ -74,7 +74,7 @@ class Users(models.Model):
     _name = "res.users"
     _inherit = "res.users"
     
-    sales_target = fields.Float(string='Sales Target', track_visibility='onchange')
+    sales_target = fields.Float(string='Sales Target', track_visibility='onchange', store=True)
 
 class Lead(models.Model):
     _name = "crm.lead"

@@ -312,6 +312,7 @@ class Picking(models.Model):
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
+    client_id = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade')
     
     @api.multi
     def button_reset(self):
@@ -1014,8 +1015,7 @@ class SaleOrder(models.Model):
     bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange', copy=False,)
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
-    upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False,)
-    report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
+    upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1025,10 +1025,10 @@ class SaleOrderLine(models.Model):
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
-    report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     
+    report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
-    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date')
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     
     @api.one
     @api.depends('report_nrc_mrc')
@@ -1268,23 +1268,14 @@ class SaleSubscriptionWizard(models.TransientModel):
         }
     
     
-'''  
 class SaleReport(models.Model):
-    _name = "sale.report"
+    _name = "netcom.sale.report"
     _inherit = "sale.report"
-    _description = "Sales Orders Statistics"
+    _description = "Netcom BDD Sales Orders Report"
     _auto = False
     _rec_name = 'date'
     _order = 'date desc'
-    
-    @api.multi
-    def _compute_report_date(self):
-        for line in self:
-            if line.order_id.upsell_sub == True:
-                line.report_date = line.sub_account_id.perm_up_date
-            else:
-                line.report_date = line.sub_account_id.activation_date
-    
+
     name = fields.Char('Order Reference', readonly=True)
     date = fields.Datetime('Date Order', readonly=True)
     confirmation_date = fields.Datetime('Confirmation Date', readonly=True)
@@ -1318,15 +1309,20 @@ class SaleReport(models.Model):
         ], string='Status', readonly=True)
     weight = fields.Float('Gross Weight', readonly=True)
     volume = fields.Float('Volume', readonly=True)
-    order_id = fields.Many2one('sale.order', 'Product', readonly=True)
-    sub_account_id = fields.Many2one(comodel_name='sub.account', string='Sub Account', readonly=True)
-    report_date = fields.Date('Report Date Order', readonly=True, compute='_compute_report_date')
+    
+    report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
+    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    report_date = fields.Date('Report Date', readonly=True)
+    sales_target = fields.Float(string='Salesperson Target', readonly=True)
+    upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
     def _select(self):
         select_str = """
             WITH currency_rate as (%s)
              SELECT min(l.id) as id,
                     l.product_id as product_id,
+                    l.report_nrc_mrc as report_nrc_mrc,
+                    l.report_date as report_date,
                     t.uom_id as product_uom,
                     sum(l.product_uom_qty / u.factor * u2.factor) as product_uom_qty,
                     sum(l.qty_delivered / u.factor * u2.factor) as qty_delivered,
@@ -1336,11 +1332,12 @@ class SaleReport(models.Model):
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
+                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     count(*) as nbr,
                     s.name as name,
+                    s.upsell_sub as upsell_sub,
                     s.date_order as date,
                     s.confirmation_date as confirmation_date,
-                    l.report_date as report_date,
                     s.state as state,
                     s.partner_id as partner_id,
                     s.user_id as user_id,
@@ -1351,6 +1348,7 @@ class SaleReport(models.Model):
                     s.analytic_account_id as analytic_account_id,
                     s.team_id as team_id,
                     p.product_tmpl_id,
+                    users.sales_target as sales_target,
                     partner.country_id as country_id,
                     partner.commercial_partner_id as commercial_partner_id,
                     sum(p.weight * l.product_uom_qty / u.factor * u2.factor) as weight,
@@ -1362,6 +1360,7 @@ class SaleReport(models.Model):
         from_str = """
                 sale_order_line l
                       join sale_order s on (l.order_id=s.id)
+                      join res_users users on s.user_id = users.id
                       join res_partner partner on s.partner_id = partner.id
                         left join product_product p on (l.product_id=p.id)
                             left join product_template t on (p.product_tmpl_id=t.id)
@@ -1384,15 +1383,18 @@ class SaleReport(models.Model):
                     s.name,
                     s.date_order,
                     s.confirmation_date,
-                    l.report_date,
                     s.partner_id,
                     s.user_id,
                     s.state,
+                    s.upsell_sub,
+                    l.report_nrc_mrc,
+                    l.report_date,
                     s.company_id,
                     s.pricelist_id,
                     s.analytic_account_id,
                     s.team_id,
                     p.product_tmpl_id,
+                    users.sales_target,
                     partner.country_id,
                     partner.commercial_partner_id
         """
@@ -1407,5 +1409,3 @@ class SaleReport(models.Model):
             FROM ( %s )
             %s
             )""" % (self._table, self._select(), self._from(), self._group_by()))
-
-'''
