@@ -1117,7 +1117,9 @@ class SaleOrderLine(models.Model):
                 self.report_nrc_mrc = "NRC"
             else:
                 self.report_nrc_mrc = "MRC"
-             
+        else:
+            self.report_nrc_mrc = "NRC"
+        
     @api.multi
     @api.onchange('type')
     def type_change(self):
