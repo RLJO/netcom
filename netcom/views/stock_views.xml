@@ -18,7 +18,7 @@
          <field name="name">netcom.sale.report.pivot</field>
          <field name="model">netcom.sale.report</field>
          <field name="arch" type="xml">
-             <pivot string="Sales Analysis" disable_linking="True">
+             <pivot string="BDD Sales Analysis" disable_linking="True">
                  <field name="team_id" type="col"/>
                  <field name="confirmation_date" interval="month" type="row"/>
                  <field name="reports_price_subtotal" type="measure"/>
@@ -30,7 +30,7 @@
          <field name="name">netcom.sale.report.graph</field>
          <field name="model">netcom.sale.report</field>
          <field name="arch" type="xml">
-             <graph string="Sales Analysis">
+             <graph string="BDD Sales Analysis">
                  <field name="date" type="row"/>
                  <field name="reports_price_subtotal" type="measure"/>
              </graph>
@@ -43,7 +43,7 @@
         <field name="model_id">netcom.sale.report</field>
         <field name="domain">['&amp;', ('date','&lt;=', time.strftime('%%Y-12-31')), '&amp;', ('date','&gt;=',time.strftime('%%Y-01-01')), ('state','not in',('cancel',))]</field>
         <field name="user_id" eval="False"/>
-        <field name="context">{'group_by': ['state'], 'measures': ['price_subtotal']}</field>
+        <field name="context">{'group_by': ['state'], 'measures': ['reports_price_subtotal']}</field>
     </record>
     <record id="netcom_filter_sale_report_salespersons" model="ir.filters">
         <field name="name">By Salespersons</field>
