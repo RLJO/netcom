@@ -1028,7 +1028,7 @@ class SaleOrderLine(models.Model):
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
-    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date')
     
     @api.one
     @api.depends('report_nrc_mrc')
@@ -1036,7 +1036,7 @@ class SaleOrderLine(models.Model):
         report_price_subtotal = 0.0
         for line in self:
             if line.report_nrc_mrc == "NRC":
-                report_price_subtotal = line.price_subtotal - (line.price_subtotal/100 * 20)
+                report_price_subtotal = line.price_subtotal/100 * 20
                 line.reports_price_subtotal = report_price_subtotal
             else:
                 line.reports_price_subtotal = line.price_subtotal
