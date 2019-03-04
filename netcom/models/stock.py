@@ -1112,10 +1112,11 @@ class SaleOrderLine(models.Model):
     @api.one
     @api.depends('order_id.period')
     def _compute_report_mrc_nrc(self):
-        if self.order_id.period < 12:
-            self.report_nrc_mrc = "NRC"
-        else:
-            self.report_nrc_mrc = "MRC"
+        if self.nrc_mrc == "MRC":
+            if self.order_id.period < 12:
+                self.report_nrc_mrc = "NRC"
+            else:
+                self.report_nrc_mrc = "MRC"
              
     @api.multi
     @api.onchange('type')
