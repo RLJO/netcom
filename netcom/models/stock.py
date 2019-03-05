@@ -1028,26 +1028,40 @@ class SaleOrderLine(models.Model):
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
-    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=False)
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
+    
+    subscription_line_id = fields.Many2one('sale.subscription.line', string='Sale Subscription Line', index=True, ondelete='cascade')
+    subscription_id = fields.Many2one('sale.subscription', string='Sale Subscription Line', index=True, ondelete='cascade')
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('order_id.upsell_sub','report_nrc_mrc', 'reports_price_subtotal')
     def _compute_report_subtotal(self):
+        self.ensure_one()
         report_price_subtotal = 0.0
         for line in self:
-            if line.report_nrc_mrc == "NRC":
-                report_price_subtotal = line.price_subtotal/100 * 20
-                line.reports_price_subtotal = report_price_subtotal
+            if line.order_id.upsell_sub == True:
+                if line.order_id.partner_id == line.subscription_id.partner_id:
+                    if line.sub_account_id == line.subscription_id.recurring_invoice_line_ids.sub_account_id and line.product_id == line.subscription_id.recurring_invoice_line_ids.product_id:
+                        report_price_subtotal = line.price_subtotal - line.subscription_id.recurring_invoice_line_ids.price_subtotal
+                        line.reports_price_subtotal = report_price_subtotal
             else:
-                line.reports_price_subtotal = line.price_subtotal
+                if line.report_nrc_mrc == "NRC":
+                    report_price_subtotal = line.price_subtotal/100 * 20
+                    line.reports_price_subtotal = report_price_subtotal
+                else:
+                    line.reports_price_subtotal = line.price_subtotal
     
-    @api.multi
+    @api.one
+    @api.depends('report_date', 'order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
     def _compute_report_date(self):
         for line in self:
-            if line.order_id.upsell_sub == True:
-                line.report_date = line.sub_account_id.perm_up_date
+            if line.report_nrc_mrc == "NRC":
+                line.report_date = line.order_id.confirmation_date
             else:
-                line.report_date = line.sub_account_id.activation_date
+                if line.order_id.upsell_sub == True:
+                    line.report_date = line.sub_account_id.perm_up_date
+                else:
+                    line.report_date = line.sub_account_id.activation_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
