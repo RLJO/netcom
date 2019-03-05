@@ -1034,7 +1034,7 @@ class SaleOrderLine(models.Model):
     subscription_id = fields.Many2one('sale.subscription', string='Sale Subscription Line', index=True, ondelete='cascade')
     
     @api.one
-    @api.depends('order_id.upsell_sub','report_nrc_mrc', 'reports_price_subtotal')
+    @api.depends('order_id.upsell_sub','report_nrc_mrc')
     def _compute_report_subtotal(self):
         self.ensure_one()
         report_price_subtotal = 0.0
@@ -1052,7 +1052,7 @@ class SaleOrderLine(models.Model):
                     line.reports_price_subtotal = line.price_subtotal
     
     @api.one
-    @api.depends('report_date', 'order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
+    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
     def _compute_report_date(self):
         for line in self:
             if line.report_nrc_mrc == "NRC":
