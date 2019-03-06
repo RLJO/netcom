@@ -1038,12 +1038,15 @@ class SaleOrderLine(models.Model):
     def _compute_report_subtotal(self):
         self.ensure_one()
         report_price_subtotal = 0.0
+        upsell_report_price_subtotal = 0.0
         for line in self:
             if line.order_id.upsell_sub == True:
                 if line.order_id.partner_id == line.subscription_id.partner_id:
                     if line.sub_account_id == line.subscription_id.recurring_invoice_line_ids.sub_account_id and line.product_id == line.subscription_id.recurring_invoice_line_ids.product_id:
-                        report_price_subtotal = line.price_subtotal - line.subscription_id.recurring_invoice_line_ids.price_subtotal
-                        line.reports_price_subtotal = report_price_subtotal
+                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_id.recurring_invoice_line_ids.price_subtotal
+                        line.reports_price_subtotal = upsell_report_price_subtotal
+                    else:
+                        line.reports_price_subtotal = line.price_subtotal
             else:
                 if line.report_nrc_mrc == "NRC":
                     report_price_subtotal = line.price_subtotal/100 * 20
