@@ -225,12 +225,13 @@ class HrExpenseSheet(models.Model):
             self.write({'state': 'done'})
         return res
     
-    
-    
     @api.multi
     def approve_expense_sheets(self):
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
         if not self.user_has_groups('netcom.group_hr_line_manager'):
             raise UserError(_("Only Line Managers can approve expenses"))
+        if current_employee == self.employee_id:
+            raise UserError(_('Only your line manager can approve your Expenses'))
         if self._check_budget() == False and self.need_override:
             return {}
         
