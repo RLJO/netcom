@@ -352,6 +352,32 @@ class Picking(models.Model):
                 partner_ids.append(partner.id)
             self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
+    
+    @api.multi
+    def create_purchase_order(self):
+        """
+        Method to open create purchase order form
+        """
+        
+        partner_id = self.client_id
+        client_id = self.client_id
+             
+        view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
+        view_id = view_ref[1] if view_ref else False
+         
+        res = {
+            'type': 'ir.actions.act_window',
+            'name': ('Purchase Order'),
+            'res_model': 'purchase.order',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': view_id,
+            'target': 'current',
+            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id}
+        }
+        
+        return res
+  
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
@@ -1023,6 +1049,11 @@ class SaleOrderLine(models.Model):
     _description = 'Sales Order Line'
     _inherit = ['sale.order.line']
     
+    @api.multi    
+    def _default_subscription(self):
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('analytic_account_id.partner_id', '=', self.order_id.partner_id.id)], limit=1).id
+        return sub
+    
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
@@ -1032,19 +1063,19 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     
     subscription_line_id = fields.Many2one('sale.subscription.line', string='Sale Subscription Line', index=True, ondelete='cascade')
-    subscription_id = fields.Many2one('sale.subscription', string='Sale Subscription Line', index=True, ondelete='cascade')
+    subscription_id = fields.Many2one('sale.subscription.line', string="Subscription", required=True, default=_default_subscription, ondelete="cascade")
     
     @api.one
     @api.depends('order_id.upsell_sub','report_nrc_mrc')
     def _compute_report_subtotal(self):
-        self.ensure_one()
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id)], limit=1)
         for line in self:
             if line.order_id.upsell_sub == True:
-                if line.order_id.partner_id == line.subscription_id.partner_id:
-                    if line.sub_account_id == line.subscription_id.recurring_invoice_line_ids.sub_account_id and line.product_id == line.subscription_id.recurring_invoice_line_ids.product_id:
-                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_id.recurring_invoice_line_ids.price_subtotal
+                if line.order_id.partner_id == sub.analytic_account_id.partner_id:
+                    if line.sub_account_id == sub.sub_account_id and line.product_id == sub.product_id:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
                         line.reports_price_subtotal = upsell_report_price_subtotal
                     else:
                         line.reports_price_subtotal = line.price_subtotal
