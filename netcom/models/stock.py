@@ -1052,8 +1052,7 @@ class SaleOrderLine(models.Model):
     
     @api.multi    
     def _default_subscription(self):
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id) ('product_id', '=', self.product_id.id),], limit=1).id
-        return sub
+        return self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id)], limit=1).id
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
@@ -1070,11 +1069,13 @@ class SaleOrderLine(models.Model):
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
-        #sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id) ('product_id', '=', self.product_id.id),], limit=1).id
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
             if line.order_id.upsell_sub == True:
-                if line.subscription_line_id:
-                    upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal
+                print(sub)
+                if sub:
+                    print(sub)
+                    upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
                     line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.reports_price_subtotal = line.price_subtotal
