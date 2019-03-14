@@ -361,6 +361,7 @@ class Picking(models.Model):
         
         partner_id = self.client_id
         client_id = self.client_id
+        product_id = self.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
         view_id = view_ref[1] if view_ref else False
@@ -373,7 +374,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id}
+            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_client_id': client_id.id}
         }
         
         return res
@@ -1051,7 +1052,7 @@ class SaleOrderLine(models.Model):
     
     @api.multi    
     def _default_subscription(self):
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('analytic_account_id.partner_id', '=', self.order_id.partner_id.id)], limit=1).id
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id) ('product_id', '=', self.product_id.id),], limit=1).id
         return sub
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
@@ -1062,23 +1063,21 @@ class SaleOrderLine(models.Model):
     reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     
-    subscription_line_id = fields.Many2one('sale.subscription.line', string='Sale Subscription Line', index=True, ondelete='cascade')
-    subscription_id = fields.Many2one('sale.subscription.line', string="Subscription", required=True, default=_default_subscription, ondelete="cascade")
+    subscription_line_id = fields.Many2one('sale.subscription.line', string="Subscription Line", required=False, default=_default_subscription, ondelete="cascade")
     
     @api.one
     @api.depends('order_id.upsell_sub','report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id)], limit=1)
+        #sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id) ('product_id', '=', self.product_id.id),], limit=1).id
         for line in self:
             if line.order_id.upsell_sub == True:
-                if line.order_id.partner_id == sub.analytic_account_id.partner_id:
-                    if line.sub_account_id == sub.sub_account_id and line.product_id == sub.product_id:
-                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
-                        line.reports_price_subtotal = upsell_report_price_subtotal
-                    else:
-                        line.reports_price_subtotal = line.price_subtotal
+                if line.subscription_line_id:
+                    upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal
+                    line.reports_price_subtotal = upsell_report_price_subtotal
+                else:
+                    line.reports_price_subtotal = line.price_subtotal
             else:
                 if line.report_nrc_mrc == "NRC":
                     report_price_subtotal = line.price_subtotal/100 * 20
