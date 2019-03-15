@@ -358,13 +358,26 @@ class Picking(models.Model):
         """
         Method to open create purchase order form
         """
-        
+
         partner_id = self.client_id
         client_id = self.client_id
-        product_id = self.product_id
+        #product_id = self.move_lines.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
         view_id = view_ref[1] if view_ref else False
+        
+        #purchase_line_obj = self.env['purchase.order.line']
+        for subscription in self:
+            order_lines = []
+            for line in subscription.move_lines:
+                order_lines.append((0, 0, {
+                    'name': line.product_id.name,
+                    'product_uom': line.product_id.uom_id.id,
+                    'product_id': line.product_id.id,
+                    'product_qty': line.product_uom_qty,
+                    'date_planned': date.today(),
+                    'price_unit': line.product_id.standard_price,
+                }))
          
         res = {
             'type': 'ir.actions.act_window',
@@ -374,7 +387,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_client_id': client_id.id}
+            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_order_line': order_lines.ids}
         }
         
         return res
@@ -1076,7 +1089,10 @@ class SaleOrderLine(models.Model):
                 if sub:
                     print(sub)
                     upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
-                    line.reports_price_subtotal = upsell_report_price_subtotal
+                    if upsell_report_price_subtotal < 0:
+                        line.reports_price_subtotal = 0
+                    else:
+                        line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.reports_price_subtotal = line.price_subtotal
             else:

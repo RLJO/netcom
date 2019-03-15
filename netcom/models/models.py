@@ -759,28 +759,29 @@ class Employee(models.Model):
         employees = self.env['hr.employee'].search([])
         
         for self in employees:
-            if self.birthday:
-                test = datetime.datetime.strptime(self.birthday, "%Y-%m-%d")
-                
-                birthday_day = test.day
-                birthday_month = test.month
-                
-                today = datetime.datetime.now().strftime("%Y-%m-%d")
-                
-                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
-                birthday_day_today = test_today.day
-                birthday_month_today = test_today.month
-                
-                if birthday_month == birthday_month_today:
-                    if birthday_day == birthday_day_today:
-                        config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
-                        mail_obj = self.env['mail.mail']
-                        if config:
-                            values = config.generate_email(self.id)
-                            mail = mail_obj.create(values)
-                            if mail:
-                                mail.send()
-                            return True
+            if self.active == True:
+                if self.birthday:
+                    test = datetime.datetime.strptime(self.birthday, "%Y-%m-%d")
+                    
+                    birthday_day = test.day
+                    birthday_month = test.month
+                    
+                    today = datetime.datetime.now().strftime("%Y-%m-%d")
+                    
+                    test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                    birthday_day_today = test_today.day
+                    birthday_month_today = test_today.month
+                    
+                    if birthday_month == birthday_month_today:
+                        if birthday_day == birthday_day_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
         return
     
     @api.multi
@@ -1453,29 +1454,30 @@ class NetcomContract(models.Model):
         employees = self.env['hr.contract'].search([])
         
         for self in employees:
-            if self.date_start:
-                test = datetime.datetime.strptime(self.date_start, "%Y-%m-%d")
-                
-                date_start_day = test.day
-                date_start_month = test.month
-                
-                today = datetime.datetime.now().strftime("%Y-%m-%d")
-                
-                test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
-                date_start_day_today = test_today.day
-                date_start_month_today = test_today.month
-                
-                
-                if date_start_month == date_start_month_today:
-                    if date_start_day == date_start_day_today:
-                        config = self.env['mail.template'].sudo().search([('name','=','Work Anniversary')], limit=1)
-                        mail_obj = self.env['mail.mail']
-                        if config:
-                            values = config.generate_email(self.id)
-                            mail = mail_obj.create(values)
-                            if mail:
-                                mail.send()
-                            return True
+            if self.employee_id.active == True:
+                if self.date_start:
+                    test = datetime.datetime.strptime(self.date_start, "%Y-%m-%d")
+                    
+                    date_start_day = test.day
+                    date_start_month = test.month
+                    
+                    today = datetime.datetime.now().strftime("%Y-%m-%d")
+                    
+                    test_today = datetime.datetime.today().strptime(today, "%Y-%m-%d")
+                    date_start_day_today = test_today.day
+                    date_start_month_today = test_today.month
+                    
+                    
+                    if date_start_month == date_start_month_today:
+                        if date_start_day == date_start_day_today:
+                            config = self.env['mail.template'].sudo().search([('name','=','Work Anniversary')], limit=1)
+                            mail_obj = self.env['mail.mail']
+                            if config:
+                                values = config.generate_email(self.id)
+                                mail = mail_obj.create(values)
+                                if mail:
+                                    mail.send()
+                                return True
         return
     
     @api.multi
