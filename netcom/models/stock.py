@@ -1056,7 +1056,7 @@ class SaleOrder(models.Model):
     bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange', copy=False,)
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
-    upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
+    #upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1077,23 +1077,26 @@ class SaleOrderLine(models.Model):
     
     subscription_line_id = fields.Many2one('sale.subscription.line', string="Subscription Line", required=False, default=_default_subscription, ondelete="cascade")
     
+    new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
+    
     @api.one
-    @api.depends('order_id.upsell_sub','report_nrc_mrc')
+    @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.order_id.upsell_sub == True:
-                print(sub)
+            if line.report_nrc_mrc == "MRC":
                 if sub:
-                    print(sub)
-                    upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
+                    line_sudo = sub.sudo()
+                    price = sub.env['account.tax']._fix_tax_included_price(sub.price_unit, line_sudo.product_id.taxes_id, [])
+                    upsell_report_price_subtotal = line.price_subtotal - (sub.quantity * price * (100.0 - sub.discount) / 100.0)
                     if upsell_report_price_subtotal < 0:
                         line.reports_price_subtotal = 0
                     else:
                         line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
+                    line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
             else:
                 if line.report_nrc_mrc == "NRC":
@@ -1109,7 +1112,7 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.order_id.upsell_sub == True:
+                if line.new_sub == False:
                     line.report_date = line.sub_account_id.perm_up_date
                 else:
                     line.report_date = line.sub_account_id.activation_date
@@ -1323,7 +1326,7 @@ class SaleSubscriptionWizard(models.TransientModel):
             'pricelist_id': self.subscription_id.pricelist_id.id,
             'fiscal_position_id': fpos_id,
             'subscription_management': 'upsell',
-            'upsell_sub': True,
+            #'upsell_sub': True,
         })
         for line in self.option_lines:
             self.subscription_id.partial_invoice_line(order, line, date_from=self.date_from)
@@ -1382,7 +1385,7 @@ class SaleReport(models.Model):
     reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
-    upsell_sub = fields.Boolean('Upsell', readonly=True)    
+    #upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
     def _select(self):
         select_str = """
@@ -1403,7 +1406,6 @@ class SaleReport(models.Model):
                     sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     count(*) as nbr,
                     s.name as name,
-                    s.upsell_sub as upsell_sub,
                     s.date_order as date,
                     s.confirmation_date as confirmation_date,
                     s.state as state,
@@ -1454,7 +1456,6 @@ class SaleReport(models.Model):
                     s.partner_id,
                     s.user_id,
                     s.state,
-                    s.upsell_sub,
                     l.report_nrc_mrc,
                     l.report_date,
                     s.company_id,
