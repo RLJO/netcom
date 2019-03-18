@@ -1348,7 +1348,7 @@ class SaleSubscriptionWizard(models.TransientModel):
             "res_id": order.id,
         }
     
-    
+'''    
 class SaleReport(models.Model):
     _name = "netcom.sale.report"
     _inherit = "sale.report"
@@ -1488,3 +1488,4 @@ class SaleReport(models.Model):
             FROM ( %s )
             %s
             )""" % (self._table, self._select(), self._from(), self._group_by()))
+'''
