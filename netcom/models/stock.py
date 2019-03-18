@@ -1072,6 +1072,7 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
+    '''
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
@@ -1095,6 +1096,7 @@ class SaleOrderLine(models.Model):
                     line.reports_price_subtotal = report_price_subtotal
                 else:
                     line.reports_price_subtotal = line.price_subtotal
+    '''
     
     @api.one
     @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
@@ -1372,7 +1374,7 @@ class SaleReport(models.Model):
     volume = fields.Float('Volume', readonly=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
-    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    #reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)    
@@ -1393,7 +1395,6 @@ class SaleReport(models.Model):
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
-                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     count(*) as nbr,
                     s.name as name,
                     s.date_order as date,
