@@ -1072,8 +1072,7 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    @api.one
-    @api.depends('report_nrc_mrc')
+    @api.multi
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
