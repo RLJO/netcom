@@ -1074,6 +1074,7 @@ class SaleOrderLine(models.Model):
     
     @api.multi
     def _compute_report_subtotal(self):
+        self.ensure_one()
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
