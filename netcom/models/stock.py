@@ -1082,11 +1082,30 @@ class SaleOrderLine(models.Model):
         for line in self:
             if line.report_nrc_mrc == "MRC":
                 if sub:
-                    upsell_report_price_subtotal = line.price_subtotal - sub.quantity * sub.price_unit * (100.0 - sub.discount) / 100.0
-                    if upsell_report_price_subtotal < 0:
-                        line.reports_price_subtotal = 0
-                    else:
-                        line.reports_price_subtotal = upsell_report_price_subtotal
+                    if sub.analytic_account_id.template_id.recurring_interval == 12:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 12
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 6:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 6
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 3:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 3
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 1:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
