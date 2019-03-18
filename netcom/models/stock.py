@@ -1100,12 +1100,13 @@ class SaleOrderLine(models.Model):
                             line.reports_price_subtotal = 0
                         else:
                             line.reports_price_subtotal = upsell_report_price_subtotal
-                    elif sub.analytic_account_id.template_id.recurring_interval == 1:
-                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
-                        if upsell_report_price_subtotal < 0:
-                            line.reports_price_subtotal = 0
-                        else:
-                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    else:
+                        if sub.analytic_account_id.template_id.recurring_interval == 1:
+                            upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
+                            if upsell_report_price_subtotal < 0:
+                                line.reports_price_subtotal = 0
+                            else:
+                                line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
