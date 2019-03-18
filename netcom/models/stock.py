@@ -1068,11 +1068,11 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    #reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
+    reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    '''
+    
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
@@ -1116,7 +1116,6 @@ class SaleOrderLine(models.Model):
                 else:
                     line.reports_price_subtotal = line.price_subtotal
     
-    '''
     
     @api.one
     @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
@@ -1350,7 +1349,7 @@ class SaleSubscriptionWizard(models.TransientModel):
             "res_id": order.id,
         }
     
-'''    
+    
 class SaleReport(models.Model):
     _name = "netcom.sale.report"
     _inherit = "sale.report"
@@ -1490,4 +1489,3 @@ class SaleReport(models.Model):
             FROM ( %s )
             %s
             )""" % (self._table, self._select(), self._from(), self._group_by()))
-'''
