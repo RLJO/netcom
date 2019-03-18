@@ -1068,11 +1068,11 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    #reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
+    reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    '''
+    
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
@@ -1116,7 +1116,6 @@ class SaleOrderLine(models.Model):
                 else:
                     line.reports_price_subtotal = line.price_subtotal
     
-    '''
     
     @api.one
     @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
@@ -1394,7 +1393,7 @@ class SaleReport(models.Model):
     volume = fields.Float('Volume', readonly=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
-    #reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)    
@@ -1413,6 +1412,7 @@ class SaleReport(models.Model):
                     sum(l.qty_to_invoice / u.factor * u2.factor) as qty_to_invoice,
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
+                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
                     count(*) as nbr,

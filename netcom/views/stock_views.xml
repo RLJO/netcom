@@ -21,7 +21,7 @@
              <pivot string="BDD Sales Analysis" disable_linking="True">
                  <field name="team_id" type="col"/>
                  <field name="confirmation_date" interval="month" type="row"/>
-                 <!-- <field name="reports_price_subtotal" type="measure"/>-->
+                 <field name="reports_price_subtotal" type="measure"/>
              </pivot>
          </field>
     </record>
@@ -32,7 +32,7 @@
          <field name="arch" type="xml">
              <graph string="BDD Sales Analysis">
                  <field name="date" type="row"/>
-                 <!-- <field name="reports_price_subtotal" type="measure"/> -->
+                 <field name="reports_price_subtotal" type="measure"/>
              </graph>
          </field>
     </record>
@@ -43,7 +43,7 @@
         <field name="model_id">netcom.sale.report</field>
         <field name="domain">['&amp;', ('date','&lt;=', time.strftime('%%Y-12-31')), '&amp;', ('date','&gt;=',time.strftime('%%Y-01-01')), ('state','not in',('cancel',))]</field>
         <field name="user_id" eval="False"/>
-        <!-- <field name="context">{'group_by': ['state'], 'measures': ['reports_price_subtotal']}</field> -->
+        <field name="context">{'group_by': ['state'], 'measures': ['reports_price_subtotal']}</field>
     </record>
     <record id="netcom_filter_sale_report_salespersons" model="ir.filters">
         <field name="name">By Salespersons</field>
@@ -691,7 +691,7 @@
                                     attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
                                 <field name="discount" groups="sale.group_discount_per_so_line"/>
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
-                                <!-- <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>-->
+                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
                                 <field name="report_date"/>                                
                                 <field name="new_sub" readonly="1"/>
