@@ -1072,41 +1072,42 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
+    subscription_line_id = fields.Many2one('sale.subscription.line', 'Subscription', copy=False)
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('report_nrc_mrc', 'subscription_line_id.price_subtotal')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
+        self.subscription_line_id = sub
         for line in self:
             if line.report_nrc_mrc == "MRC":
-                if sub:
-                    if sub.analytic_account_id.template_id.recurring_interval == 12:
-                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 12
+                if line.subscription_line_id:
+                    if line.subscription_line_id.analytic_account_id.template_id.recurring_interval == 12:
+                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal / 12
                         if upsell_report_price_subtotal < 0:
                             line.reports_price_subtotal = 0
                         else:
                             line.reports_price_subtotal = upsell_report_price_subtotal
-                    elif sub.analytic_account_id.template_id.recurring_interval == 6:
-                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 6
+                    elif line.subscription_line_id.analytic_account_id.template_id.recurring_interval == 6:
+                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal / 6
                         if upsell_report_price_subtotal < 0:
                             line.reports_price_subtotal = 0
                         else:
                             line.reports_price_subtotal = upsell_report_price_subtotal
-                    elif sub.analytic_account_id.template_id.recurring_interval == 3:
-                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 3
+                    elif line.subscription_line_id.analytic_account_id.template_id.recurring_interval == 3:
+                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal / 3
                         if upsell_report_price_subtotal < 0:
                             line.reports_price_subtotal = 0
                         else:
                             line.reports_price_subtotal = upsell_report_price_subtotal
-                    else:
-                        if sub.analytic_account_id.template_id.recurring_interval == 1:
-                            upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
-                            if upsell_report_price_subtotal < 0:
-                                line.reports_price_subtotal = 0
-                            else:
-                                line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif line.subscription_line_id.analytic_account_id.template_id.recurring_interval == 1:
+                        upsell_report_price_subtotal = line.price_subtotal - line.subscription_line_id.price_subtotal
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
