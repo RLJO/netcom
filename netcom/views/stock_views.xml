@@ -693,8 +693,7 @@
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
-                                <field name="report_date"/>                                
-                                <field name="new_sub" readonly="1"/>
+                                <field name="report_date"/>
                                 <field name="qty_delivered_updateable" invisible="1"/>
                                 <field name="state" invisible="1"/>
                                 <field name="invoice_status" invisible="1"/>
