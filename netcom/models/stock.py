@@ -1068,24 +1068,44 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
+    #reports_price_subtotal = fields.Monetary(compute='_compute_report_subtotal', string='Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
+    
+    @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
-        self.ensure_one()
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
             if line.report_nrc_mrc == "MRC":
                 if sub:
-                    upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
-                    if upsell_report_price_subtotal < 0:
-                        line.reports_price_subtotal = 0
-                    else:
-                        line.reports_price_subtotal = upsell_report_price_subtotal
+                    if sub.analytic_account_id.template_id.recurring_interval == 12:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 12
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 6:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 6
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 3:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / 3
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
+                    elif sub.analytic_account_id.template_id.recurring_interval == 1:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal
+                        if upsell_report_price_subtotal < 0:
+                            line.reports_price_subtotal = 0
+                        else:
+                            line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
@@ -1392,7 +1412,6 @@ class SaleReport(models.Model):
                     sum(l.qty_to_invoice / u.factor * u2.factor) as qty_to_invoice,
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
-                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
                     count(*) as nbr,
