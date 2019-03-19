@@ -1393,7 +1393,7 @@ class SaleReport(models.Model):
     volume = fields.Float('Volume', readonly=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
-    #reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)    
