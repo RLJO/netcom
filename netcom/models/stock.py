@@ -1088,7 +1088,6 @@ class SaleOrderLine(models.Model):
                     else:
                         line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
-                    line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
             else:
                 if line.report_nrc_mrc == "NRC":
@@ -1105,7 +1104,7 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.new_sub == True:
+                if line.order_id.upsell_sub == True:
                     line.report_date = line.sub_account_id.perm_up_date
                 else:
                     line.report_date = line.sub_account_id.activation_date
