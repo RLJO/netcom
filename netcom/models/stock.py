@@ -1074,7 +1074,7 @@ class SaleOrderLine(models.Model):
     
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('order_id.upsell_sub', 'report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
@@ -1105,7 +1105,7 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.new_sub == True:
+                if line.order_id.upsell_sub == True:
                     line.report_date = line.sub_account_id.perm_up_date
                 else:
                     line.report_date = line.sub_account_id.activation_date
