@@ -1070,17 +1070,17 @@ class SaleOrderLine(models.Model):
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
-    new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
+    #new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('order_id.upsell_sub', 'report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.report_nrc_mrc == "MRC":
+            if line.order_id.upsell_sub == True:
                 if sub:
                     upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
                     if upsell_report_price_subtotal < 0:
@@ -1377,7 +1377,7 @@ class SaleReport(models.Model):
     reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
-    #upsell_sub = fields.Boolean('Upsell', readonly=True)    
+    upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
     def _select(self):
         select_str = """
@@ -1393,6 +1393,7 @@ class SaleReport(models.Model):
                     sum(l.qty_to_invoice / u.factor * u2.factor) as qty_to_invoice,
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
+                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
                     count(*) as nbr,
