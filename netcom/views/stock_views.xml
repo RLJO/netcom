@@ -577,7 +577,7 @@
                         <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}" options='{"always_reload": True}'/>
                         <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}" options='{"always_reload": True}'/>
                         <field name="bill_confirm" readonly="1"/>
-                      	<!-- <field name="upsell_sub"/> -->
+                      	<field name="upsell_sub"/>
                     </group>
                     <group>
                         <field name="validity_date" attrs="{'invisible': [('state', 'in', ['sale', 'done'])]}"/>
@@ -691,8 +691,10 @@
                                     attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
                                 <field name="discount" groups="sale.group_discount_per_so_line"/>
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
+                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
                                 <field name="report_date"/>
+                                <field name="new_sub"/>
                                 <field name="qty_delivered_updateable" invisible="1"/>
                                 <field name="state" invisible="1"/>
                                 <field name="invoice_status" invisible="1"/>
