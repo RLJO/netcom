@@ -1074,13 +1074,13 @@ class SaleOrderLine(models.Model):
     
     
     @api.one
-    @api.depends('order_id.upsell_sub', 'report_nrc_mrc')
+    @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.order_id.upsell_sub == True:
+            if line.report_nrc_mrc == "MRC":
                 if sub:
                     upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
                     if upsell_report_price_subtotal < 0:
@@ -1105,7 +1105,7 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.order_id.upsell_sub == True:
+                if line.new_sub == True:
                     line.report_date = line.sub_account_id.perm_up_date
                 else:
                     line.report_date = line.sub_account_id.activation_date
