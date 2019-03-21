@@ -19,7 +19,7 @@
          <field name="model">netcom.sale.report</field>
          <field name="arch" type="xml">
              <pivot string="BDD Sales Analysis" disable_linking="True">
-                 <field name="team_id" type="col"/>
+                 <!-- <field name="team_id" type="col"/> -->
                  <field name="report_date" interval="month" type="row"/>
                  <field name="reports_price_subtotal" type="measure"/>
                  <field name="report_nrc_mrc" type="col"/>
