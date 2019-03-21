@@ -1014,10 +1014,11 @@ class SaleOrder(models.Model):
         Compute the total amounts of the SO.
         """
         for order in self:
-            amount_untaxed = amount_tax = amount_nrc = amount_mrc = 0.0
+            amount_untaxed = amount_tax = amount_nrc = amount_mrc = report_amount_mrc = 0.0
             for line in order.order_line:
                 if line.nrc_mrc == "MRC":
                     amount_mrc += line.price_subtotal
+                    report_amount_mrc += line.reports_price_subtotal
                 else:
                     amount_nrc += line.price_subtotal
                 amount_untaxed += line.price_subtotal
@@ -1025,6 +1026,7 @@ class SaleOrder(models.Model):
             order.update({
                 'amount_untaxed': order.pricelist_id.currency_id.round(amount_untaxed),
                 'amount_mrc': order.pricelist_id.currency_id.round(amount_mrc),
+                'report_amount_mrc': order.pricelist_id.currency_id.round(report_amount_mrc),
                 'amount_nrc': order.pricelist_id.currency_id.round(amount_nrc),
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
@@ -1057,6 +1059,7 @@ class SaleOrder(models.Model):
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
+    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1083,10 +1086,10 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC" and line.order_id.upsell_sub == True or line.order_id.upsell_sub == False:
                 if sub:
                     upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
-                    if upsell_report_price_subtotal < 0:
-                        line.reports_price_subtotal = 0
-                    else:
-                        line.reports_price_subtotal = upsell_report_price_subtotal
+                    #if upsell_report_price_subtotal < 0:
+                    #    line.reports_price_subtotal = 0
+                    #else:
+                    line.reports_price_subtotal = upsell_report_price_subtotal
                 else:
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
