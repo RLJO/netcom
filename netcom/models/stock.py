@@ -1347,7 +1347,7 @@ class SaleSubscriptionWizard(models.TransientModel):
         }
     
     
-class SaleReport(models.Model):
+class BDDSaleReport(models.Model):
     _name = "netcom.sale.report"
     _inherit = "sale.report"
     _description = "Netcom BDD Sales Orders Report"
@@ -1359,7 +1359,7 @@ class SaleReport(models.Model):
     date = fields.Datetime('Date Order', readonly=True)
     confirmation_date = fields.Datetime('Confirmation Date', readonly=True)
     product_id = fields.Many2one('product.product', 'Product', readonly=True)
-    sub_account_id = fields.Many2one('sub.account', 'Child Account', readonly=True)
+    sub_account_id = fields.Many2one('sub.account', 'Sub Account', readonly=True)
     product_uom = fields.Many2one('product.uom', 'Unit of Measure', readonly=True)
     product_uom_qty = fields.Float('Qty Ordered', readonly=True)
     qty_delivered = fields.Float('Qty Delivered', readonly=True)
