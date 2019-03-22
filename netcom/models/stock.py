@@ -1018,9 +1018,11 @@ class SaleOrder(models.Model):
             for line in order.order_line:
                 if line.nrc_mrc == "MRC":
                     amount_mrc += line.price_subtotal
-                    report_amount_mrc += line.reports_price_subtotal
                 else:
                     amount_nrc += line.price_subtotal
+                if line.report_nrc_mrc == "MRC":
+                    report_amount_mrc += line.reports_price_subtotal
+                else:
                     report_amount_nrc += line.reports_price_subtotal
                 amount_untaxed += line.price_subtotal
                 amount_tax += line.price_tax
