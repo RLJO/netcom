@@ -736,9 +736,12 @@
                                 </templates>
                             </kanban>
                         </field>
+                        <group>
+                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        </group>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
                         	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                         	<field name="amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             <field name="amount_untaxed" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                             <field name="amount_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>

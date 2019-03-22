@@ -1014,19 +1014,21 @@ class SaleOrder(models.Model):
         Compute the total amounts of the SO.
         """
         for order in self:
-            amount_untaxed = amount_tax = amount_nrc = amount_mrc = report_amount_mrc = 0.0
+            amount_untaxed = amount_tax = amount_nrc = amount_mrc = report_amount_mrc = report_amount_nrc = 0.0
             for line in order.order_line:
                 if line.nrc_mrc == "MRC":
                     amount_mrc += line.price_subtotal
                     report_amount_mrc += line.reports_price_subtotal
                 else:
                     amount_nrc += line.price_subtotal
+                    report_amount_nrc += line.reports_price_subtotal
                 amount_untaxed += line.price_subtotal
                 amount_tax += line.price_tax
             order.update({
                 'amount_untaxed': order.pricelist_id.currency_id.round(amount_untaxed),
                 'amount_mrc': order.pricelist_id.currency_id.round(amount_mrc),
                 'report_amount_mrc': order.pricelist_id.currency_id.round(report_amount_mrc),
+                'report_amount_nrc': order.pricelist_id.currency_id.round(report_amount_nrc),
                 'amount_nrc': order.pricelist_id.currency_id.round(amount_nrc),
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
@@ -1060,6 +1062,7 @@ class SaleOrder(models.Model):
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
     report_amount_mrc = fields.Monetary(string='Report Total MRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
+    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=True, readonly=True, compute='_amount_all', track_visibility='onchange')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1068,7 +1071,7 @@ class SaleOrderLine(models.Model):
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
-    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
@@ -1094,11 +1097,19 @@ class SaleOrderLine(models.Model):
                     line.write({'new_sub': True})
                     line.reports_price_subtotal = line.price_subtotal
             else:
-                if line.report_nrc_mrc == "NRC":
-                    report_price_subtotal = line.price_subtotal/100 * 20
-                    line.reports_price_subtotal = report_price_subtotal
+                if sub:
+                    if line.report_nrc_mrc == "NRC":
+                        report_price_subtotal = line.price_subtotal/100 * 20
+                        line.reports_price_subtotal = report_price_subtotal
+                    else:
+                        line.reports_price_subtotal = line.price_subtotal
                 else:
-                    line.reports_price_subtotal = line.price_subtotal
+                    line.write({'new_sub': True})
+                    if line.report_nrc_mrc == "NRC":
+                        report_price_subtotal = line.price_subtotal/100 * 20
+                        line.reports_price_subtotal = report_price_subtotal
+                    else:
+                        line.reports_price_subtotal = line.price_subtotal
     
     
     @api.one
@@ -1346,6 +1357,7 @@ class SaleReport(models.Model):
     date = fields.Datetime('Date Order', readonly=True)
     confirmation_date = fields.Datetime('Confirmation Date', readonly=True)
     product_id = fields.Many2one('product.product', 'Product', readonly=True)
+    sub_account_id = fields.Many2one('sub.account', 'Child Account', readonly=True)
     product_uom = fields.Many2one('product.uom', 'Unit of Measure', readonly=True)
     product_uom_qty = fields.Float('Qty Ordered', readonly=True)
     qty_delivered = fields.Float('Qty Delivered', readonly=True)
@@ -1387,6 +1399,7 @@ class SaleReport(models.Model):
             WITH currency_rate as (%s)
              SELECT min(l.id) as id,
                     l.product_id as product_id,
+                    l.sub_account_id as sub_account_id,
                     l.report_nrc_mrc as report_nrc_mrc,
                     l.report_date as report_date,
                     t.uom_id as product_uom,
@@ -1443,6 +1456,7 @@ class SaleReport(models.Model):
         group_by_str = """
             GROUP BY l.product_id,
                     l.order_id,
+                    l.sub_account_id,
                     t.uom_id,
                     t.categ_id,
                     s.name,
