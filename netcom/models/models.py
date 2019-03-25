@@ -532,6 +532,8 @@ class SubAccount(models.Model):
     
     perm_up_date = fields.Date(string='Permanent Activation Date', readonly=False, track_visibility='onchange')
     
+    price_review_date = fields.Date(string='Price Review Date', readonly=False, track_visibility='onchange')
+    
     contact_person = fields.Many2one('res.partner.title')
     
     company_name = fields.Many2many('Company Name')
