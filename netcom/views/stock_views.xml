@@ -14,6 +14,117 @@
         </field>	
    </record>
   
+  <record id="netcom_view_order_product_pivot" model="ir.ui.view">
+         <field name="name">netcom.sale.report.pivot</field>
+         <field name="model">netcom.sale.report</field>
+         <field name="arch" type="xml">
+             <pivot string="BDD Sales Analysis" disable_linking="True">
+                 <!-- <field name="team_id" type="col"/> -->
+                 <field name="report_date" interval="month" type="row"/>
+                 <field name="reports_price_subtotal" type="measure"/>
+                 <field name="report_nrc_mrc" type="col"/>
+             </pivot>
+         </field>
+    </record>
+
+    <record id="netcom_view_order_product_graph" model="ir.ui.view">
+         <field name="name">netcom.sale.report.graph</field>
+         <field name="model">netcom.sale.report</field>
+         <field name="arch" type="xml">
+             <graph string="BDD Sales Analysis">
+                 <field name="date" type="row"/>
+                 <field name="reports_price_subtotal" type="measure"/>
+             </graph>
+         </field>
+    </record>
+
+    <!-- Custom reports (aka filters) -->
+    <record id="netcom_filter_sale_report_sales_funnel" model="ir.filters">
+        <field name="name">Netcom Sales Funnel</field>
+        <field name="model_id">netcom.sale.report</field>
+        <field name="domain">['&amp;', ('date','&lt;=', time.strftime('%%Y-12-31')), '&amp;', ('date','&gt;=',time.strftime('%%Y-01-01')), ('state','not in',('cancel',))]</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['state'], 'measures': ['reports_price_subtotal']}</field>
+    </record>
+    <record id="netcom_filter_sale_report_salespersons" model="ir.filters">
+        <field name="name">By Salespersons</field>
+        <field name="model_id">netcom.sale.report</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date:month', 'user_id']}</field>
+    </record>
+    <record id="netcom_filter_sale_report_salesteam" model="ir.filters">
+        <field name="name">By Salesteam</field>
+        <field name="model_id">netcom.sale.report</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date:month', 'team_id']}</field>
+    </record>
+    <record id="netcom_filter_isale_report_product" model="ir.filters">
+        <field name="name">By Product</field>
+        <field name="model_id">netcom.sale.report</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date:month', 'product_id']}</field>
+    </record>
+  
+  <record id="netcom_view_order_product_search" model="ir.ui.view">
+        <field name="name">netcom.sale.report.search</field>
+        <field name="model">netcom.sale.report</field>
+        <field name="arch" type="xml">
+            <search string="BDD Sales Analysis">
+                <field name="date"/>
+                <filter string="This Year" name="year" invisible="1" domain="[('date','&lt;=', time.strftime('%%Y-12-31')),('date','&gt;=',time.strftime('%%Y-01-01'))]"/>
+                <filter name="Quotations" string="Quotations" domain="[('state','in', ('draft', 'sent'))]"/>
+                <filter name="Sales" string="Sales" domain="[('state','not in',('draft', 'cancel', 'sent'))]"/>
+                <separator/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <group expand="0" string="Extended Filters">
+                    <field name="categ_id" filter_domain="[('categ_id', 'child_of', self)]"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </group>
+                <group expand="1" string="Group By">
+                    <filter string="Salesperson" name="User" context="{'group_by':'user_id'}"/>
+                    <filter string="Sales Channel" context="{'group_by':'team_id'}"/>
+                    <filter string="Partner's Country" name="country_id" context="{'group_by':'country_id'}"/>
+                    <filter string="Customer" name="Customer" context="{'group_by':'partner_id'}"/>
+                    <filter string="Product Category" name="Category" context="{'group_by':'categ_id'}"/>
+                    <filter name="status" string="Status" context="{'group_by':'state'}"/>
+                    <filter string="Company" groups="base.group_multi_company" context="{'group_by':'company_id'}"/>
+                    <separator/>
+                    <filter string="Order Month" context="{'group_by':'date:month'}" help="Ordered date of the sales order"/>
+                </group>
+            </search>
+        </field>
+    </record>
+  
+  	<record id="netcom_action_order_report_all" model="ir.actions.act_window">
+        <field name="name">BDD Sales Analysis</field>
+        <field name="res_model">netcom.sale.report</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="view_id"></field>  <!-- force empty -->
+        <field name="search_view_id" ref="netcom_view_order_product_search"/>
+        <field name="context">{'search_default_Sales':1, 'group_by_no_leaf':1,'group_by':[]}</field>
+        <field name="help">This report performs analysis on your quotations and sales orders. Analysis check your sales revenues and sort it by different group criteria (salesman, partner, product, etc.) Use this report to perform analysis on sales not having invoiced yet. If you want to analyse your turnover, you should use the Invoice Analysis report in the Accounting application.</field>
+    </record>
+  
+	<menuitem id="netcom_menu_report_product_all"
+            name="BDD Sales Report"
+            action="netcom_action_order_report_all"
+            parent="sale.menu_sale_report"
+            sequence="1"/>
+	  
+  <!-- <record id="netcom_view_order_product_pivot" model="ir.ui.view">
+         <field name="name">netcom.sale.report.pivot</field>
+         <field name="model">sale.report</field>
+         <field name="inherit_id" ref="sale.view_order_product_pivot"/>
+         <field name="arch" type="xml">
+             <field name="price_subtotal" position="replace">
+                 <field name="reports_price_subtotal" type="measure"/>
+             </field>
+         </field>
+    </record>-->
+  
     <record id="netcom_company_bank_form_view" model="ir.ui.view">
         <field name="name">netcom.res.company.form</field>
         <field name="model">res.company</field>
@@ -287,6 +398,9 @@
                     <field name="move_line_exist" invisible="1"/>
                     <field name="has_packages" invisible="1"/>
                     <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
+                    
+                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager" attrs="{'invisible': [('show_check_availability', '=', False)]}"/>
+                    
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="reset" groups="stock.group_stock_manager" type="object"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="object"/>
@@ -318,6 +432,7 @@
                             <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                             <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>
+                            <field name="client_id"/>
                         </group>
                         <group>
                             <field name="scheduled_date" attrs="{'readonly': [('id', '=', False)], 'required': [('id', '!=', False)]}"/>
@@ -463,6 +578,7 @@
                         <field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}" options='{"always_reload": True}'/>
                         <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}" options='{"always_reload": True}'/>
                         <field name="bill_confirm" readonly="1"/>
+                      	<field name="upsell_sub" invisible="1"/>
                     </group>
                     <group>
                         <field name="validity_date" attrs="{'invisible': [('state', 'in', ['sale', 'done'])]}"/>
@@ -555,6 +671,7 @@
                                 <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                 <field name="name"/>
                                 <field name="nrc_mrc"/>
+	            				<field name="report_nrc_mrc"/>
                                 <field name="product_uom_qty"
                                     string="Ordered Qty"
                                     context="{'partner_id':parent.partner_id, 'quantity':product_uom_qty, 'pricelist':parent.pricelist_id, 'uom':product_uom, 'company_id': parent.company_id}"
@@ -575,7 +692,10 @@
                                     attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
                                 <field name="discount" groups="sale.group_discount_per_so_line"/>
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
+                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
+                                <field name="report_date"/>
+                                <field name="new_sub"/>
                                 <field name="qty_delivered_updateable" invisible="1"/>
                                 <field name="state" invisible="1"/>
                                 <field name="invoice_status" invisible="1"/>
@@ -616,6 +736,10 @@
                                 </templates>
                             </kanban>
                         </field>
+                        <group>
+                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        </group>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
                         	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                         	<field name="amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>

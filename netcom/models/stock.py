@@ -12,6 +12,8 @@ from odoo.tools.misc import formatLang
 from dateutil.relativedelta import relativedelta
 import logging
 
+from odoo import tools
+
 _logger = logging.getLogger(__name__)
 
 
@@ -223,12 +225,13 @@ class HrExpenseSheet(models.Model):
             self.write({'state': 'done'})
         return res
     
-    
-    
     @api.multi
     def approve_expense_sheets(self):
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
         if not self.user_has_groups('netcom.group_hr_line_manager'):
             raise UserError(_("Only Line Managers can approve expenses"))
+        if current_employee == self.employee_id:
+            raise UserError(_('Only your line manager can approve your Expenses'))
         if self._check_budget() == False and self.need_override:
             return {}
         
@@ -310,6 +313,7 @@ class Picking(models.Model):
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
+    client_id = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade')
     
     @api.multi
     def button_reset(self):
@@ -348,6 +352,46 @@ class Picking(models.Model):
                 partner_ids.append(partner.id)
             self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
+    
+    @api.multi
+    def create_purchase_order(self):
+        """
+        Method to open create purchase order form
+        """
+
+        partner_id = self.client_id
+        client_id = self.client_id
+        #product_id = self.move_lines.product_id
+             
+        view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
+        view_id = view_ref[1] if view_ref else False
+        
+        #purchase_line_obj = self.env['purchase.order.line']
+        for subscription in self:
+            order_lines = []
+            for line in subscription.move_lines:
+                order_lines.append((0, 0, {
+                    'name': line.product_id.name,
+                    'product_uom': line.product_id.uom_id.id,
+                    'product_id': line.product_id.id,
+                    'product_qty': line.product_uom_qty,
+                    'date_planned': date.today(),
+                    'price_unit': line.product_id.standard_price,
+                }))
+         
+        res = {
+            'type': 'ir.actions.act_window',
+            'name': ('Purchase Order'),
+            'res_model': 'purchase.order',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': view_id,
+            'target': 'current',
+            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_order_line': order_lines.ids}
+        }
+        
+        return res
+  
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
@@ -970,22 +1014,28 @@ class SaleOrder(models.Model):
         Compute the total amounts of the SO.
         """
         for order in self:
-            amount_untaxed = amount_tax = amount_nrc = amount_mrc = 0.0
+            amount_untaxed = amount_tax = amount_nrc = amount_mrc = report_amount_mrc = report_amount_nrc = 0.0
             for line in order.order_line:
                 if line.nrc_mrc == "MRC":
                     amount_mrc += line.price_subtotal
                 else:
                     amount_nrc += line.price_subtotal
+                if line.report_nrc_mrc == "MRC":
+                    report_amount_mrc += line.reports_price_subtotal
+                else:
+                    report_amount_nrc += line.reports_price_subtotal
                 amount_untaxed += line.price_subtotal
                 amount_tax += line.price_tax
             order.update({
                 'amount_untaxed': order.pricelist_id.currency_id.round(amount_untaxed),
                 'amount_mrc': order.pricelist_id.currency_id.round(amount_mrc),
+                'report_amount_mrc': order.pricelist_id.currency_id.round(report_amount_mrc),
+                'report_amount_nrc': order.pricelist_id.currency_id.round(report_amount_nrc),
                 'amount_nrc': order.pricelist_id.currency_id.round(amount_nrc),
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
             })
-    
+            
     @api.multi
     def action_cancel(self):
         return self.write({'state': 'cancel','bill_confirm':False})
@@ -1012,6 +1062,9 @@ class SaleOrder(models.Model):
     bill_confirm = fields.Boolean('Billing Confirmation', track_visibility='onchange', copy=False,)
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
+    upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
+    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
+    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1020,13 +1073,63 @@ class SaleOrderLine(models.Model):
     
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
-    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
+    sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
+    
+    report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
+    new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
+    
+    
+    @api.one
+    @api.depends('report_nrc_mrc')
+    def _compute_report_subtotal(self):
+        report_price_subtotal = 0.0
+        upsell_report_price_subtotal = 0.0
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
+        for line in self:
+            if line.report_nrc_mrc == "MRC":
+                if sub:
+                    upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
+                    #if upsell_report_price_subtotal < 0:
+                    #    line.reports_price_subtotal = 0
+                    #else:
+                    line.reports_price_subtotal = upsell_report_price_subtotal
+                else:
+                    line.write({'new_sub': True})
+                    line.reports_price_subtotal = line.price_subtotal
+            else:
+                if sub:
+                    if line.report_nrc_mrc == "NRC":
+                        report_price_subtotal = line.price_subtotal/100 * 20
+                        line.reports_price_subtotal = report_price_subtotal
+                    else:
+                        line.reports_price_subtotal = line.price_subtotal
+                else:
+                    line.write({'new_sub': True})
+                    if line.report_nrc_mrc == "NRC":
+                        report_price_subtotal = line.price_subtotal/100 * 20
+                        line.reports_price_subtotal = report_price_subtotal
+                    else:
+                        line.reports_price_subtotal = line.price_subtotal
+    
+    
+    @api.one
+    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
+    def _compute_report_date(self):
+        for line in self:
+            if line.report_nrc_mrc == "NRC":
+                line.report_date = line.order_id.confirmation_date
+            else:
+                if line.new_sub == True:
+                    line.report_date = line.sub_account_id.activation_date
+                else:
+                    line.report_date = line.sub_account_id.perm_up_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
         """
         Prepare the dict of values to create the new invoice line for a sales order line.
-
         :param qty: float quantity to invoice
         """
         self.ensure_one()
@@ -1080,7 +1183,19 @@ class SaleOrderLine(models.Model):
             self.nrc_mrc = "MRC"
         else:
             self.nrc_mrc = "NRC"
-             
+            
+            
+    @api.one
+    @api.depends('order_id.period')
+    def _compute_report_mrc_nrc(self):
+        if self.nrc_mrc == "MRC":
+            if self.order_id.period < 12:
+                self.report_nrc_mrc = "NRC"
+            else:
+                self.report_nrc_mrc = "MRC"
+        else:
+            self.report_nrc_mrc = "NRC"
+        
     @api.multi
     @api.onchange('type')
     def type_change(self):
@@ -1199,3 +1314,178 @@ class HrPayslipWorkedDays(models.Model):
 
     name = fields.Char(string='Description', required=False)
     code = fields.Char(required=False, help="The code that can be used in the salary rules")
+    
+    
+    
+class SaleSubscriptionWizard(models.TransientModel):
+    _name = 'sale.subscription.wizard'
+    _inherit = 'sale.subscription.wizard'
+    
+    
+    @api.multi
+    def create_sale_order(self):
+        fpos_id = self.env['account.fiscal.position'].get_fiscal_position(self.subscription_id.partner_id.id)
+        sale_order_obj = self.env['sale.order']
+        team = self.env['crm.team']._get_default_team_id(user_id=self.subscription_id.user_id.id)
+        order = sale_order_obj.create({
+            'partner_id': self.subscription_id.partner_id.id,
+            'analytic_account_id': self.subscription_id.analytic_account_id.id,
+            'team_id': team and team.id,
+            'pricelist_id': self.subscription_id.pricelist_id.id,
+            'fiscal_position_id': fpos_id,
+            'subscription_management': 'upsell',
+#           'upsell_sub': True,
+        })
+        for line in self.option_lines:
+            self.subscription_id.partial_invoice_line(order, line, date_from=self.date_from)
+        order.order_line._compute_tax_id()
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "sale.order",
+            "views": [[False, "form"]],
+            "res_id": order.id,
+        }
+    
+    
+class BDDSaleReport(models.Model):
+    _name = "netcom.sale.report"
+    _inherit = "sale.report"
+    _description = "Netcom BDD Sales Orders Report"
+    _auto = False
+    _rec_name = 'date'
+    _order = 'date desc'
+
+    name = fields.Char('Order Reference', readonly=True)
+    date = fields.Datetime('Date Order', readonly=True)
+    confirmation_date = fields.Datetime('Confirmation Date', readonly=True)
+    product_id = fields.Many2one('product.product', 'Product', readonly=True)
+    sub_account_id = fields.Many2one('sub.account', 'Sub Account', readonly=True)
+    product_uom = fields.Many2one('product.uom', 'Unit of Measure', readonly=True)
+    product_uom_qty = fields.Float('Qty Ordered', readonly=True)
+    qty_delivered = fields.Float('Qty Delivered', readonly=True)
+    qty_to_invoice = fields.Float('Qty To Invoice', readonly=True)
+    qty_invoiced = fields.Float('Qty Invoiced', readonly=True)
+    partner_id = fields.Many2one('res.partner', 'Partner', readonly=True)
+    company_id = fields.Many2one('res.company', 'Company', readonly=True)
+    user_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
+    price_total = fields.Float('Total', readonly=True)
+    price_subtotal = fields.Float('Untaxed Total', readonly=True)
+    amt_to_invoice = fields.Float('Amount To Invoice', readonly=True)
+    amt_invoiced = fields.Float('Amount Invoiced', readonly=True)
+    product_tmpl_id = fields.Many2one('product.template', 'Product Template', readonly=True)
+    categ_id = fields.Many2one('product.category', 'Product Category', readonly=True)
+    nbr = fields.Integer('# of Lines', readonly=True)
+    pricelist_id = fields.Many2one('product.pricelist', 'Pricelist', readonly=True)
+    analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account', readonly=True)
+    team_id = fields.Many2one('crm.team', 'Sales Channel', readonly=True, oldname='section_id')
+    country_id = fields.Many2one('res.country', 'Partner Country', readonly=True)
+    commercial_partner_id = fields.Many2one('res.partner', 'Commercial Entity', readonly=True)
+    state = fields.Selection([
+        ('draft', 'Draft Quotation'),
+        ('sent', 'Quotation Sent'),
+        ('sale', 'Sales Order'),
+        ('done', 'Sales Done'),
+        ('cancel', 'Cancelled'),
+        ], string='Status', readonly=True)
+    weight = fields.Float('Gross Weight', readonly=True)
+    volume = fields.Float('Volume', readonly=True)
+    
+    report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
+    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    report_date = fields.Date('Report Date', readonly=True)
+    sales_target = fields.Float(string='Salesperson Target', readonly=True)
+    upsell_sub = fields.Boolean('Upsell', readonly=True)    
+    
+    def _select(self):
+        select_str = """
+            WITH currency_rate as (%s)
+             SELECT min(l.id) as id,
+                    l.product_id as product_id,
+                    l.sub_account_id as sub_account_id,
+                    l.report_nrc_mrc as report_nrc_mrc,
+                    l.report_date as report_date,
+                    t.uom_id as product_uom,
+                    sum(l.product_uom_qty / u.factor * u2.factor) as product_uom_qty,
+                    sum(l.qty_delivered / u.factor * u2.factor) as qty_delivered,
+                    sum(l.qty_invoiced / u.factor * u2.factor) as qty_invoiced,
+                    sum(l.qty_to_invoice / u.factor * u2.factor) as qty_to_invoice,
+                    sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
+                    sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
+                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
+                    sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
+                    sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
+                    count(*) as nbr,
+                    s.name as name,
+                    s.date_order as date,
+                    s.confirmation_date as confirmation_date,
+                    s.state as state,
+                    s.partner_id as partner_id,
+                    s.user_id as user_id,
+                    s.company_id as company_id,
+                    extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
+                    t.categ_id as categ_id,
+                    s.pricelist_id as pricelist_id,
+                    s.analytic_account_id as analytic_account_id,
+                    s.team_id as team_id,
+                    p.product_tmpl_id,
+                    users.sales_target as sales_target,
+                    partner.country_id as country_id,
+                    partner.commercial_partner_id as commercial_partner_id,
+                    sum(p.weight * l.product_uom_qty / u.factor * u2.factor) as weight,
+                    sum(p.volume * l.product_uom_qty / u.factor * u2.factor) as volume
+        """ % self.env['res.currency']._select_companies_rates()
+        return select_str
+
+    def _from(self):
+        from_str = """
+                sale_order_line l
+                      join sale_order s on (l.order_id=s.id)
+                      join res_users users on s.user_id = users.id
+                      join res_partner partner on s.partner_id = partner.id
+                        left join product_product p on (l.product_id=p.id)
+                            left join product_template t on (p.product_tmpl_id=t.id)
+                    left join product_uom u on (u.id=l.product_uom)
+                    left join product_uom u2 on (u2.id=t.uom_id)
+                    left join product_pricelist pp on (s.pricelist_id = pp.id)
+                    left join currency_rate cr on (cr.currency_id = pp.currency_id and
+                        cr.company_id = s.company_id and
+                        cr.date_start <= coalesce(s.date_order, now()) and
+                        (cr.date_end is null or cr.date_end > coalesce(s.date_order, now())))
+        """
+        return from_str
+
+    def _group_by(self):
+        group_by_str = """
+            GROUP BY l.product_id,
+                    l.order_id,
+                    l.sub_account_id,
+                    t.uom_id,
+                    t.categ_id,
+                    s.name,
+                    s.date_order,
+                    s.confirmation_date,
+                    s.partner_id,
+                    s.user_id,
+                    s.state,
+                    l.report_nrc_mrc,
+                    l.report_date,
+                    s.company_id,
+                    s.pricelist_id,
+                    s.analytic_account_id,
+                    s.team_id,
+                    p.product_tmpl_id,
+                    users.sales_target,
+                    partner.country_id,
+                    partner.commercial_partner_id
+        """
+        return group_by_str
+
+    @api.model_cr
+    def init(self):
+        # self._table = sale_report
+        tools.drop_view_if_exists(self.env.cr, self._table)
+        self.env.cr.execute("""CREATE or REPLACE VIEW %s as (
+            %s
+            FROM ( %s )
+            %s
+            )""" % (self._table, self._select(), self._from(), self._group_by()))
