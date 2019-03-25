@@ -1076,7 +1076,7 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
@@ -1084,8 +1084,9 @@ class SaleOrderLine(models.Model):
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
-        report_price_subtotal = upsell_report_price_subtotal = 0.0
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1).id
+        report_price_subtotal = 0.0
+        upsell_report_price_subtotal = 0.0
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
             if line.report_nrc_mrc == "MRC":
                 if sub:
