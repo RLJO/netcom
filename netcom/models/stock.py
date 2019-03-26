@@ -1076,7 +1076,7 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=True, store=True)
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
@@ -1115,16 +1115,17 @@ class SaleOrderLine(models.Model):
     
     
     @api.one
-    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
+    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date', 'report_nrc_mrc')
     def _compute_report_date(self):
         for line in self:
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.new_sub == True:
-                    line.report_date = line.sub_account_id.activation_date
-                else:
-                    line.report_date = line.sub_account_id.perm_up_date
+                if line.report_nrc_mrc == "MRC":
+                    if line.new_sub == True:
+                        line.report_date = line.sub_account_id.activation_date
+                    else:
+                        line.report_date = line.sub_account_id.perm_up_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
