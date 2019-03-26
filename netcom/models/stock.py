@@ -1121,10 +1121,11 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.new_sub == True:
-                    line.report_date = line.sub_account_id.activation_date
-                else:
-                    line.report_date = line.sub_account_id.perm_up_date
+                if line.report_nrc_mrc == "MRC":
+                    if line.new_sub == True:
+                        line.report_date = line.sub_account_id.activation_date
+                    else:
+                        line.report_date = line.sub_account_id.perm_up_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
