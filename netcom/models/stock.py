@@ -1077,7 +1077,7 @@ class SaleOrderLine(models.Model):
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
     reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
-    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
+    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=False)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
     
