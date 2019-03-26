@@ -1115,16 +1115,17 @@ class SaleOrderLine(models.Model):
     
     
     @api.one
-    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
+    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date', 'report_nrc_mrc')
     def _compute_report_date(self):
         for line in self:
             if line.report_nrc_mrc == "NRC":
                 line.report_date = line.order_id.confirmation_date
             else:
-                if line.new_sub == True:
-                    line.report_date = line.sub_account_id.activation_date
-                else:
-                    line.report_date = line.sub_account_id.perm_up_date
+                if line.report_nrc_mrc == "MRC":
+                    if line.new_sub == True:
+                        line.report_date = line.sub_account_id.activation_date
+                    else:
+                        line.report_date = line.sub_account_id.perm_up_date
     
     @api.multi
     def _prepare_invoice_line(self, qty):
