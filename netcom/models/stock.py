@@ -1035,9 +1035,20 @@ class SaleOrder(models.Model):
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
             })
+    
+    @api.multi
+    def action_confirm(self):
+        self._action_confirm()
+        if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
+            self.action_done()
+        for line in self.order_line:
+            line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+        return True
             
     @api.multi
     def action_cancel(self):
+        for line in self.order_line:
+            line.confirmed_reports_price_subtotal = 0
         return self.write({'state': 'cancel','bill_confirm':False})
     
     @api.multi
@@ -1080,13 +1091,14 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
     
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('analytic_account_id.date_start', '<', self.order_id.create_date)], limit=1)
         for line in self:
             if line.report_nrc_mrc == "MRC":
                 if sub:
