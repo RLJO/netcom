@@ -1086,7 +1086,7 @@ class SaleOrderLine(models.Model):
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('date_start', '<', self.order_id.confirmation_date)], limit=1)
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('analytic_account_id.date_start', '<', self.order_id.create_date)], limit=1)
         for line in self:
             if line.report_nrc_mrc == "MRC":
                 if sub:
