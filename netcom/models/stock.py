@@ -313,7 +313,7 @@ class Picking(models.Model):
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
-    client_id = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade')
+    x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
     @api.multi
     def button_reset(self):
@@ -1100,30 +1100,33 @@ class SaleOrderLine(models.Model):
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('analytic_account_id.date_start', '<', self.order_id.create_date)], limit=1)
         for line in self:
-            if line.report_nrc_mrc == "MRC":
-                if sub:
-                    upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
-                    #if upsell_report_price_subtotal < 0:
-                    #    line.reports_price_subtotal = 0
-                    #else:
-                    line.reports_price_subtotal = upsell_report_price_subtotal
-                else:
-                    line.write({'new_sub': True})
-                    line.reports_price_subtotal = line.price_subtotal
+            if line.order_id.state == 'sale':
+                line.reports_price_subtotal = line.confirmed_reports_price_subtotal
             else:
-                if sub:
-                    if line.report_nrc_mrc == "NRC":
-                        report_price_subtotal = line.price_subtotal/100 * 20
-                        line.reports_price_subtotal = report_price_subtotal
+                if line.report_nrc_mrc == "MRC":
+                    if sub:
+                        upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
+                        #if upsell_report_price_subtotal < 0:
+                        #    line.reports_price_subtotal = 0
+                        #else:
+                        line.reports_price_subtotal = upsell_report_price_subtotal
                     else:
+                        line.write({'new_sub': True})
                         line.reports_price_subtotal = line.price_subtotal
                 else:
-                    line.write({'new_sub': True})
-                    if line.report_nrc_mrc == "NRC":
-                        report_price_subtotal = line.price_subtotal/100 * 20
-                        line.reports_price_subtotal = report_price_subtotal
+                    if sub:
+                        if line.report_nrc_mrc == "NRC":
+                            report_price_subtotal = line.price_subtotal/100 * 20
+                            line.reports_price_subtotal = report_price_subtotal
+                        else:
+                            line.reports_price_subtotal = line.price_subtotal
                     else:
-                        line.reports_price_subtotal = line.price_subtotal
+                        line.write({'new_sub': True})
+                        if line.report_nrc_mrc == "NRC":
+                            report_price_subtotal = line.price_subtotal/100 * 20
+                            line.reports_price_subtotal = report_price_subtotal
+                        else:
+                            line.reports_price_subtotal = line.price_subtotal
     
     
     @api.one
