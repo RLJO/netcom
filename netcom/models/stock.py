@@ -1035,9 +1035,20 @@ class SaleOrder(models.Model):
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
             })
+    
+    @api.multi
+    def action_confirm(self):
+        self._action_confirm()
+        if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
+            self.action_done()
+        for line in self.order_line:
+            line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+        return True
             
     @api.multi
     def action_cancel(self):
+        for line in self.order_line:
+            line.confirmed_reports_price_subtotal = 0
         return self.write({'state': 'cancel','bill_confirm':False})
     
     @api.multi
@@ -1080,6 +1091,7 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
     
     @api.one
     @api.depends('report_nrc_mrc')
