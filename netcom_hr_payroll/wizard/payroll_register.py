@@ -6,6 +6,9 @@ import base64
 from io import BytesIO
 
 from odoo import api, fields, models
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class report_payrollregister(models.AbstractModel):
     _name = 'report.netcom_hr_payroll.report_payrollregister'
@@ -211,14 +214,17 @@ class payroll_reg(models.TransientModel):
             # Search for the Pension Field
             inds = []               
             for i, ele in enumerate(comp_list):
+                _logger.info('Pension: %s: %s' %(i, ele))
                 if "Employee's Pension Contribution"  == ele:
                     inds.append(i)
             
             if inds :                    
                 for emp_data in emp_datas :
                     emp_ids = employee_obj.search([('name','=',emp_data[0])])
-                    pen_comp = emp_ids[0].pfa_id
+                    pen_comp = emp_ids[0].pf_id.name
+                    _logger.info('Emp data %s: %s'%(emp_data[0], pen_comp))
                     thevalue = emp_data[inds[0]]
+                    _logger.info('Value: %s'%thevalue)
                     if not thevalue:
                         thevalue = 0.0
                     
@@ -232,6 +238,7 @@ class payroll_reg(models.TransientModel):
                         # Search for the index of the column
                         ind = []
                         for i, ele in enumerate(comp_list):
+                            _logger.info('Pen comp: %s:%s'%(pen_comp,ele))
                             if "Pension - " + pen_comp == ele:
                                 ind.append(i)
                         try:
@@ -242,6 +249,7 @@ class payroll_reg(models.TransientModel):
                         # emp_data[ind[0]] = float(thevalue)                   
                         pfa_total = pfa_dict.get("Pension - " + pen_comp) or 0.0
                         pfa_dict["Pension - " + pen_comp] = pfa_total + thevalue
+                        _logger.info('Pension: %s'%pfa_total)
                     
             value_style = xlwt.easyxf('font: name Helvetica', num_format_str = '#,##0.00')
             cell_count = 0
