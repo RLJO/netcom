@@ -453,7 +453,8 @@ class CrossoveredBudgetLines(models.Model):
                     
                     elif line_timedelta.days > 0 and fields.Datetime.from_string(today) < fields.Datetime.from_string(line.date_to):
                         month_dif =int(str(fields.Datetime.from_string(today))[5:7]) - int(str(line.date_from)[5:7]) + 1
-                        interval = int(str(line.date_to)[5:7]) - int(str(line.date_from)[5:7]) + 1
+#                         interval = int(str(line.date_to)[5:7]) - int(str(line.date_from)[5:7]) + 1
+                        interval = 12
                         theo_amt =  (line.planned_amount/interval) * month_dif
                     else:
                         theo_amt = line.planned_amount
