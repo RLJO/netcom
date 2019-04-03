@@ -74,7 +74,7 @@
                 <filter string="This Year" name="year" invisible="1" domain="[('date','&lt;=', time.strftime('%%Y-12-31')),('date','&gt;=',time.strftime('%%Y-01-01'))]"/>
                 <filter name="Quotations" string="Quotations" domain="[('state','in', ('draft', 'sent'))]"/>
                 <filter name="Sales" string="Sales" domain="[('state','not in',('draft', 'cancel', 'sent'))]"/>
-                <filter name="Report_date" string="Report Active Date" domain="[('confirmation_date','&gt;=',time.strftime('2019-04-01'))]"/>
+                <filter name="Report_date" string="Report Active Date" domain="[('report_date','&gt;=',time.strftime('2019-04-01'))]"/>
                 <separator/>
                 <field name="partner_id"/>
                 <field name="product_id"/>

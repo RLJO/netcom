@@ -1099,13 +1099,14 @@ class SaleOrderLine(models.Model):
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
-        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('analytic_account_id.date_start', '<', self.order_id.create_date)], limit=1)
+        sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id), ('analytic_account_id.date_start', '<=', self.order_id.create_date)], limit=1)
         for line in self:
             if line.order_id.state == 'sale':
                 line.reports_price_subtotal = line.confirmed_reports_price_subtotal
             else:
                 if line.report_nrc_mrc == "MRC":
                     if sub:
+                        line.write({'new_sub': False})
                         upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
                         #if upsell_report_price_subtotal < 0:
                         #    line.reports_price_subtotal = 0
@@ -1411,7 +1412,8 @@ class BDDSaleReport(models.Model):
     reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
-    upsell_sub = fields.Boolean('Upsell', readonly=True)    
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True)
+    #upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
     def _select(self):
         select_str = """
@@ -1429,6 +1431,7 @@ class BDDSaleReport(models.Model):
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
                     sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
+                    sum(l.confirmed_reports_price_subtotal / COALESCE(cr.rate, 1.0)) as confirmed_reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
                     count(*) as nbr,
