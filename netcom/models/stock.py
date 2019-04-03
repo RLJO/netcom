@@ -1036,16 +1036,7 @@ class SaleOrder(models.Model):
                 'amount_tax': order.pricelist_id.currency_id.round(amount_tax),
                 'amount_total': amount_untaxed + amount_tax,
             })
-    
-    @api.multi
-    def action_confirm(self):
-        self._action_confirm()
-        if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
-            self.action_done()
-        for line in self.order_line:
-            line.confirmed_reports_price_subtotal = line.reports_price_subtotal
-        return True
-            
+                   
     @api.multi
     def action_cancel(self):
         for line in self.order_line:
