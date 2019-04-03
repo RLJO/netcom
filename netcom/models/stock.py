@@ -1132,7 +1132,7 @@ class SaleOrderLine(models.Model):
     
     
     @api.one
-    @api.depends('order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date', 'report_nrc_mrc')
+    @api.depends('report_nrc_mrc', 'new_sub', 'order_id.confirmation_date', 'sub_account_id.perm_up_date', 'sub_account_id.activation_date')
     def _compute_report_date(self):
         for line in self:
             if line.report_nrc_mrc == "NRC":
