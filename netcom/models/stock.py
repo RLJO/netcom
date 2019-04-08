@@ -313,7 +313,7 @@ class Picking(models.Model):
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
-    client_id = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
+    x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
     @api.multi
     def button_reset(self):
@@ -359,8 +359,8 @@ class Picking(models.Model):
         Method to open create purchase order form
         """
 
-        partner_id = self.client_id
-        client_id = self.client_id
+        partner_id = self.x_studio_field_KZL4m
+        client_id = self.x_studio_field_KZL4m
         #product_id = self.move_lines.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
