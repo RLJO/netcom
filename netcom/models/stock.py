@@ -387,7 +387,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_order_line': order_lines.ids}
+            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_order_line': order_lines.id}
         }
         
         return res
