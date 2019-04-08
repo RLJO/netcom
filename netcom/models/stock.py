@@ -313,7 +313,7 @@ class Picking(models.Model):
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
-    x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
+    client_id = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
     @api.multi
     def button_reset(self):
