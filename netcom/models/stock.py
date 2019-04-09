@@ -359,8 +359,8 @@ class Picking(models.Model):
         Method to open create purchase order form
         """
 
-        partner_id = self.client_id
-        client_id = self.client_id
+        partner_id = self.x_studio_field_KZL4m
+        client_id = self.x_studio_field_KZL4m
         #product_id = self.move_lines.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
@@ -387,7 +387,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_partner_id': partner_id.id, 'default_client_id': client_id.id, 'default_order_line': order_lines.ids}
+            'context': {'default_client_id': client_id.id}
         }
         
         return res
