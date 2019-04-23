@@ -524,6 +524,8 @@ class PurchaseOrder(models.Model):
     manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
     client_id = fields.Many2one('res.partner','Client', track_visibility='onchange')
     
+    department_name = fields.Char(string="Department", related="employee_id.department_id.name", readonly=True)
+    
     state = fields.Selection([
         ('draft', 'RFQ'),
         ('sent', 'RFQ Sent'),
