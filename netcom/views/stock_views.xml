@@ -813,16 +813,14 @@
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
    	
-   	<record model="ir.actions.act_window" id="my_netcom_act_crossovered_budget_lines_view">
+   	<record model="ir.actions.act_window" id="my_netcom_act_crossovered_budget_lines_views">
             <field name="name">Budgets</field>
             <field name="res_model">crossovered.budget.lines</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">[]</field>
+            <field name="domain">[('general_budget_id.department_id.member_ids.user_id', 'in', [uid])]</field>
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
-   	
-   	
     
     <record id="store_req_action_form" model="ir.actions.act_window.view">
          <field eval="2" name="sequence"/>
@@ -842,7 +840,7 @@
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view" groups="netcom.group_budget_report"/>
     <menuitem name="My Budget" id="my_netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="my_netcom_act_crossovered_budget_lines_view"/> 
+              action="my_netcom_act_crossovered_budget_lines_views"/> 
 	
 	<menuitem id="sale.menu_sale_report"
             name="Reporting"
