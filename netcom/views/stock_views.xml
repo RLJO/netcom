@@ -809,7 +809,16 @@
             <field name="res_model">crossovered.budget.lines</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">[('general_budget_id.department_id.manager_id.user_id','=',uid)]</field>
+            <field name="domain">[('general_budget_id.department_id.manager_id.child_ids.user_id','=',uid)]</field>
+            <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
+   	</record>
+   	
+   	<record model="ir.actions.act_window" id="my_netcom_act_crossovered_budget_lines_view">
+            <field name="name">Budgets</field>
+            <field name="res_model">crossovered.budget.lines</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
    	
@@ -829,9 +838,11 @@
          <field name="act_window_id" ref="store_req_action1_window"/>
      </record>
 
-	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root" groups="netcom.group_budget_report"/>
+	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root"/>
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="netcom_act_crossovered_budget_lines_view"/> 
+              action="netcom_act_crossovered_budget_lines_view" groups="netcom.group_budget_report"/>
+    <menuitem name="My Budget" id="my_netcom_budget_reporting_team" parent="netcom_budget_report"
+              action="my_netcom_act_crossovered_budget_lines_view"/> 
 	
 	<menuitem id="sale.menu_sale_report"
             name="Reporting"
