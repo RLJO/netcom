@@ -813,12 +813,24 @@
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
    	
+   	<record id="netcom_view_crossovered_budget_line_search" model="ir.ui.view">
+            <field name="name">netcom.account.budget.line.search</field>
+            <field name="model">crossovered.budget.lines</field>
+            <field name="inherit_id" ref="account_budget.view_crossovered_budget_line_search"/>
+            <field name="arch" type="xml">
+               <xpath expr="//search" position="inside">
+                	<filter string="This Year" name="year" invisible="1" domain="[('date_from','&lt;=', time.strftime('%%Y-12-31')),('date_from','&gt;=',time.strftime('%%Y-01-01'))]"/>
+			    </xpath>
+            </field>
+    </record>
+   	
    	<record model="ir.actions.act_window" id="my_netcom_act_crossovered_budget_lines_views">
             <field name="name">Budgets</field>
             <field name="res_model">crossovered.budget.lines</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">['|',('general_budget_id.department_id.member_ids.user_id', 'in', [uid]),('general_budget_id.department_id.parent_id.member_ids.user_id', 'in', [uid])]</field>
+            <field name="context">{'search_default_year':1}</field>
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
     
