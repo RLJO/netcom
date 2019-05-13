@@ -829,7 +829,7 @@
             <field name="res_model">crossovered.budget.lines</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="domain">['|',('general_budget_id.department_id.member_ids.user_id', 'in', [uid]),('general_budget_id.department_id.parent_id.user_id', 'in', [uid])]</field>
+            <field name="domain">['|',('general_budget_id.department_id.member_ids.user_id', 'in', [uid]),('general_budget_id.department_id.child_ids.member_ids.user_id', 'in', [uid])]</field>
             <field name="context">{'search_default_year':1}</field>
             <field name="view_id" ref="account_budget.view_crossovered_budget_line_tree"/>
    	</record>
