@@ -1087,6 +1087,8 @@ class SaleOrderLine(models.Model):
     
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
     
+    price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
+    
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
@@ -1406,6 +1408,7 @@ class BDDSaleReport(models.Model):
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True)
+    price_review_date = fields.Date(string='Price Review Date', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
     def _select(self):
@@ -1414,6 +1417,7 @@ class BDDSaleReport(models.Model):
              SELECT min(l.id) as id,
                     l.product_id as product_id,
                     l.sub_account_id as sub_account_id,
+                    l.price_review_date as price_review_date,
                     l.report_nrc_mrc as report_nrc_mrc,
                     l.report_date as report_date,
                     t.uom_id as product_uom,
@@ -1482,6 +1486,7 @@ class BDDSaleReport(models.Model):
                     s.state,
                     l.report_nrc_mrc,
                     l.report_date,
+                    l.price_review_date,
                     s.company_id,
                     s.pricelist_id,
                     s.analytic_account_id,
