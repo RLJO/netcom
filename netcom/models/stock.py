@@ -1103,6 +1103,7 @@ class SaleOrderLine(models.Model):
             else:
                 if line.report_nrc_mrc == "MRC":
                     if sub:
+                        print(sub)
                         line.write({'new_sub': False})
                         upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
                         #if upsell_report_price_subtotal < 0:
