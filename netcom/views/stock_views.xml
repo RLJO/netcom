@@ -419,7 +419,7 @@
         </record>
  
         <record id="stock_rejection_action" model="ir.actions.act_window">
-            <field name="name">Cancellation Reason</field>
+            <field name="name">Rejection Reason</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">stock.picking.rejected</field>
             <field name="view_mode">form</field>
@@ -454,7 +454,7 @@
                     <field name="has_packages" invisible="1"/>
                     <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
                     
-                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager" attrs="{'invisible': [('show_check_availability', '=', False)]}"/>
+                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager"/>
                     
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="reset" groups="stock.group_stock_manager" type="object"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
