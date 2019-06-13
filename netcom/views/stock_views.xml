@@ -903,7 +903,7 @@
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view" groups="netcom.group_budget_report"/>
     <menuitem name="My Department's Budget" id="my_netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="my_netcom_act_crossovered_budget_lines_views"/> 
+              action="my_netcom_act_crossovered_budget_lines_views" groups="netcom.group_employee_budget"/> 
 	
 	<menuitem id="sale.menu_sale_report"
             name="Reporting"

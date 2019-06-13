@@ -376,6 +376,7 @@ class Picking(models.Model):
                     'name': line.product_id.name,
                     'product_uom': line.product_id.uom_id.id,
                     'product_id': line.product_id.id,
+                    'account_id': line.account_id.id,
                     'product_qty': line.product_uom_qty,
                     'date_planned': date.today(),
                     'price_unit': line.product_id.standard_price,
@@ -389,7 +390,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_client_id': client_id.id}
+            'context': {'default_client_id': client_id.id, 'default_order_line': order_lines}
         }
         
         return res
