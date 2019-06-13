@@ -374,7 +374,58 @@
           </p>
         </field>
     </record>
+	
+	<!--
+            stock_rejection views
+        -->
+        <record id="stock_rejection_view_search" model="ir.ui.view">
+            <field name="name">stock.rejection.reason.view.search</field>
+            <field name="model">stock.rejection.reason</field>
+            <field name="arch" type="xml">
+                <search string="Search Opportunities">
+                    <filter string="Include archived" name="archived"
+                            domain="['|', ('active', '=', True), ('active', '=', False)]"/>
+                </search>
+            </field>
+        </record>
 
+        <record id="stock_rejection_view_form" model="ir.ui.view">
+            <field name="name">stock.rejection.reason.form</field>
+            <field name="model">stock.rejection.reason</field>
+            <field name="arch" type="xml">
+                <form string="Channel">
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+	
+	<record id="stock_picking_rejection_view_form" model="ir.ui.view">
+            <field name="name">stock.picking.rejected.form</field>
+            <field name="model">stock.picking.rejected</field>
+            <field name="arch" type="xml">
+                <form string="Rejection Reason">
+                    <group class="oe_title">
+                        <field name="rejection_reason_id"/>
+                    </group>
+                    <footer>
+                        <button name="action_rejection_reason_apply" string="Submit" type="object" class="btn btn-sm btn-primary"/>
+                        <button string="Cancel" class="btn btn-sm btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+ 
+        <record id="stock_rejection_action" model="ir.actions.act_window">
+            <field name="name">Rejection Reason</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.picking.rejected</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="stock_picking_rejection_view_form"/>
+            <field name="target">new</field>
+        </record>
    
     <record id="netcom_stock_form_view" model="ir.ui.view">
             <field name="name">netcom.stock.form</field>
@@ -403,11 +454,11 @@
                     <field name="has_packages" invisible="1"/>
                     <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
                     
-                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager" attrs="{'invisible': [('show_check_availability', '=', False)]}"/>
+                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager"/>
                     
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="reset" groups="stock.group_stock_manager" type="object"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
-                    <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="object"/>
+                    <button name="%(netcom.stock_rejection_action)d" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="action"/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Unlock" groups="stock.group_stock_manager" type="object" help="If the picking is unlocked you can edit initial demand (for a draft picking) or done quantities (for a done picking)."/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': [('is_locked', '=', True)]}" string="Lock" class="oe_highlight" groups="stock.group_stock_manager" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,partially_available,assigned,done" />
@@ -852,7 +903,7 @@
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view" groups="netcom.group_budget_report"/>
     <menuitem name="My Department's Budget" id="my_netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="my_netcom_act_crossovered_budget_lines_views"/> 
+              action="my_netcom_act_crossovered_budget_lines_views" groups="netcom.group_employee_budget"/> 
 	
 	<menuitem id="sale.menu_sale_report"
             name="Reporting"

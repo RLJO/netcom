@@ -315,6 +315,8 @@ class Picking(models.Model):
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
     x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
+    rejection_reason = fields.Many2one('stock.rejection.reason', string='Rejection Reason', index=True, track_visibility='onchange')
+    
     @api.multi
     def button_reset(self):
         self.mapped('move_lines')._action_cancel()
@@ -374,6 +376,7 @@ class Picking(models.Model):
                     'name': line.product_id.name,
                     'product_uom': line.product_id.uom_id.id,
                     'product_id': line.product_id.id,
+                    'account_id': line.account_id.id,
                     'product_qty': line.product_uom_qty,
                     'date_planned': date.today(),
                     'price_unit': line.product_id.standard_price,
@@ -387,11 +390,33 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_client_id': client_id.id}
+            'context': {'default_client_id': client_id.id, 'default_order_line': order_lines}
         }
         
         return res
-  
+    
+    
+class StockRejectionReason(models.Model):
+    _name = "stock.rejection.reason"
+    _description = 'Reason for Rejecting Requests'
+
+    name = fields.Char('Name', required=True, translate=True)
+    active = fields.Boolean('Active', default=True)
+    
+    
+class StockPickingRejection(models.TransientModel):
+    _name = 'stock.picking.rejected'
+    _description = 'Get Rejection Reason'
+
+    rejection_reason_id = fields.Many2one('stock.rejection.reason', 'Rejection Reason')
+
+    @api.multi
+    def action_rejection_reason_apply(self):
+        leads = self.env['stock.picking'].browse(self.env.context.get('active_ids'))
+        leads.write({'rejection_reason': self.rejection_reason_id.id})
+        return leads.button_reset()
+    
+      
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
@@ -1302,6 +1327,14 @@ class SaleOrderLine(models.Model):
             else:
                 self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
 
+class AccountReconcileModel(models.Model):
+    _name = "account.reconcile.model"
+    _inherit = "account.reconcile.model"
+    
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, ondelete='set null')  
 
 class BudgetDept(models.Model):
     _name = 'account.budget.post'
