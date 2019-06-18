@@ -272,6 +272,9 @@
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="department_name" invisible="1"/>
             </field>
+            <field name="incoterm_id" position="after">
+            	<field name="stock_source"/>
+            </field>
         </field>
     </record>
     <record id="netcom_view_hr_expense_sheet_form" model="ir.ui.view">
