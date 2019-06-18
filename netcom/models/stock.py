@@ -363,6 +363,7 @@ class Picking(models.Model):
 
         partner_id = self.x_studio_field_KZL4m
         client_id = self.x_studio_field_KZL4m
+        sub_account_id = self.sub_account_id
         #product_id = self.move_lines.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
@@ -390,7 +391,7 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_client_id': client_id.id, 'default_order_line': order_lines}
+            'context': {'default_client_id': client_id.id, 'default_sub_account_id': sub_account_id.id, 'default_stock_source': self.name, 'default_order_line': order_lines}
         }
         
         return res
@@ -560,6 +561,8 @@ class PurchaseOrder(models.Model):
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    
+    stock_source = fields.Char(string='Source document')
     
     @api.multi
     def button_submit(self):
