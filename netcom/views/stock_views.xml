@@ -297,6 +297,17 @@
             <field name="analytic_account_id" position="replace">
             	<field name="account_id"/>
             </field>
+            <!-- <field name="expense_line_ids" position="after">
+            	<group class="oe_subtotal_footer oe_right">
+                   <field name="amount_untaxed"/>
+                   <field name="amount_tax" invisible="1"/>
+                   <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                   <field name="payments_widget" colspan="2" nolabel="1" widget="payment"/>
+                   <field name="residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                   <field name="reconciled" invisible="1"/>
+                   <field name="outstanding_credits_debits_widget" colspan="2" nolabel="1" widget="payment" attrs="{'invisible': [('state', 'not in', 'open')]}"/> 
+               </group>
+            </field>-->
             </field>
     </record>
     <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">

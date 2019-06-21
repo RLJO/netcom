@@ -441,8 +441,8 @@
             </field>
         </record>
 	
-	<!--<record id="hr_expense_submit_action_server_net" model="ir.actions.server">
-            <field name="name">Expense: Submit To Manager Stevo</field>
+	<record id="hr_expense_submit_action_server_net" model="ir.actions.server">
+            <field name="name">Expense: Submit To Manager for payment</field>
             <field name="type">ir.actions.server</field>
             <field name="model_id" ref="model_hr_expense_sheet"/>
             <field name="binding_model_id" ref="model_hr_expense_sheet"/>
@@ -451,7 +451,7 @@
 if records:
     action = records.submit_approved_expenses()
             </field>
-        </record>-->
+        </record>
 	
     <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
               action="brands_action_window"/>
@@ -468,8 +468,8 @@ if records:
     <menuitem name="Sub Account" id="sub_account" parent="sale.sale_order_menu"
               action="SubAccount_action_window"/>
 	
-	<!--<menuitem id="netcom_menu_hr_expense_sheet_all_to_pay" name="Approved Expense Reports To Pay" sequence="3" parent="hr_expense.menu_hr_expense_accountant"
-            action="netcom_action_hr_expense_sheet_all_to_pay"/>-->
+	<menuitem id="netcom_menu_hr_expense_sheet_all_to_pay" name="Approved Expense Reports To Pay" sequence="3" parent="hr_expense.menu_hr_expense_accountant"
+            action="netcom_action_hr_expense_sheet_all_to_pay" groups="netcom.group_expense_payment"/>
 	
     <record id="customer_request_form" model="ir.ui.view">
     <field name="name">customer.request.form</field>

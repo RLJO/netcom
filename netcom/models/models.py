@@ -52,7 +52,8 @@ class Partner(models.Model):
     parent_account_number = fields.Char('Parent Account Number', required=False, index=True, copy=False,)
     contact_name = fields.Char('Contact Name')
     
-    customer_budget_code_ids = fields.Many2one(comodel_name='account.account', string='Vendor Budget Code')
+    customer_budget_code_ids = fields.Many2many('account.account', string='Vendor Budget Code')
+    #next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
 
     @api.model
     def create(self, vals):
@@ -958,7 +959,7 @@ class ExpenseRefSheet(models.Model):
     _name = "hr.expense.sheet"
     _inherit = 'hr.expense.sheet'
     
-    #treasury_approval = fields.Boolean(string='payment approved')
+    treasury_approval = fields.Boolean(string='payment approved')
     
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
     description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
@@ -974,7 +975,7 @@ class ExpenseRefSheet(models.Model):
         for self in self:
             if self.state == 'post':
                 self.treasury_approval = True
-                group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_sale_billing')
+                group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_expense_payment')
                 user_ids = []
                 partner_ids = []
                 for user in group_id.users:

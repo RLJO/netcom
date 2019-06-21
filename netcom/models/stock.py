@@ -34,6 +34,16 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
         
     partner_id = fields.Many2one('res.partner', string='Partner', required=True, default=_default_partner_id)
 
+    
+    @api.model
+    def _default_payment_amount(self):
+        context = dict(self._context or {})
+        active_ids = context.get('active_ids', [])
+        expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
+        return expense_sheet.sheet_id.amount_total
+    
+    amount = fields.Monetary(string='Payment Amounts', required=True, default=11)
+    
 class HrExpense(models.Model):
 
     _name = "hr.expense"
@@ -203,6 +213,22 @@ class HrExpenseSheet(models.Model):
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
+    
+    @api.one
+    @api.depends('expense_line_ids.total_amount', 'expense_line_ids.tax_ids',
+                 'currency_id', 'company_id')
+    def _compute_amount(self):
+        round_curr = self.currency_id.round
+        self.amount_untaxed = sum(line.total_amount for line in self.expense_line_ids)
+        self.amount_tax = 0.00
+        self.amount_total = self.amount_untaxed
+    
+    amount_untaxed = fields.Monetary(string='Untaxed Amount',
+        store=True, readonly=True, compute='_compute_amount',)
+    amount_tax = fields.Monetary(string='Tax',
+        store=True, readonly=True, compute='_compute_amount')
+    amount_total = fields.Monetary(string='Total',
+        store=True, readonly=True, compute='_compute_amount')
     
     @api.multi
     def action_sheet_move_create(self):
