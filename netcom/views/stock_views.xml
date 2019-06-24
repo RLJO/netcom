@@ -282,32 +282,31 @@
             <field name="model">hr.expense.sheet</field>
             <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
             <field name="arch" type="xml">
-            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
-                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
-            </xpath>
-            <field name="name" position="before">
-            	<field name= "need_override" invisible = "1"/>
-            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+	            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
+	                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
+	            </xpath>
+	            <field name="name" position="before">
+	            	<field name= "need_override" invisible = "1"/>
+	            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+	            </field>
+	            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
+	            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+	            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+	            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+	            </xpath>
+	            <field name="analytic_account_id" position="replace">
+	            	<field name="account_id"/>
+	            </field>
             </field>
-            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
-            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
-            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
-            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
-            </xpath>
-            <field name="analytic_account_id" position="replace">
-            	<field name="account_id"/>
+    </record>
+    <record id="netcom_hr_expense_sheet_register_payment_view_form" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.register.payment.wizard.form</field>
+            <field name="model">hr.expense.sheet.register.payment.wizard</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_sheet_register_payment_view_form"/>
+            <field name="arch" type="xml">
+            <field name="communication" position="after">
+            	<field name="test_amount"/>
             </field>
-            <!-- <field name="expense_line_ids" position="after">
-            	<group class="oe_subtotal_footer oe_right">
-                   <field name="amount_untaxed"/>
-                   <field name="amount_tax" invisible="1"/>
-                   <field name="amount_total" class="oe_subtotal_footer_separator"/>
-                   <field name="payments_widget" colspan="2" nolabel="1" widget="payment"/>
-                   <field name="residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '=', 'draft')]}"/>
-                   <field name="reconciled" invisible="1"/>
-                   <field name="outstanding_credits_debits_widget" colspan="2" nolabel="1" widget="payment" attrs="{'invisible': [('state', 'not in', 'open')]}"/> 
-               </group>
-            </field>-->
             </field>
     </record>
     <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">
