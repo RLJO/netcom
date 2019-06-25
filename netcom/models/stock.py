@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
 
 from datetime import date, timedelta
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, AccessError
+from odoo.exceptions import UserError, AccessError, ValidationError
 from odoo.tools import float_is_zero
 
 from functools import partial
@@ -11,6 +12,7 @@ from odoo.tools.misc import formatLang
 
 from dateutil.relativedelta import relativedelta
 import logging
+from werkzeug import url_encode
 
 from odoo import tools
 
@@ -33,7 +35,12 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
             return expense_sheet.address_id.id or expense_sheet.employee_id.id and expense_sheet.employee_id.address_home_id.id
         
     partner_id = fields.Many2one('res.partner', string='Partner', required=True, default=_default_partner_id)
-
+    
+    @api.one
+    @api.constrains('amounts')
+    def _check_amount(self):
+        if not self.amounts > 0.0:
+            raise ValidationError(_('The payment amount must be strictly positive.'))
     
     @api.model
     def _default_payment_amount(self):
@@ -41,12 +48,64 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
         active_ids = context.get('active_ids', [])
         expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
         if expense_sheet.payment_mode == 'own_account':
-            return expense_sheet.amount_total
+            return expense_sheet.exp_amount_due
     
+    @api.one
+    @api.depends('amounts', 'test_amount', 'payment_date', 'currency_id')
+    def _compute_payment_difference(self):
+        if self.amounts:
+            self.payment_difference = self.test_amount - self.amounts
+    
+    def _get_payment_vals(self):
+        """ Hook for extension """
+        return {
+            'partner_type': 'supplier',
+            'payment_type': 'outbound',
+            'partner_id': self.partner_id.id,
+            'journal_id': self.journal_id.id,
+            'company_id': self.company_id.id,
+            'payment_method_id': self.payment_method_id.id,
+            'amount': self.amounts,
+            'currency_id': self.currency_id.id,
+            'payment_date': self.payment_date,
+            'communication': self.communication
+        }
+    
+    amounts = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
     test_amount = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
-    amount = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
     payment_difference = fields.Monetary(compute='_compute_payment_difference', readonly=True)
     payment_difference_handling = fields.Selection([('open', 'Keep open'), ('reconcile', 'Mark invoice as fully paid')], default='open', string="Payment Difference", copy=False)
+    
+    
+    @api.multi
+    def expense_post_payment(self):
+        self.ensure_one()
+        context = dict(self._context or {})
+        active_ids = context.get('active_ids', [])
+        expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
+
+        # Create payment and post it
+        payment = self.env['account.payment'].create(self._get_payment_vals())
+        payment.post()
+
+        # Log the payment in the chatter
+        body = (_("A payment of %s %s with the reference <a href='/mail/view?%s'>%s</a> related to your expense %s has been made.") % (payment.amounts, payment.currency_id.symbol, url_encode({'model': 'account.payment', 'res_id': payment.id}), payment.name, expense_sheet.name))
+        expense_sheet.message_post(body=body)
+        
+        #update amount due
+        expense_sheet.exp_amount_due = self.payment_difference
+        
+        if not self.payment_difference == 0.00:
+            expense_sheet.state = "open"
+        
+        # Reconcile the payment and the expense, i.e. lookup on the payable account move lines
+        account_move_lines_to_reconcile = self.env['account.move.line']
+        for line in payment.move_line_ids + expense_sheet.account_move_id.line_ids:
+            if line.account_id.internal_type == 'payable':
+                account_move_lines_to_reconcile |= line
+        account_move_lines_to_reconcile.reconcile()
+
+        return {'type': 'ir.actions.act_window_close'}
     
     
 class HrExpense(models.Model):
@@ -215,9 +274,55 @@ class HrExpenseSheet(models.Model):
                     self.need_override = True
                 else:
                     self.need_override = False
+    
+    @api.one
+    @api.depends('expense_line_ids', 'expense_line_ids.total_amount', 'expense_line_ids.currency_id')
+    def _compute_amount(self):
+        total_amount = 0.0
+        for expense in self.expense_line_ids:
+            total_amount += expense.currency_id.with_context(
+                date=expense.date,
+                company_id=expense.company_id.id
+            ).compute(expense.total_amount, self.currency_id)
+        self.total_amount = total_amount
+        self.exp_amount_due = total_amount
+    
+    def _get_payments_vals(self):
+        """ Hook for extension """
+        return {
+            'partner_type': 'supplier',
+            'payment_type': 'outbound',
+            'partner_id': self.partner_id.id,
+            'journal_id': self.journal_id.id,
+            'company_id': self.company_id.id,
+            'payment_method_id': self.payment_method_id.id,
+            'amount': self.amount,
+            'currency_id': self.currency_id.id,
+            'payment_date': self.payment_date,
+            'communication': self.communication
+        }
+        
+    #@api.one
+    #@api.depends('exp_amount_due')
+    #def _get_payment_info_JSON(self):
+        #.payments_widget = json.dumps(False)
+        #if self.exp_amount_due:
+            #info = {'title': _('Less Payment'), 'outstanding': False, 'content': self._get_payments_vals()}
+            #self.payments_widget = json.dumps(info)
+    
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
+    exp_amount_due = fields.Float(string='Amount Due', store=True, readonly=True, compute='_compute_amount')
+    #payments_widget = fields.Text(groups="account.group_account_invoice")
+    
+    state = fields.Selection([('submit', 'Submitted'),
+                              ('approve', 'Approved'),
+                              ('post', 'Posted'),
+                              ('done', 'Paid'),
+                              ('cancel', 'Refused')
+                              ], string='Status', index=True, readonly=True, track_visibility='onchange', copy=False, default='submit', required=True,
+    help='Expense Report State')
     
     @api.multi
     def action_sheet_move_create(self):

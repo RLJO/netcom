@@ -297,18 +297,73 @@
 	            <field name="analytic_account_id" position="replace">
 	            	<field name="account_id"/>
 	            </field>
+	           	<field name="expense_line_ids" position="after">
+	            	<group class="oe_subtotal_footer oe_right">
+	                   <field name="total_amount"/>
+	                    <!-- <field name="payments_widget" colspan="2" nolabel="1" widget="payment"/> -->
+	                   <field name="exp_amount_due" class="oe_subtotal_footer_separator" attrs="{'invisible': [('exp_amount_due', '&lt;=', 'exp_amount_due')]}"/>
+	                   <!--<field name="amount_tax" invisible="1"/>
+	                   <field name="amount_total" class="oe_subtotal_footer_separator"/>
+	                   <field name="residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+	                   <field name="reconciled" invisible="1"/>
+	                   <field name="outstanding_credits_debits_widget" colspan="2" nolabel="1" widget="payment" attrs="{'invisible': [('state', 'not in', 'open')]}"/> -->
+	               </group>
+	            </field>
             </field>
     </record>
-    <record id="netcom_hr_expense_sheet_register_payment_view_form" model="ir.ui.view">
-            <field name="name">netcom.hr.expense.sheet.register.payment.wizard.form</field>
+    
+    <record id="hr_expense.hr_expense_sheet_register_payment_view_form" model="ir.ui.view">
+            <field name="name">hr.expense.sheet.register.payment.wizard.form</field>
             <field name="model">hr.expense.sheet.register.payment.wizard</field>
-            <field name="inherit_id" ref="hr_expense.hr_expense_sheet_register_payment_view_form"/>
             <field name="arch" type="xml">
-            <field name="communication" position="after">
-            	<field name="test_amount"/>
+                <form string="Register Payment">
+                    <sheet>
+                        <field name="id" invisible="1"/>
+                        <div class="oe_title">
+                            <h1>Draft Payment</h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" required="1" context="{'default_is_company': True, 'default_supplier': True}"/>
+                                <field name="journal_id" widget="selection"/>
+                                <field name="hide_payment_method" invisible="1"/>
+                                <field name="payment_method_id" widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)]}"/>
+                                <label for="amounts"/>
+                                <div name="amount_div" class="o_row">
+                                    <field name="amounts"/>
+                                    <field name="test_amount"/>
+                                    <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
+                                </div>
+                            </group>
+                            <group>
+                                <field name="payment_date"/>
+                                <field name="communication"/>
+                            </group>
+                            <group attrs="{'invisible': [('payment_difference', '=', 0.0)]}">
+				                <label for="payment_difference"/>
+				                <div>
+				                    <field name="payment_difference"/>
+				                    <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+				                    <!-- <div attrs="{'invisible': [('payment_difference_handling','=','open')]}">
+				                        <label for="writeoff_account_id" class="oe_edit_only" string="Post Difference In"/>
+				                        <field name="writeoff_account_id" string="Post Difference In" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+				                        <label string="Journal" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+				                        <field name="journal_id" string="Journal" widget="selection" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+				                        <label for="writeoff_label" class="oe_edit_only" string="Label"/>
+				                        <field name="writeoff_label" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+				                    </div> -->
+				                </div>
+				            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string='Validate' name="expense_post_payment" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
             </field>
-            </field>
-    </record>
+        </record>
+    
     <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">
             <field name="name">netcom.hr.expense.sheet.tree</field>
             <field name="model">hr.expense.sheet</field>
