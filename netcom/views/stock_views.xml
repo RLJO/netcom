@@ -110,12 +110,32 @@
         <field name="context">{'search_default_Report_date':1, 'search_default_Sales':1, 'group_by_no_leaf':1,'group_by':[]}</field>
         <field name="help">This report performs analysis on your quotations and sales orders. Analysis check your sales revenues and sort it by different group criteria (salesman, partner, product, etc.) Use this report to perform analysis on sales not having invoiced yet. If you want to analyse your turnover, you should use the Invoice Analysis report in the Accounting application.</field>
     </record>
+    
+    <record id="netcom_action_account_invoice_all_to_pay" model="ir.actions.act_window">
+            <field name="name">Approved Vendor Bills To Pay</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_mode">tree,kanban,form,pivot,graph</field>
+            <field name="search_view_id" ref="account.invoice_supplier_form"/>
+            <field name="domain">[('treasury_approval', '=', True)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a new vendor bill.
+              </p><p>
+                You can control the invoice from your vendor according to
+                what you purchased or received.
+              </p>
+            </field>
+        </record>
   
 	<menuitem id="netcom_menu_report_product_all"
             name="BDD Sales Report"
             action="netcom_action_order_report_all"
             parent="sale.menu_sale_report"
             sequence="1"/>
+            
+    <menuitem id="netcom_menu_account_invoice_all_to_pay" name="Approved Vendor Bills To Pay" sequence="14" parent="purchase.menu_purchase_control"
+            action="netcom_action_account_invoice_all_to_pay" groups="netcom.group_expense_payment"/>
 	  
   <!-- <record id="netcom_view_order_product_pivot" model="ir.ui.view">
          <field name="name">netcom.sale.report.pivot</field>
@@ -159,6 +179,18 @@
         </field>
     </record>
     
+       	<record id="account_invoice_submit_action_server_net" model="ir.actions.server">
+            <field name="name">Vendor Bill: Submit To Manager for payment</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_account_invoice"/>
+            <field name="binding_model_id" ref="model_account_invoice"/>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.submit_approved_expenses()
+            </field>
+        </record>
+    
     <record id="netcom_invoice_form" model="ir.ui.view">
             <field name="name">netcom.invoice.form</field>
             <field name="model">account.invoice</field>
@@ -187,6 +219,21 @@
 	            		<field name="total_discount_amount"/>
 	            	</group>
 	            </xpath>
+            </field>
+   	</record>
+   	
+   	<record id="netcom_invoice_supplier_form" model="ir.ui.view">
+            <field name="name">netcom.account.invoice.supplier.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+	            <xpath expr="//button[@name='action_invoice_draft']" position="before">
+	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	            </xpath>
+	            <field name="number" position="before">
+            	<field name="treasury_approval" invisible="1"/>
+            	<field name="treasury_approved" invisible="1"/>
+	            </field>
             </field>
    	</record>
   
@@ -284,6 +331,8 @@
             <field name="arch" type="xml">
 	            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
 	                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
+	                <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	            	<button name="%(hr_expense.hr_expense_sheet_register_payment_wizard_action)d" type="action" string="Register Payment" class="oe_highlight o_expense_sheet_pay" attrs="{'invisible': [('state', '!=', 'open')]}" context="{'default_amount': total_amount, 'partner_id': address_id}" groups="account.group_account_manager"/>
 	            </xpath>
 	            <field name="name" position="before">
 	            	<field name= "need_override" invisible = "1"/>
@@ -331,7 +380,7 @@
                                 <label for="amounts"/>
                                 <div name="amount_div" class="o_row">
                                     <field name="amounts"/>
-                                    <field name="test_amount"/>
+                                    <field name="test_amount" invisible="1"/>
                                     <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
                                 </div>
                             </group>
@@ -371,6 +420,7 @@
             <field name="arch" type="xml">
             <field name="state" position="before">
             	<field name="need_override"/>
+            	<field name="exp_amount_due"/>
             </field>
             </field>
     </record>

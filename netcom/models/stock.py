@@ -74,7 +74,7 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
     amounts = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
     test_amount = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
     payment_difference = fields.Monetary(compute='_compute_payment_difference', readonly=True)
-    payment_difference_handling = fields.Selection([('open', 'Keep open'), ('reconcile', 'Mark invoice as fully paid')], default='open', string="Payment Difference", copy=False)
+    payment_difference_handling = fields.Selection([('open', 'set open'), ('reconcile', 'Leave as posted')], default='open', string="Payment Difference", copy=False)
     
     
     @api.multi
@@ -89,13 +89,13 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
         payment.post()
 
         # Log the payment in the chatter
-        body = (_("A payment of %s %s with the reference <a href='/mail/view?%s'>%s</a> related to your expense %s has been made.") % (payment.amounts, payment.currency_id.symbol, url_encode({'model': 'account.payment', 'res_id': payment.id}), payment.name, expense_sheet.name))
+        body = (_("A payment of %s %s with the reference <a href='/mail/view?%s'>%s</a> related to your expense %s has been made.") % (payment.amount, payment.currency_id.symbol, url_encode({'model': 'account.payment', 'res_id': payment.id}), payment.name, expense_sheet.name))
         expense_sheet.message_post(body=body)
         
         #update amount due
         expense_sheet.exp_amount_due = self.payment_difference
         
-        if not self.payment_difference == 0.00:
+        if not self.payment_difference == 0.00 and self.payment_difference_handling == 'open':
             expense_sheet.state = "open"
         
         # Reconcile the payment and the expense, i.e. lookup on the payable account move lines
@@ -287,38 +287,15 @@ class HrExpenseSheet(models.Model):
         self.total_amount = total_amount
         self.exp_amount_due = total_amount
     
-    def _get_payments_vals(self):
-        """ Hook for extension """
-        return {
-            'partner_type': 'supplier',
-            'payment_type': 'outbound',
-            'partner_id': self.partner_id.id,
-            'journal_id': self.journal_id.id,
-            'company_id': self.company_id.id,
-            'payment_method_id': self.payment_method_id.id,
-            'amount': self.amount,
-            'currency_id': self.currency_id.id,
-            'payment_date': self.payment_date,
-            'communication': self.communication
-        }
-        
-    #@api.one
-    #@api.depends('exp_amount_due')
-    #def _get_payment_info_JSON(self):
-        #.payments_widget = json.dumps(False)
-        #if self.exp_amount_due:
-            #info = {'title': _('Less Payment'), 'outstanding': False, 'content': self._get_payments_vals()}
-            #self.payments_widget = json.dumps(info)
-    
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
     exp_amount_due = fields.Float(string='Amount Due', store=True, readonly=True, compute='_compute_amount')
-    #payments_widget = fields.Text(groups="account.group_account_invoice")
     
     state = fields.Selection([('submit', 'Submitted'),
                               ('approve', 'Approved'),
                               ('post', 'Posted'),
+                              ('open', 'Open'),
                               ('done', 'Paid'),
                               ('cancel', 'Refused')
                               ], string='Status', index=True, readonly=True, track_visibility='onchange', copy=False, default='submit', required=True,
@@ -995,12 +972,41 @@ class AccountInvoice(models.Model):
              " * The 'Cancelled' status is used when user cancel invoice.")
     total_discount_amount = fields.Float(string="Total Discount Amount", compute="_total_discount_amount")
     
+    treasury_approval = fields.Boolean(string='payment for approval')
+    treasury_approved = fields.Boolean(string='payment approved')
+    payment_approval_date = fields.Datetime(string='Payment Approval Date', store=True, readonly=True, track_visibility='onchange')
+    
     @api.depends('invoice_line_ids.discount_amount')
     def _total_discount_amount(self):
         total_discount_amount = 0.0
         for line in self.invoice_line_ids:
             self.total_discount_amount += line.discount_amount
-            
+    
+    @api.multi
+    def submit_approved_expenses(self):
+        for self in self:
+            if self.state == 'open':
+                self.treasury_approval = True
+                group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_expense_payment')
+                user_ids = []
+                partner_ids = []
+                for user in group_id.users:
+                    user_ids.append(user.id)
+                    partner_ids.append(user.partner_id.id)
+                self.message_subscribe_users(user_ids=user_ids)
+                subject = "Vendor Bill {} is ready for Payment".format(self.number)
+                self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+                return False
+            else:
+                raise UserError(_('Vendor Bill to be Approved for payment has not been Validated.'))
+    
+    @api.multi
+    def button_treasury_approval(self):
+        self.treasury_approved = True
+        self.treasury_approval = False
+        self.payment_approval_date = datetime.datetime.now()
+        return {}
+    
 class AccountInvoiceTax(models.Model):
     _name = "account.invoice.tax"
     _inherit = ['account.invoice.tax']
