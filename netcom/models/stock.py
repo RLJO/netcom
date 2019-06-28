@@ -16,6 +16,8 @@ from werkzeug import url_encode
 
 from odoo import tools
 
+from odoo.addons import decimal_precision as dp
+
 _logger = logging.getLogger(__name__)
 
 
@@ -1215,6 +1217,15 @@ class SaleOrder(models.Model):
             order.write({'bill_confirm': True})
         return True
     
+    @api.one
+    @api.depends('percent_shared_report_amount_mrc','percent_shared_report_amount_nrc')
+    def _compute_percentage(self):
+        for percent in self:
+            mrc_shared_percent = percent.report_amount_mrc * (percent.percent_shared_report_amount_mrc / 100.0)
+            nrc_shared_percent = percent.report_amount_nrc * (percent.percent_shared_report_amount_nrc / 100.0)
+            self.shared_report_amount_mrc = mrc_shared_percent
+            self.shared_report_amount_nrc = nrc_shared_percent
+    
     remarks = fields.Char('Remarks', track_visibility='onchange')
     date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
@@ -1226,6 +1237,15 @@ class SaleOrder(models.Model):
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
     report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
+    
+    shared_salesperson = fields.Many2one(comodel_name='res.users', string='Shared with')
+    percent_shared_report_amount_mrc = fields.Float(string='Percentage(%) of MRC', digits=dp.get_precision('Discount'), default=0.0)
+    percent_shared_report_amount_nrc = fields.Float(string='Percentage(%) of  NRC', digits=dp.get_precision('Discount'), default=0.0)
+    
+    shared_report_amount_mrc = fields.Monetary(string='Shared MRC', store=True, readonly=True, compute='_compute_percentage')
+    shared_report_amount_nrc = fields.Monetary(string='Shared NRC', store=True, readonly=True, compute='_compute_percentage')
+    
+    
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1575,6 +1595,11 @@ class BDDSaleReport(models.Model):
     price_review_date = fields.Date(string='Price Review Date', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)    
     
+    shared_salesperson = fields.Many2one(comodel_name='res.users', string='Shared with', readonly=True)
+    shared_report_amount_mrc = fields.Float(string='Shared MRC', readonly=True)
+    shared_report_amount_nrc = fields.Float(string='Shared NRC', readonly=True)
+    
+    
     def _select(self):
         select_str = """
             WITH currency_rate as (%s)
@@ -1600,6 +1625,9 @@ class BDDSaleReport(models.Model):
                     s.date_order as date,
                     s.confirmation_date as confirmation_date,
                     s.state as state,
+                    s.shared_salesperson as shared_salesperson,
+                    s.shared_report_amount_mrc as shared_report_amount_mrc,
+                    s.shared_report_amount_nrc as shared_report_amount_nrc,
                     s.partner_id as partner_id,
                     s.user_id as user_id,
                     s.company_id as company_id,
@@ -1648,6 +1676,9 @@ class BDDSaleReport(models.Model):
                     s.partner_id,
                     s.user_id,
                     s.state,
+                    s.shared_salesperson,
+                    s.shared_report_amount_mrc,
+                    s.shared_report_amount_nrc,
                     l.report_nrc_mrc,
                     l.report_date,
                     l.price_review_date,
