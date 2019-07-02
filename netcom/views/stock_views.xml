@@ -867,7 +867,7 @@ if records:
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
-                                <field name="report_date"/>
+                                <field name="report_date" readonly="1"/>
                                 <field name="new_sub"/>
                                 <field name="qty_delivered_updateable" invisible="1"/>
                                 <field name="state" invisible="1"/>
@@ -910,8 +910,8 @@ if records:
                             </kanban>
                         </field>
                         <group>
-                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
+                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
                         </group>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
                         	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
