@@ -865,7 +865,7 @@ if records:
                                     attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
                                 <field name="discount" groups="sale.group_discount_per_so_line"/>
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
-                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
+                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal" readonly="1"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
                                 <field name="report_date" readonly="1"/>
                                 <field name="new_sub"/>
