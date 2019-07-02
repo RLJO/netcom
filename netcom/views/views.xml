@@ -165,7 +165,8 @@
                 <field name="name" readonly="1"/>
             </field>
             <field name="employee_id" position="before">
-            	<!--<field name="treasury_approval"/>-->
+            	<field name="treasury_approval" invisible="1"/>
+            	<field name="treasury_approved" invisible="1"/>
                 <field name="description" readonly="1"/>
             </field>
         </field>
