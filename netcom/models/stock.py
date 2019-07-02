@@ -51,6 +51,8 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
         expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
         if expense_sheet.payment_mode == 'own_account':
             return expense_sheet.exp_amount_due
+        else:
+            return expense_sheet.exp_amount_due
     
     @api.one
     @api.depends('amounts', 'test_amount', 'payment_date', 'currency_id')
