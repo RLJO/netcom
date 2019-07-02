@@ -942,13 +942,13 @@ if records:
                                 <field name="account_executive_id" groups="base.group_system"/>
                                 <field name="account_manager_id" groups="base.group_system"/>
                             </group>
-                            <group string="Percentage Reallocation" name="percent">
+                            <!--<group string="Percentage Reallocation" name="percent">
                                 <field name="shared_salesperson"/>
                                 <field name="percent_shared_report_amount_mrc"/>
                                 <field name="percent_shared_report_amount_nrc"/>
                                 <field name="shared_report_amount_mrc" readonly="1"/>
                                 <field name="shared_report_amount_nrc" readonly="1"/>
-                            </group>
+                            </group>-->s
                             <group string="Reporting" name="technical" groups="base.group_no_one">
                                 <field groups="base.group_no_one" name="origin"/>
                             </group>
