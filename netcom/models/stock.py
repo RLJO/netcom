@@ -287,7 +287,10 @@ class HrExpenseSheet(models.Model):
                 company_id=expense.company_id.id
             ).compute(expense.total_amount, self.currency_id)
         self.total_amount = total_amount
-        self.exp_amount_due = total_amount
+        if self.state in ['done']:
+            self.exp_amount_due = 0
+        else:
+            self.exp_amount_due = total_amount
     
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
