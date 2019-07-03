@@ -1231,8 +1231,8 @@ class SaleOrder(models.Model):
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
-    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
-    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
+    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=True, readonly=False, track_visibility='onchange')
+    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=True, readonly=False, track_visibility='onchange')
     
     
 class SaleOrderLine(models.Model):
@@ -1245,8 +1245,8 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=False, store=True)
-    report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False, store=True)
+    report_date = fields.Date('Report Date', readonly=False, store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
