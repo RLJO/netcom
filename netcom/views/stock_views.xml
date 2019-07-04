@@ -110,12 +110,32 @@
         <field name="context">{'search_default_Report_date':1, 'search_default_Sales':1, 'group_by_no_leaf':1,'group_by':[]}</field>
         <field name="help">This report performs analysis on your quotations and sales orders. Analysis check your sales revenues and sort it by different group criteria (salesman, partner, product, etc.) Use this report to perform analysis on sales not having invoiced yet. If you want to analyse your turnover, you should use the Invoice Analysis report in the Accounting application.</field>
     </record>
+    
+    <record id="netcom_action_account_invoice_all_to_pay" model="ir.actions.act_window">
+            <field name="name">Approved Vendor Bills To Pay</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_mode">tree,kanban,form,pivot,graph</field>
+            <field name="search_view_id" ref="account.invoice_supplier_form"/>
+            <field name="domain">[('treasury_approval', '=', True)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a new vendor bill.
+              </p><p>
+                You can control the invoice from your vendor according to
+                what you purchased or received.
+              </p>
+            </field>
+        </record>
   
 	<menuitem id="netcom_menu_report_product_all"
             name="BDD Sales Report"
             action="netcom_action_order_report_all"
             parent="sale.menu_sale_report"
             sequence="1"/>
+            
+    <menuitem id="netcom_menu_account_invoice_all_to_pay" name="Approved Vendor Bills To Pay" sequence="14" parent="purchase.menu_purchase_control"
+            action="netcom_action_account_invoice_all_to_pay" groups="netcom.group_expense_payment"/>
 	  
   <!-- <record id="netcom_view_order_product_pivot" model="ir.ui.view">
          <field name="name">netcom.sale.report.pivot</field>
@@ -159,6 +179,18 @@
         </field>
     </record>
     
+       	<record id="account_invoice_submit_action_server_net" model="ir.actions.server">
+            <field name="name">Vendor Bill: Submit To Manager for payment</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_account_invoice"/>
+            <field name="binding_model_id" ref="model_account_invoice"/>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.submit_approved_expenses()
+            </field>
+        </record>
+    
     <record id="netcom_invoice_form" model="ir.ui.view">
             <field name="name">netcom.invoice.form</field>
             <field name="model">account.invoice</field>
@@ -187,6 +219,21 @@
 	            		<field name="total_discount_amount"/>
 	            	</group>
 	            </xpath>
+            </field>
+   	</record>
+   	
+   	<record id="netcom_invoice_supplier_form" model="ir.ui.view">
+            <field name="name">netcom.account.invoice.supplier.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+	            <xpath expr="//button[@name='action_invoice_draft']" position="before">
+	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	            </xpath>
+	            <field name="number" position="before">
+            	<field name="treasury_approval" invisible="1"/>
+            	<field name="treasury_approved" invisible="1"/>
+	            </field>
             </field>
    	</record>
   
@@ -272,6 +319,9 @@
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="department_name" invisible="1"/>
             </field>
+            <field name="incoterm_id" position="after">
+            	<field name="stock_source"/>
+            </field>
         </field>
     </record>
     <record id="netcom_view_hr_expense_sheet_form" model="ir.ui.view">
@@ -279,23 +329,90 @@
             <field name="model">hr.expense.sheet</field>
             <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form"/>
             <field name="arch" type="xml">
-            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
-                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
-            </xpath>
-            <field name="name" position="before">
-            	<field name= "need_override" invisible = "1"/>
-            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
-            </field>
-            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
-            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
-            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
-            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
-            </xpath>
-            <field name="analytic_account_id" position="replace">
-            	<field name="account_id"/>
-            </field>
+	            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
+	                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
+	                <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	            	<button name="%(hr_expense.hr_expense_sheet_register_payment_wizard_action)d" type="action" string="Register Payment" class="oe_highlight o_expense_sheet_pay" attrs="{'invisible': [('state', '!=', 'open')]}" context="{'default_amount': total_amount, 'partner_id': address_id}" groups="account.group_account_manager"/>
+	            </xpath>
+	            <field name="name" position="before">
+	            	<field name= "need_override" invisible = "1"/>
+	            	<h3 attrs="{'invisible': [('need_override', '=', False)]}"><b>Needs Budget Override, The Budget Dept. has been notified </b></h3>
+	            </field>
+	            <xpath expr="//field[@name='expense_line_ids']/tree/field[@name='total_amount']" position="after">
+	            	<field name= "need_override" attrs="{'invisible': [('need_override', '=', False)]}" />
+	            	<field name= "override_budget" attrs="{'invisible': [('need_override', '=', False)]}" groups="netcom.group_sale_account_budget"/>
+	            	<button name="action_override_budget" type="object" string="Override Budget" groups="netcom.group_sale_account_budget" attrs="{'invisible': ['|',('need_override', '=', False),('override_budget', '=', True)]}"/>
+	            </xpath>
+	            <field name="analytic_account_id" position="replace">
+	            	<field name="account_id"/>
+	            </field>
+	           	<field name="expense_line_ids" position="after">
+	            	<group class="oe_subtotal_footer oe_right">
+	                   <field name="total_amount"/>
+	                    <!-- <field name="payments_widget" colspan="2" nolabel="1" widget="payment"/> -->
+	                   <field name="exp_amount_due" class="oe_subtotal_footer_separator" attrs="{'invisible': [('exp_amount_due', '&lt;=', 'exp_amount_due')]}"/>
+	                   <!--<field name="amount_tax" invisible="1"/>
+	                   <field name="amount_total" class="oe_subtotal_footer_separator"/>
+	                   <field name="residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+	                   <field name="reconciled" invisible="1"/>
+	                   <field name="outstanding_credits_debits_widget" colspan="2" nolabel="1" widget="payment" attrs="{'invisible': [('state', 'not in', 'open')]}"/> -->
+	               </group>
+	            </field>
             </field>
     </record>
+    
+    <record id="hr_expense.hr_expense_sheet_register_payment_view_form" model="ir.ui.view">
+            <field name="name">hr.expense.sheet.register.payment.wizard.form</field>
+            <field name="model">hr.expense.sheet.register.payment.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Register Payment">
+                    <sheet>
+                        <field name="id" invisible="1"/>
+                        <div class="oe_title">
+                            <h1>Draft Payment</h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" required="1" context="{'default_is_company': True, 'default_supplier': True}"/>
+                                <field name="journal_id" widget="selection"/>
+                                <field name="hide_payment_method" invisible="1"/>
+                                <field name="payment_method_id" widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)]}"/>
+                                <label for="amounts"/>
+                                <div name="amount_div" class="o_row">
+                                    <field name="amounts"/>
+                                    <field name="test_amount" invisible="1"/>
+                                    <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
+                                </div>
+                            </group>
+                            <group>
+                                <field name="payment_date"/>
+                                <field name="communication"/>
+                            </group>
+                            <group attrs="{'invisible': [('payment_difference', '=', 0.0)]}">
+				                <label for="payment_difference"/>
+				                <div>
+				                    <field name="payment_difference"/>
+				                    <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+				                    <!-- <div attrs="{'invisible': [('payment_difference_handling','=','open')]}">
+				                        <label for="writeoff_account_id" class="oe_edit_only" string="Post Difference In"/>
+				                        <field name="writeoff_account_id" string="Post Difference In" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+				                        <label string="Journal" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+				                        <field name="journal_id" string="Journal" widget="selection" attrs="{'invisible': [('amount', '!=', 0)]}"/>
+				                        <label for="writeoff_label" class="oe_edit_only" string="Label"/>
+				                        <field name="writeoff_label" attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+				                    </div> -->
+				                </div>
+				            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string='Validate' name="expense_post_payment" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    
     <record id="netcom_view_hr_expense_sheet_tree" model="ir.ui.view">
             <field name="name">netcom.hr.expense.sheet.tree</field>
             <field name="model">hr.expense.sheet</field>
@@ -303,6 +420,7 @@
             <field name="arch" type="xml">
             <field name="state" position="before">
             	<field name="need_override"/>
+            	<field name="exp_amount_due"/>
             </field>
             </field>
     </record>
@@ -374,7 +492,58 @@
           </p>
         </field>
     </record>
+	
+	<!--
+            stock_rejection views
+        -->
+        <record id="stock_rejection_view_search" model="ir.ui.view">
+            <field name="name">stock.rejection.reason.view.search</field>
+            <field name="model">stock.rejection.reason</field>
+            <field name="arch" type="xml">
+                <search string="Search Opportunities">
+                    <filter string="Include archived" name="archived"
+                            domain="['|', ('active', '=', True), ('active', '=', False)]"/>
+                </search>
+            </field>
+        </record>
 
+        <record id="stock_rejection_view_form" model="ir.ui.view">
+            <field name="name">stock.rejection.reason.form</field>
+            <field name="model">stock.rejection.reason</field>
+            <field name="arch" type="xml">
+                <form string="Channel">
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+	
+	<record id="stock_picking_rejection_view_form" model="ir.ui.view">
+            <field name="name">stock.picking.rejected.form</field>
+            <field name="model">stock.picking.rejected</field>
+            <field name="arch" type="xml">
+                <form string="Rejection Reason">
+                    <group class="oe_title">
+                        <field name="rejection_reason_id"/>
+                    </group>
+                    <footer>
+                        <button name="action_rejection_reason_apply" string="Submit" type="object" class="btn btn-sm btn-primary"/>
+                        <button string="Cancel" class="btn btn-sm btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+ 
+        <record id="stock_rejection_action" model="ir.actions.act_window">
+            <field name="name">Rejection Reason</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.picking.rejected</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="stock_picking_rejection_view_form"/>
+            <field name="target">new</field>
+        </record>
    
     <record id="netcom_stock_form_view" model="ir.ui.view">
             <field name="name">netcom.stock.form</field>
@@ -403,11 +572,11 @@
                     <field name="has_packages" invisible="1"/>
                     <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
                     
-                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager" attrs="{'invisible': [('show_check_availability', '=', False)]}"/>
+                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager"/>
                     
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="reset" groups="stock.group_stock_manager" type="object"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
-                    <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="object"/>
+                    <button name="%(netcom.stock_rejection_action)d" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="action"/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Unlock" groups="stock.group_stock_manager" type="object" help="If the picking is unlocked you can edit initial demand (for a draft picking) or done quantities (for a done picking)."/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': [('is_locked', '=', True)]}" string="Lock" class="oe_highlight" groups="stock.group_stock_manager" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,partially_available,assigned,done" />
@@ -696,9 +865,9 @@
                                     attrs="{'readonly': [('qty_invoiced', '&gt;', 0)]}"/>
                                 <field name="discount" groups="sale.group_discount_per_so_line"/>
                                 <field name="price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
-                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal"/>
+                                <field name="reports_price_subtotal" widget="monetary" groups="sale.group_show_price_subtotal" readonly="1"/>
                                 <field name="price_total" widget="monetary" groups="sale.group_show_price_total"/>
-                                <field name="report_date"/>
+                                <field name="report_date" readonly="1"/>
                                 <field name="new_sub"/>
                                 <field name="qty_delivered_updateable" invisible="1"/>
                                 <field name="state" invisible="1"/>
@@ -741,8 +910,8 @@
                             </kanban>
                         </field>
                         <group>
-                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
+                        	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
                         </group>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
                         	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
@@ -852,7 +1021,7 @@
 	<menuitem name="Budget" id="netcom_budget_reporting_team" parent="netcom_budget_report"
               action="netcom_act_crossovered_budget_lines_view" groups="netcom.group_budget_report"/>
     <menuitem name="My Department's Budget" id="my_netcom_budget_reporting_team" parent="netcom_budget_report"
-              action="my_netcom_act_crossovered_budget_lines_views"/> 
+              action="my_netcom_act_crossovered_budget_lines_views" groups="netcom.group_employee_budget"/> 
 	
 	<menuitem id="sale.menu_sale_report"
             name="Reporting"

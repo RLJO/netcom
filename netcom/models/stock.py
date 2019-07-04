@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
 
 from datetime import date, timedelta
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, AccessError
+from odoo.exceptions import UserError, AccessError, ValidationError
 from odoo.tools import float_is_zero
 
 from functools import partial
@@ -11,8 +12,11 @@ from odoo.tools.misc import formatLang
 
 from dateutil.relativedelta import relativedelta
 import logging
+from werkzeug import url_encode
 
 from odoo import tools
+
+#from odoo.addons import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 
@@ -33,7 +37,81 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
             return expense_sheet.address_id.id or expense_sheet.employee_id.id and expense_sheet.employee_id.address_home_id.id
         
     partner_id = fields.Many2one('res.partner', string='Partner', required=True, default=_default_partner_id)
+    
+    @api.one
+    @api.constrains('amounts')
+    def _check_amount(self):
+        if not self.amounts > 0.0:
+            raise ValidationError(_('The payment amount must be strictly positive.'))
+    
+    @api.model
+    def _default_payment_amount(self):
+        context = dict(self._context or {})
+        active_ids = context.get('active_ids', [])
+        expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
+        if expense_sheet.payment_mode == 'own_account':
+            return expense_sheet.exp_amount_due
+        else:
+            return expense_sheet.exp_amount_due
+    
+    @api.one
+    @api.depends('amounts', 'test_amount', 'payment_date', 'currency_id')
+    def _compute_payment_difference(self):
+        if self.amounts:
+            self.payment_difference = self.test_amount - self.amounts
+    
+    def _get_payment_vals(self):
+        """ Hook for extension """
+        return {
+            'partner_type': 'supplier',
+            'payment_type': 'outbound',
+            'partner_id': self.partner_id.id,
+            'journal_id': self.journal_id.id,
+            'company_id': self.company_id.id,
+            'payment_method_id': self.payment_method_id.id,
+            'amount': self.amounts,
+            'currency_id': self.currency_id.id,
+            'payment_date': self.payment_date,
+            'communication': self.communication
+        }
+    
+    amounts = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
+    test_amount = fields.Monetary(string='Payment Amounts', required=True, default=_default_payment_amount)
+    payment_difference = fields.Monetary(compute='_compute_payment_difference', readonly=True)
+    payment_difference_handling = fields.Selection([('open', 'set open'), ('reconcile', 'Leave as posted')], default='open', string="Payment Difference", copy=False)
+    
+    
+    @api.multi
+    def expense_post_payment(self):
+        self.ensure_one()
+        context = dict(self._context or {})
+        active_ids = context.get('active_ids', [])
+        expense_sheet = self.env['hr.expense.sheet'].browse(active_ids)
 
+        # Create payment and post it
+        payment = self.env['account.payment'].create(self._get_payment_vals())
+        payment.post()
+
+        # Log the payment in the chatter
+        body = (_("A payment of %s %s with the reference <a href='/mail/view?%s'>%s</a> related to your expense %s has been made.") % (payment.amount, payment.currency_id.symbol, url_encode({'model': 'account.payment', 'res_id': payment.id}), payment.name, expense_sheet.name))
+        expense_sheet.message_post(body=body)
+        
+        #update amount due
+        expense_sheet.exp_amount_due = self.payment_difference
+        
+        if not self.payment_difference == 0.00 and self.payment_difference_handling == 'open':
+            expense_sheet.state = "open"
+        
+        # Reconcile the payment and the expense, i.e. lookup on the payable account move lines
+        account_move_lines_to_reconcile = self.env['account.move.line']
+        for line in payment.move_line_ids + expense_sheet.account_move_id.line_ids:
+            if line.account_id.internal_type == 'payable':
+                account_move_lines_to_reconcile |= line
+        account_move_lines_to_reconcile.reconcile()
+
+        return {'type': 'ir.actions.act_window_close'}
+    
+    
 class HrExpense(models.Model):
 
     _name = "hr.expense"
@@ -200,9 +278,35 @@ class HrExpenseSheet(models.Model):
                     self.need_override = True
                 else:
                     self.need_override = False
+    
+    @api.one
+    @api.depends('expense_line_ids', 'expense_line_ids.total_amount', 'expense_line_ids.currency_id')
+    def _compute_amount(self):
+        total_amount = 0.0
+        for expense in self.expense_line_ids:
+            total_amount += expense.currency_id.with_context(
+                date=expense.date,
+                company_id=expense.company_id.id
+            ).compute(expense.total_amount, self.currency_id)
+        self.total_amount = total_amount
+        if self.state in ['done']:
+            self.exp_amount_due = 0
+        else:
+            self.exp_amount_due = total_amount
+    
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
+    exp_amount_due = fields.Float(string='Amount Due', store=True, readonly=True, compute='_compute_amount')
+    
+    state = fields.Selection([('submit', 'Submitted'),
+                              ('approve', 'Approved'),
+                              ('post', 'Posted'),
+                              ('open', 'Open'),
+                              ('done', 'Paid'),
+                              ('cancel', 'Refused')
+                              ], string='Status', index=True, readonly=True, track_visibility='onchange', copy=False, default='submit', required=True,
+    help='Expense Report State')
     
     @api.multi
     def action_sheet_move_create(self):
@@ -315,6 +419,8 @@ class Picking(models.Model):
     internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
     x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
+    rejection_reason = fields.Many2one('stock.rejection.reason', string='Rejection Reason', index=True, track_visibility='onchange')
+    
     @api.multi
     def button_reset(self):
         self.mapped('move_lines')._action_cancel()
@@ -361,6 +467,7 @@ class Picking(models.Model):
 
         partner_id = self.x_studio_field_KZL4m
         client_id = self.x_studio_field_KZL4m
+        sub_account_id = self.sub_account_id
         #product_id = self.move_lines.product_id
              
         view_ref = self.env['ir.model.data'].get_object_reference('purchase', 'purchase_order_form')
@@ -374,6 +481,7 @@ class Picking(models.Model):
                     'name': line.product_id.name,
                     'product_uom': line.product_id.uom_id.id,
                     'product_id': line.product_id.id,
+                    'account_id': line.account_id.id,
                     'product_qty': line.product_uom_qty,
                     'date_planned': date.today(),
                     'price_unit': line.product_id.standard_price,
@@ -387,11 +495,33 @@ class Picking(models.Model):
             'view_mode': 'form',
             'view_id': view_id,
             'target': 'current',
-            'context': {'default_client_id': client_id.id}
+            'context': {'default_client_id': client_id.id, 'default_sub_account_id': sub_account_id.id, 'default_stock_source': self.name, 'default_order_line': order_lines}
         }
         
         return res
-  
+    
+    
+class StockRejectionReason(models.Model):
+    _name = "stock.rejection.reason"
+    _description = 'Reason for Rejecting Requests'
+
+    name = fields.Char('Name', required=True, translate=True)
+    active = fields.Boolean('Active', default=True)
+    
+    
+class StockPickingRejection(models.TransientModel):
+    _name = 'stock.picking.rejected'
+    _description = 'Get Rejection Reason'
+
+    rejection_reason_id = fields.Many2one('stock.rejection.reason', 'Rejection Reason')
+
+    @api.multi
+    def action_rejection_reason_apply(self):
+        leads = self.env['stock.picking'].browse(self.env.context.get('active_ids'))
+        leads.write({'rejection_reason': self.rejection_reason_id.id})
+        return leads.button_reset()
+    
+      
 class CrossoveredBudgetLines(models.Model):
     _name = "crossovered.budget.lines"
     _inherit = ['crossovered.budget.lines']
@@ -535,6 +665,8 @@ class PurchaseOrder(models.Model):
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    
+    stock_source = fields.Char(string='Source document')
     
     @api.multi
     def button_submit(self):
@@ -847,12 +979,41 @@ class AccountInvoice(models.Model):
              " * The 'Cancelled' status is used when user cancel invoice.")
     total_discount_amount = fields.Float(string="Total Discount Amount", compute="_total_discount_amount")
     
+    treasury_approval = fields.Boolean(string='payment for approval')
+    treasury_approved = fields.Boolean(string='payment approved')
+    payment_approval_date = fields.Datetime(string='Payment Approval Date', store=True, readonly=True, track_visibility='onchange')
+    
     @api.depends('invoice_line_ids.discount_amount')
     def _total_discount_amount(self):
         total_discount_amount = 0.0
         for line in self.invoice_line_ids:
             self.total_discount_amount += line.discount_amount
-            
+    
+    @api.multi
+    def submit_approved_expenses(self):
+        for self in self:
+            if self.state == 'open':
+                self.treasury_approval = True
+                group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_expense_payment')
+                user_ids = []
+                partner_ids = []
+                for user in group_id.users:
+                    user_ids.append(user.id)
+                    partner_ids.append(user.partner_id.id)
+                self.message_subscribe_users(user_ids=user_ids)
+                subject = "Vendor Bill {} is ready for Payment".format(self.number)
+                self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+                return False
+            else:
+                raise UserError(_('Vendor Bill to be Approved for payment has not been Validated.'))
+    
+    @api.multi
+    def button_treasury_approval(self):
+        self.treasury_approved = True
+        self.treasury_approval = False
+        self.payment_approval_date = datetime.datetime.now()
+        return {}
+    
 class AccountInvoiceTax(models.Model):
     _name = "account.invoice.tax"
     _inherit = ['account.invoice.tax']
@@ -1061,6 +1222,8 @@ class SaleOrder(models.Model):
             order.write({'bill_confirm': True})
         return True
     
+    confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
+    
     remarks = fields.Char('Remarks', track_visibility='onchange')
     date_order = fields.Date(string='Order Date', required=True, readonly=True, index=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, copy=False, default=fields.Datetime.now)
     period = fields.Integer('Service Contract Period (in months)', default="1", required=True, track_visibility='onchange')
@@ -1070,8 +1233,9 @@ class SaleOrder(models.Model):
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
-    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
-    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
+    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
+    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
+    
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1083,8 +1247,8 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
-    report_date = fields.Date('Report Date', readonly=True, compute='_compute_report_date', store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False,compute='_compute_report_subtotal', store=True)
+    report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
@@ -1302,6 +1466,14 @@ class SaleOrderLine(models.Model):
             else:
                 self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
 
+class AccountReconcileModel(models.Model):
+    _name = "account.reconcile.model"
+    _inherit = "account.reconcile.model"
+    
+    def _default_analytic(self):
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    
+    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, ondelete='set null')  
 
 class BudgetDept(models.Model):
     _name = 'account.budget.post'
@@ -1411,7 +1583,8 @@ class BDDSaleReport(models.Model):
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True)
     price_review_date = fields.Date(string='Price Review Date', readonly=True)
-    #upsell_sub = fields.Boolean('Upsell', readonly=True)    
+    #upsell_sub = fields.Boolean('Upsell', readonly=True)
+    
     
     def _select(self):
         select_str = """

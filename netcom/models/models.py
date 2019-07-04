@@ -51,6 +51,11 @@ class Partner(models.Model):
 
     parent_account_number = fields.Char('Parent Account Number', required=False, index=True, copy=False,)
     contact_name = fields.Char('Contact Name')
+    
+    customer_budget_code_ids = fields.Many2many('account.account', string='Vendor Matching')
+    customer_matching_code_id = fields.Many2one('account.account', string='Vendor Matching Code')
+    customer_matching_code = fields.Char(related='customer_budget_code_ids.code', store=True, string='Customer Matching Code')
+    #next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
 
     @api.model
     def create(self, vals):
@@ -956,6 +961,10 @@ class ExpenseRefSheet(models.Model):
     _name = "hr.expense.sheet"
     _inherit = 'hr.expense.sheet'
     
+    treasury_approval = fields.Boolean(string='payment for approval')
+    treasury_approved = fields.Boolean(string='payment approved')
+    payment_approval_date = fields.Datetime(string='Payment Approval Date', store=True, readonly=True, track_visibility='onchange')
+    
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
     description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
     
@@ -965,6 +974,30 @@ class ExpenseRefSheet(models.Model):
             if expense.description:
                 self.description = expense.description
                 break
+    @api.multi
+    def submit_approved_expenses(self):
+        for self in self:
+            if self.state == 'post':
+                self.treasury_approval = True
+                group_id = self.env['ir.model.data'].xmlid_to_object('netcom.group_expense_payment')
+                user_ids = []
+                partner_ids = []
+                for user in group_id.users:
+                    user_ids.append(user.id)
+                    partner_ids.append(user.partner_id.id)
+                self.message_subscribe_users(user_ids=user_ids)
+                subject = "Posted Expense {} is ready for Payment".format(self.name)
+                self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+                return False
+            else:
+                raise UserError(_('Expense to be Approved for payment has not been posted.'))
+    
+    @api.multi
+    def button_treasury_approval(self):
+        self.treasury_approved = True
+        self.treasury_approval = False
+        self.payment_approval_date = datetime.datetime.now()
+        return {}
     
 class JournalMailThread(models.Model):
     _name = "account.move"

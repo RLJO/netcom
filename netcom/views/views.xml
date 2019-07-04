@@ -10,6 +10,9 @@
     		<field name="parent_account_number" readonly="1"/>
     		<field name="contact_name" />
 		</field>
+		<field name="property_account_payable_id" position="after">
+    		<field name="customer_budget_code_ids" />
+		</field>
 <!-- 		<field name="phone" position="before">
     		<field name="contact_name" />
 		</field> -->
@@ -162,6 +165,8 @@
                 <field name="name" readonly="1"/>
             </field>
             <field name="employee_id" position="before">
+            	<field name="treasury_approval" invisible="1"/>
+            	<field name="treasury_approved" invisible="1"/>
                 <field name="description" readonly="1"/>
             </field>
         </field>
@@ -420,7 +425,35 @@
       <field name="res_model">sub.account</field>
       <field name="view_mode">tree,form</field>
     </record>
-
+    
+    <record id="netcom_action_hr_expense_sheet_all_to_pay" model="ir.actions.act_window">
+            <field name="name">Approved Expense Reports To Pay</field>
+            <field name="res_model">hr.expense.sheet</field>
+            <field name="view_mode">tree,kanban,form,pivot,graph</field>
+            <field name="search_view_id" ref="hr_expense.view_hr_expense_sheet_filter"/>
+            <field name="domain">[('treasury_approval', '=', True)]</field>
+            <field name="context">{'search_default_approved': 1}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click here to create a new expense report.
+              </p><p>
+                Once you have created your expense, submit it to your manager who will validate it.
+              </p>
+            </field>
+        </record>
+	
+	<record id="hr_expense_submit_action_server_net" model="ir.actions.server">
+            <field name="name">Expense: Submit To Manager for payment</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_hr_expense_sheet"/>
+            <field name="binding_model_id" ref="model_hr_expense_sheet"/>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.submit_approved_expenses()
+            </field>
+        </record>
+	
     <menuitem name="Brand" id="brand_list" parent="stock.menu_product_in_config_stock"
               action="brands_action_window"/>
     <menuitem name="Equipment Types" id="equipment_list" parent="stock.menu_product_in_config_stock"
@@ -435,6 +468,9 @@
               
     <menuitem name="Sub Account" id="sub_account" parent="sale.sale_order_menu"
               action="SubAccount_action_window"/>
+	
+	<menuitem id="netcom_menu_hr_expense_sheet_all_to_pay" name="Approved Expense Reports To Pay" sequence="3" parent="hr_expense.menu_hr_expense_accountant"
+            action="netcom_action_hr_expense_sheet_all_to_pay" groups="netcom.group_expense_payment"/>
 	
     <record id="customer_request_form" model="ir.ui.view">
     <field name="name">customer.request.form</field>
