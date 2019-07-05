@@ -27,12 +27,12 @@
     # always loaded
     'data': [
         'security/netcom_security.xml',
-         #'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'data/data.xml',
         'views/views.xml',
-         #'views/stock_views.xml',
+        'views/stock_views.xml',
         'views/templates.xml',
-         #'views/website_netcom_hr_recruitment_template.xml',
+        'views/website_netcom_hr_recruitment_template.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
