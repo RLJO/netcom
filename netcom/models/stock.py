@@ -1269,9 +1269,9 @@ class SaleOrderLine(models.Model):
                     if sub:
                         line.write({'new_sub': False})
                         upsell_report_price_subtotal = line.price_subtotal - sub.price_subtotal / sub.analytic_account_id.template_id.recurring_interval
-                        if upsell_report_price_subtotal < 0:
-                            line.reports_price_subtotal = 0
-                        else:
+                        #if upsell_report_price_subtotal < 0:
+                        #    line.reports_price_subtotal = 0
+                        #else:
                         line.reports_price_subtotal = upsell_report_price_subtotal
                     else:
                         line.write({'new_sub': True})
