@@ -1446,11 +1446,28 @@ class Hrrecruitment(models.Model):
     
     industry_exp = fields.Char(string='Key Industry/Sector Experience')
     country_exp = fields.Char(string='International/Country Experience')
-    highest_level_edu = fields.Selection([('ond','OND'), ('hnd','HND'), ('bsc','BSc'), ('msc','MSc'), ('above','Above')], string='Highest Level of Education')
-    professional_cert = fields.Char(string='Professional Certification(s)/Affiliation(s)')
+    highest_level_edu = fields.Selection([('ond','OND'), ('hnd','HND'), ('bsc','BSc'), ('msc','MSc'), ('diploma','Diploma'), ('pgd','PGD'), ('mba','MBA'), ('phd','PhD'), ('other','Other')], string='Highest Level of Education')
+    
     notice_period = fields.Char(string='Notice Period')
     skype_id = fields.Char(string='Skype ID')
     last_3_employers = fields.Char(string='Last three(3) employers')
+
+    academic_name_of_institution = fields.Char(String='Name of Institution')
+    academic_institution_date_from = fields.Char(String='Date From')
+    academic_institution_date_to = fields.Char(String='Date To')
+    academic_institution_other = fields.Char(String='Others')
+
+    professional_cert = fields.Char(string='Certification')
+    professional_cert_date_from = fields.Char(string='Date From')
+    professional_cert_date_to = fields.Char(string='Date To')
+    professional_cert_institution = fields.Char(string='Professional Certification Awarding Institution')
+
+    name_of_organization = fields.Char(string='Name of Organization:')
+    organization_position = fields.Char(string='Position:')
+    organization_date_from = fields.Char(string='Date From')
+    organization_date_to = fields.Char(string='Date To')
+    organization_job_description = fields.Char(string='Previous Job Description')
+    organization_other = fields.Char(string='And More...')
 
 class NetcomPurchaseRequisition(models.Model):
     _inherit = 'purchase.requisition'
