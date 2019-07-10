@@ -1247,11 +1247,11 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False,compute='_compute_report_subtotal', store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False, compute='_compute_report_subtotal', store=True)
     report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
     
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
