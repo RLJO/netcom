@@ -1468,7 +1468,13 @@ class Hrrecruitment(models.Model):
     organization_date_to = fields.Char(string='Date To')
     organization_job_description = fields.Char(string='Previous Job Description')
     organization_other = fields.Char(string='And More...')
+    
+    intelligence_quotient = fields.Char(string='Intelligence Quotient:')
+    psychometric_test = fields.Char(string='Psychometric test:')
 
+    hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
+    hear_about_this_vacancy_other = fields.Char(string='Other:')
+    
 class NetcomPurchaseRequisition(models.Model):
     _inherit = 'purchase.requisition'
     

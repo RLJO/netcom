@@ -361,6 +361,9 @@
                 <field name="gender" widget="radio"/>-->
                 <field name="date_of_birth"/>
                 
+                <field name="intelligence_quotient"/>
+                <field name="psychometric_test"/>
+                
                 <field name="highest_level_edu"/>
                 <field name="academic_name_of_institution"/>
                 <field name="academic_institution_date_from"/>
@@ -397,6 +400,8 @@
                 <field name="employment_status"/>-->
 
                 <field name="notice_period"/>
+                <field name="hear_about_this_vacancy"/>
+                <field name="hear_about_this_vacancy_other"/>
                 <!--<field name="skype_id"/>
                 <field name="last_3_employers"/>-->
                 <field name="current_salary"/>

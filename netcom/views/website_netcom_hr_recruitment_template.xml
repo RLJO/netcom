@@ -116,12 +116,32 @@
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="current_location">Address</label>
+                        <label class="control-label" for="current_location">Current Location</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <input type="text" class="form-control o_website_form_input" name="current_location"/>
                     </div>
                 </div>
+                
+                <br/>
+                <P><strong>Pre-employment test scores</strong></P>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="intelligence_quotient">Intelligence Quotient:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="integer" class="form-control o_website_form_input" name="intelligence_quotient"/>
+                    </div>
+                </div>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="psychometric_test">Psychometric test:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="integer" class="form-control o_website_form_input" name="psychometric_test"/>
+                    </div>
+                </div>
+                
                 <!-- <div class="form-group form-field o_website_form_required_custom">
                  <div class="col-md-3 col-sm-4 text-right">
                  <label class="control-label" for="preferred_name">Preferred Name</label>
@@ -215,14 +235,16 @@
                     </div>
                 </div>
                 
-                <div class="form-group form-field o_website_form_required_custom">
-                    <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="academic_institution_other">Others:</label>
-                    </div>
-                    <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
-                    </div>
-                </div>
+                <li t-if="highest_level_edu">
+	                <div class="form-group form-field o_website_form_required_custom">
+	                    <div class="col-md-3 col-sm-4 text-right">
+	                        <label class="control-label" for="academic_institution_other">Others:</label>
+	                    </div>
+	                    <div class="col-md-7 col-sm-8">
+	                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
+	                    </div>
+	                </div>
+                </li>
                 
                 <br/>
                 <P><strong>Professional Qualification</strong></P>
@@ -465,6 +487,31 @@
                         <input type="text" class="form-control o_website_form_input" name="notice_period" required=""/>
                     </div>
                 </div>
+                
+                 <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="hear_about_this_vacancy">How did you know about this vacancy?:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control o_website_form_input" name="hear_about_this_vacancy">
+                            <option value="linkedIn">LinkedIn</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="newsletter">Newsletter</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="hear_about_this_vacancy_other">Other:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="hear_about_this_vacancy_other"/>
+                    </div>
+                </div>
+                
                 <!--<div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="skype_id">Skype ID</label>
@@ -517,8 +564,8 @@
             'description',
             'email_from',
             'partner_name','academic_name_of_institution','academic_institution_date_from','date_of_birth','academic_institution_date_to','academic_institution_other','professional_cert_date_from',
-            'professional_cert_date_to','professional_cert_institution','name_of_organization','applicant_image',
-            'organization_position','current_location','organization_date_from','commercial_exp','organization_date_to','country_exp','notice_period',
+            'professional_cert_date_to','professional_cert_institution','name_of_organization','applicant_image','hear_about_this_vacancy_other','hear_about_this_vacancy','psychometric_test',
+            'organization_position','current_location','organization_date_from','commercial_exp','organization_date_to','country_exp','notice_period','intelligence_quotient',
             'current_salary','salary_expected','organization_job_description','last_3_employers','organization_other','professional_cert','highest_level_edu'
             ]"/>
         </function>

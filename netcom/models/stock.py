@@ -765,6 +765,8 @@ class PurchaseOrderLine(models.Model):
     _inherit = ['purchase.order.line']
     
     def _default_analytic(self):
+        for self in self:
+            self.account_analytic_id = 5
         return self.env['account.analytic.account'].search([('name','=','Netcom')])
     
     def _default_account(self):
@@ -1222,6 +1224,25 @@ class SaleOrder(models.Model):
             order.write({'bill_confirm': True})
         return True
     
+    @api.one
+    @api.depends('order_line.reports_price_subtotal')
+    def _bdd_sales_all(self):
+        for order in self:
+            bdd_sales = 0.0
+            for line in order.order_line:
+                bdd_sales += line.reports_price_subtotal
+            order.update({
+                'bdd_sales': order.pricelist_id.currency_id.round(bdd_sales),
+            })
+    
+    @api.one
+    @api.depends('bdd_sales')
+    def _bdd_sales_report(self):
+        if self.bdd_sales < 0:
+            self.bdd_sales_report = 0
+        else:
+            self.bdd_sales_report = self.bdd_sales
+    
     confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
     
     remarks = fields.Char('Remarks', track_visibility='onchange')
@@ -1236,6 +1257,9 @@ class SaleOrder(models.Model):
     report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
     report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
     
+    bdd_sales = fields.Monetary(string='Report Subtotal Sum', store=True, readonly=False, compute='_bdd_sales_all', track_visibility='onchange')
+    bdd_sales_report = fields.Monetary(string='BDD Report Total', store=True, readonly=False, compute='_bdd_sales_report', track_visibility='onchange')
+    
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1247,7 +1271,7 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False,compute='_compute_report_subtotal', store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False, compute='_compute_report_subtotal', store=True)
     report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
@@ -1256,13 +1280,13 @@ class SaleOrderLine(models.Model):
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('report_nrc_mrc','order_id.state')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.order_id.state == 'sale':
+            if line.order_id.state in ['sale','done']:
                 line.reports_price_subtotal = line.confirmed_reports_price_subtotal
             else:
                 if line.report_nrc_mrc == "MRC":
@@ -1584,7 +1608,7 @@ class BDDSaleReport(models.Model):
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True)
     price_review_date = fields.Date(string='Price Review Date', readonly=True)
     #upsell_sub = fields.Boolean('Upsell', readonly=True)
-    
+    bdd_sales_report = fields.Float(string='BDD Report Total', readonly=True)
     
     def _select(self):
         select_str = """
@@ -1603,6 +1627,7 @@ class BDDSaleReport(models.Model):
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
                     sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
+                    s.bdd_sales_report as bdd_sales_report,
                     sum(l.confirmed_reports_price_subtotal / COALESCE(cr.rate, 1.0)) as confirmed_reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
@@ -1657,6 +1682,7 @@ class BDDSaleReport(models.Model):
                     s.date_order,
                     s.confirmation_date,
                     s.partner_id,
+                    s.bdd_sales_report,
                     s.user_id,
                     s.state,
                     l.report_nrc_mrc,
