@@ -775,7 +775,7 @@ class PurchaseOrderLine(models.Model):
 #     def type_change(self):
 #         self.product_id = False
     
-    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, track_visibility="always")
+    account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', required=True, default=_default_analytic, track_visibility="always")
     account_id = fields.Many2one('account.account', string='Account',  domain = [('user_type_id', 'in', [5,8,17,16])])
     need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
     override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
@@ -1233,8 +1233,8 @@ class SaleOrder(models.Model):
     account_executive_id = fields.Many2one(string='Account Executive', comodel_name='hr.employee')
     account_manager_id = fields.Char(string='Account Manager')
     upsell_sub = fields.Boolean('Upsell?', track_visibility='onchange', copy=False, store=True)
-    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
-    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=False, compute='_amount_all', track_visibility='onchange')
+    report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
+    report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     
     
 class SaleOrderLine(models.Model):
@@ -1247,22 +1247,22 @@ class SaleOrderLine(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', compute='_compute_report_mrc_nrc', readonly=True, store=True)
-    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False,compute='_compute_report_subtotal', store=True)
+    reports_price_subtotal = fields.Float('Report Subtotal', readonly=False, compute='_compute_report_subtotal', store=True)
     report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
     
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('report_nrc_mrc','order_id.state')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.order_id.state == 'sale':
+            if line.order_id.state in ['sale','done']:
                 line.reports_price_subtotal = line.confirmed_reports_price_subtotal
             else:
                 if line.report_nrc_mrc == "MRC":
