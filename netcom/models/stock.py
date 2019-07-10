@@ -1256,7 +1256,7 @@ class SaleOrderLine(models.Model):
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
     @api.one
-    @api.depends('report_nrc_mrc')
+    @api.depends('report_nrc_mrc','order_id.state')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
