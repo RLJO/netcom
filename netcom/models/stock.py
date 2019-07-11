@@ -1230,7 +1230,6 @@ class SaleOrder(models.Model):
             order.write({'bill_confirm': True})
         return True
 	
-	
     
     confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
     
