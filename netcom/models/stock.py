@@ -1216,11 +1216,21 @@ class SaleOrder(models.Model):
             default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
         return super(SaleOrder, self).copy_data(default)
     
+
+    @api.depends('report_amount_mrc')
+    def _check_negatieve(self):
+        if self.report_amount_mrc < 0:
+            for line in self.order_line:
+                line.negative_reports_price_subtotal = line.reports_price_subtotal
+                line.reports_price_subtotal = 0
+
     @api.multi
     def billing_confirm(self):
         for order in self:
             order.write({'bill_confirm': True})
         return True
+	
+	
     
     confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
     
