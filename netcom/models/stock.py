@@ -1217,7 +1217,7 @@ class SaleOrder(models.Model):
         return super(SaleOrder, self).copy_data(default)
     
     
-'''
+    '''
     @api.onchange('report_amount_mrc')
     def _check_negatieve(self):
         if self.report_amount_mrc < 0:
