@@ -1217,7 +1217,7 @@ class SaleOrder(models.Model):
         return super(SaleOrder, self).copy_data(default)
     
 
-    @api.depends('report_amount_mrc')
+    @api.multi
     def _check_negatieve(self):
         if self.report_amount_mrc < 0:
             for line in self.order_line:
