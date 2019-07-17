@@ -247,8 +247,7 @@
 	                </div>
 				</xsl:if>
                  -->
-                 
-                <li>
+                
 	                <div class="form-group form-field o_website_form_required_custom">
 	                    <div class="col-md-3 col-sm-4 text-right">
 	                        <label class="control-label" for="academic_institution_other">Others:</label>
@@ -257,7 +256,6 @@
 	                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
 	                    </div>
 	                </div>
-                </li>
                 
                 <br/>
                 <P><strong>Professional Qualification</strong></P>
