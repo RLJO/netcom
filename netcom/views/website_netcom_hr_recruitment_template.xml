@@ -233,16 +233,6 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    <li if="highest_level_edu.option == 'other' or other">
-		                <div class="form-group form-field o_website_form_required_custom">
-		                    <div class="col-md-3 col-sm-4 text-right">
-		                        <label class="control-label" for="academic_institution_other">Others:</label>
-		                    </div>
-		                    <div class="col-md-7 col-sm-8">
-		                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
-		                    </div>
-		                </div>
-	                </li>
                 </div>
                 
                 <!-- 
@@ -258,7 +248,7 @@
 				</xsl:if>
                  -->
                  
-                <li t-if="highest_level_edu == 'other' or other">
+                <li>
 	                <div class="form-group form-field o_website_form_required_custom">
 	                    <div class="col-md-3 col-sm-4 text-right">
 	                        <label class="control-label" for="academic_institution_other">Others:</label>

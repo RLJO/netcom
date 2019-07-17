@@ -1216,11 +1216,11 @@ class SaleOrder(models.Model):
             default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
         return super(SaleOrder, self).copy_data(default)
     
-    
-    
-    @api.depends('report_amount_mrc')
-    def _check_negatieve(self):
+    @api.multi
+    @api.onchange('state')
+    def check_negatieve(self):
         if self.report_amount_mrc < 0:
+            print(self.report_amount_mrc, 'it works bro')
             for line in self.order_line:
                 line.negative_reports_price_subtotal = line.reports_price_subtotal
                 line.reports_price_subtotal = 0
@@ -1230,7 +1230,6 @@ class SaleOrder(models.Model):
         for order in self:
             order.write({'bill_confirm': True})
         return True
-    
     
     confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
     
@@ -1261,14 +1260,14 @@ class SaleOrderLine(models.Model):
     report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
     
-    negative_reports_price_subtotal = fields.Float('Negative Report Subtotal', readonly=True, store=True)    
+    negative_reports_price_subtotal = fields.Float('Negative Report Subtotal', readonly=True, store=True)
 
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
     
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
     @api.one
-    @api.depends('report_nrc_mrc','order_id.state')
+    @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
         report_price_subtotal = 0.0
         upsell_report_price_subtotal = 0.0
