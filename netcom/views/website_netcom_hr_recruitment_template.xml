@@ -284,7 +284,7 @@
                         <input type="date" class="form-control o_website_form_input" name="professional_cert_date_to" required=""/>
                     </div>
                 </div>
-                <div class="form-group form-field">
+                <!--<div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="organization_other">And More:</label>
                     </div>
@@ -292,7 +292,7 @@
                         <input type="text" class="form-control o_website_form_input" name="organization_other"/>
                     </div>
                 </div>
-                <!--<div class="form-group form-field o_website_form_custom">
+                <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="family_status">Family Status</label>
                     </div>
@@ -422,14 +422,14 @@
                     </div>
                 </div>
                 
-                <div class="form-group form-field">
+                <!-- <div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="organization_other">And More:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <input type="text" class="form-control o_website_form_input" name="organization_other"/>
                     </div>
-                </div>
+                </div>-->
                 
                 <br/>
                 <P><strong>Other Details</strong></P>
