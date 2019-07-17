@@ -228,7 +228,7 @@ if records:
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
 	            <xpath expr="//button[@name='action_invoice_draft']" position="before">
-	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('state', '=', 'paid'), ('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
 	            </xpath>
 	            <field name="number" position="before">
             	<field name="treasury_approval" invisible="1"/>
@@ -274,7 +274,7 @@ if records:
         		<button name="button_submit" string="Submit to Manager" type="object" states="draft" groups="base.group_user"/>
         	</xpath>
         	<xpath expr="//button[@name='button_confirm']" position="replace">
-        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
+        		<button name="button_confirm" type="object" states="submit" string="Approve Order" id="draft_confirm" attrs="{'invisible': [('employee_id.department_id.manager_id.user_id', '=', uid)]}" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
         	</xpath>
         	<xpath expr="//button[@name='button_cancel']" position="replace">
         		<button name="button_cancel" type="object" states="submit" string="Decline Order" id="draft_decline" groups="netcom.group_hr_line_manager,purchase.group_purchase_manager"/>
@@ -912,8 +912,8 @@ if records:
                         <group>
                         	<field name="report_amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
                         	<field name="report_amount_nrc" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
-                        	<field name="bdd_sales" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
-                        	<field name="bdd_sales_report" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
+                        	<!-- <field name="bdd_sales" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/>
+                        	<field name="bdd_sales_report" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="1"/> -->
                         </group>
                         <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
                         	<field name="amount_mrc" widget='monetary' options="{'currency_field': 'currency_id'}"/>
