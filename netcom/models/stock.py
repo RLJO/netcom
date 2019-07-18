@@ -1216,15 +1216,24 @@ class SaleOrder(models.Model):
             default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
         return super(SaleOrder, self).copy_data(default)
     
-    @api.multi
-    @api.onchange('state')
-    def check_negatieve(self):
-        if self.report_amount_mrc < 0:
+    @api.depends('report_amount_mrc','state')
+    def check_report_mrc(self):
+        if self.report_amount_mrc < 0 and self.state in ['sent','sale','done']:
             print(self.report_amount_mrc, 'it works bro')
             for line in self.order_line:
-                line.negative_reports_price_subtotal = line.reports_price_subtotal
-                line.reports_price_subtotal = 0
-
+                    line.negative_reports_price_subtotal = line.reports_price_subtotal
+                    line.reports_price_subtotal = 0
+                    line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+        else:
+            for line in self.order_line:
+                line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+    
+    @api.multi
+    def action_confirm(self):
+        res = super(SaleOrder, self).action_confirm()
+        self.check_report_mrc()
+        return res
+    
     @api.multi
     def billing_confirm(self):
         for order in self:

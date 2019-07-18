@@ -228,7 +228,7 @@ if records:
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
 	            <xpath expr="//button[@name='action_invoice_draft']" position="before">
-	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('state', '=', 'paid'), ('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	               <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': ['|',('state', '=', 'paid'), ('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
 	            </xpath>
 	            <field name="number" position="before">
             	<field name="treasury_approval" invisible="1"/>
@@ -331,7 +331,7 @@ if records:
             <field name="arch" type="xml">
 	            <xpath expr="//button[@name='approve_expense_sheets']" position="after">
 	                <button name="unpost_expense_sheets" string="Unpost" type="object" attrs="{'invisible': ['|', ('state', 'not in', ('post','posted'))]}"/>
-	                <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': [('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
+	                <button name="button_treasury_approval" string="Approve for Payment" type="object" attrs="{'invisible': ['|',('state', '=', 'paid'),('treasury_approved','=',True)]}" class="btn-primary" groups="netcom.group_expense_payment"/>
 	            	<button name="%(hr_expense.hr_expense_sheet_register_payment_wizard_action)d" type="action" string="Register Payment" class="oe_highlight o_expense_sheet_pay" attrs="{'invisible': [('state', '!=', 'open')]}" context="{'default_amount': total_amount, 'partner_id': address_id}" groups="account.group_account_manager"/>
 	            </xpath>
 	            <field name="name" position="before">
