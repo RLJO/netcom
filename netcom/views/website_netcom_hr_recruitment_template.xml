@@ -76,10 +76,10 @@
                 <P><strong>Personal Information</strong></P>
                 <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="applicant_image">Passport</label>
+                        <label class="control-label" for="applicant_image">Photo:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="file" class="oe_avatar" name="applicant_image"/>
+                        <input type="file" class="oe_avatar" name="applicant_image" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -103,7 +103,7 @@
                         <label class="control-label" for="partner_phone">Phone Number</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="partner_phone" required=""/>
+                        <input type="number" class="form-control o_website_form_input" name="partner_phone" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -119,7 +119,7 @@
                         <label class="control-label" for="current_location">Current Location</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="current_location"/>
+                        <input type="text" class="form-control o_website_form_input" name="current_location" required=""/>
                     </div>
                 </div>
                 
@@ -130,7 +130,7 @@
                         <label class="control-label" for="intelligence_quotient">Intelligence Quotient:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="integer" class="form-control o_website_form_input" name="intelligence_quotient"/>
+                        <input type="number" class="form-control o_website_form_input" name="intelligence_quotient" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -138,7 +138,7 @@
                         <label class="control-label" for="psychometric_test">Psychometric test:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="integer" class="form-control o_website_form_input" name="psychometric_test"/>
+                        <input type="number" class="form-control o_website_form_input" name="psychometric_test" required=""/>
                     </div>
                 </div>
                 
@@ -202,7 +202,7 @@
                         <label class="control-label" for="academic_name_of_institution">Name of institution:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="academic_name_of_institution"/>
+                        <input type="text" class="form-control o_website_form_input" name="academic_name_of_institution" required=""/>
                     </div>
                 </div>
                 
@@ -211,13 +211,15 @@
                         <label class="control-label" for="date_of_birth">Date:</label>
                     </div>
                     <div class="col-md-3 col-sm-4">
-                        <input type="date" class="form-control o_website_form_input" name="academic_institution_date_from" required=""/><br/>
+                    	<label class="control-label">From:</label>
+                        <input type="date" class="form-control o_website_form_input" name="academic_institution_date_from" required=""/>
+                        <label class="control-label">To:</label>
                         <input type="date" class="form-control o_website_form_input" name="academic_institution_date_to" required=""/>
                     </div>
                 </div>
                 
                 
-                <div class="form-group form-field o_website_form_custom">
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="highest_level_edu">Qualification Obtained:</label>
                     </div>
@@ -248,9 +250,9 @@
 				</xsl:if>
                  -->
                 
-	                <div class="form-group form-field o_website_form_required_custom">
+	                <div class="form-group form-field o_website_form_custom">
 	                    <div class="col-md-3 col-sm-4 text-right">
-	                        <label class="control-label" for="academic_institution_other">Others:</label>
+	                        <label class="control-label" for="academic_institution_other">Others(Please specify):</label>
 	                    </div>
 	                    <div class="col-md-7 col-sm-8">
 	                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
@@ -280,8 +282,10 @@
                         <label class="control-label" for="professional_cert_date_from">Date:</label>
                     </div>
                     <div class="col-md-3 col-sm-4">
-                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_from" required=""/><br/>
-                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_to" required=""/>
+                    	<label class="control-label">From:</label>
+                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_from"/>
+                        <label class="control-label">To:</label>
+                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_to"/>
                     </div>
                 </div>
                 <!--<div class="form-group form-field">
@@ -383,9 +387,63 @@
                 </div>-->
                 
                 <br/>
-                <P><strong>Work Experience</strong></P>
+                <P><strong>Work Experience(s)</strong></P>
                 
                 <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="name_of_organization">Name of Organization:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="name_of_organization" required=""/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_position">Position:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="organization_position" required=""/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="most_current_job">Most current job:</label>
+                    </div>
+                    <div class="col-md-1 col-sm-1 pull-left align-left">
+                   		<input type="checkbox" class="form-control o_website_form_input" name="most_current_job"/>
+                   </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="date_of_birth">Date:</label>
+                    </div>
+                    <div class="col-md-3 col-sm-4">
+                    	<label class="control-label">From:</label>
+                        <input type="date" class="form-control o_website_form_input" name="organization_date_from" required=""/>
+                        <label class="control-label">To:</label>
+                        <input type="date" class="form-control o_website_form_input" name="organization_date_to" required=""/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_job_description">Job Description</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <textarea class="form-control o_website_form_input" name="organization_job_description" required=""></textarea>
+                    </div>
+                </div>
+                
+                <br/>
+                
+                <p>
+                	<label class="control-label">More:</label>
+                </p>
+                
+                <div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="name_of_organization">Name of Organization:</label>
                     </div>
@@ -394,7 +452,7 @@
                     </div>
                 </div>
                 
-                <div class="form-group form-field o_website_form_required_custom">
+                <div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="organization_position">Position:</label>
                     </div>
@@ -408,8 +466,10 @@
                         <label class="control-label" for="date_of_birth">Date:</label>
                     </div>
                     <div class="col-md-3 col-sm-4">
-                        <input type="date" class="form-control o_website_form_input" name="organization_date_from" required=""/><br/>
-                        <input type="date" class="form-control o_website_form_input" name="organization_date_to" required=""/>
+                    	<label class="control-label">From:</label>
+                        	<input type="date" class="form-control o_website_form_input" name="organization_date_from"/>
+                        <label class="control-label">To:</label>
+                        	<input type="date" class="form-control o_website_form_input" name="organization_date_to"/>
                     </div>
                 </div>
                 
@@ -479,7 +539,7 @@
                         <label class="control-label" for="current_salary">Current Salary</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="float" class="form-control o_website_form_input" name="current_salary" required=""/>
+                        <input type="number" class="form-control o_website_form_input" name="current_salary" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -487,15 +547,15 @@
                         <label class="control-label" for="salary_expected">Expected Salary</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="float" class="form-control o_website_form_input" name="salary_expected" required=""/>
+                        <input type="number" class="form-control o_website_form_input" name="salary_expected" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="notice_period">Notice Period</label>
+                        <label class="control-label" for="notice_period">Notice Period(Days):</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="notice_period" required=""/>
+                        <input type="number" min="1" max="100" class="form-control o_website_form_input" name="notice_period" required=""/>
                     </div>
                 </div>
                 
@@ -510,16 +570,26 @@
                             <option value="twitter">Twitter</option>
                             <option value="instagram">Instagram</option>
                             <option value="newsletter">Newsletter</option>
+                            <option value="company_website">Company Website</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_required_custom">
+                <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="hear_about_this_vacancy_other">Other:</label>
+                        <label class="control-label" for="hear_about_this_vacancy_other">Other (Please specify):</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <input type="text" class="form-control o_website_form_input" name="hear_about_this_vacancy_other"/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="copy_paste_cv">Copy CV Here</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <textarea class="form-control o_website_form_input" name="copy_paste_cv"></textarea>
                     </div>
                 </div>
                 
@@ -573,7 +643,7 @@
             <value>hr.applicant</value>
             <value eval="[
             'description',
-            'email_from',
+            'email_from','most_current_job','copy_paste_cv',
             'partner_name','academic_name_of_institution','academic_institution_date_from','date_of_birth','academic_institution_date_to','academic_institution_other','professional_cert_date_from',
             'professional_cert_date_to','professional_cert_institution','name_of_organization','applicant_image','hear_about_this_vacancy_other','hear_about_this_vacancy','psychometric_test',
             'organization_position','current_location','organization_date_from','commercial_exp','organization_date_to','country_exp','notice_period','intelligence_quotient',
