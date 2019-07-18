@@ -1216,23 +1216,30 @@ class SaleOrder(models.Model):
             default['order_line'] = [(0, 0, line.copy_data()[0]) for line in self.order_line.filtered(lambda l: not l.is_downpayment)]
         return super(SaleOrder, self).copy_data(default)
     
-    
-    '''
-    @api.onchange('report_amount_mrc')
-    def _check_negatieve(self):
-        if self.report_amount_mrc < 0:
+    @api.depends('report_amount_mrc','state')
+    def check_report_mrc(self):
+        if self.report_amount_mrc < 0 and self.state in ['sent','sale','done']:
+            print(self.report_amount_mrc, 'it works bro')
             for line in self.order_line:
-                line.negative_reports_price_subtotal = line.reports_price_subtotal
-                line.reports_price_subtotal = 0
-    '''
-
+                    line.negative_reports_price_subtotal = line.reports_price_subtotal
+                    line.reports_price_subtotal = 0
+                    line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+        else:
+            for line in self.order_line:
+                line.confirmed_reports_price_subtotal = line.reports_price_subtotal
+    
+    @api.multi
+    def action_confirm(self):
+        res = super(SaleOrder, self).action_confirm()
+        self.check_report_mrc()
+        return res
+    
     @api.multi
     def billing_confirm(self):
         for order in self:
             order.write({'bill_confirm': True})
         return True
-	
-    
+
     confirmation_date = fields.Datetime(string='Confirmation Date', readonly=False, index=True, help="Date on which the sales order is confirmed.", oldname="date_confirm", copy=False)
     
     remarks = fields.Char('Remarks', track_visibility='onchange')
@@ -1261,8 +1268,8 @@ class SaleOrderLine(models.Model):
     reports_price_subtotal = fields.Float('Report Subtotal', readonly=False, compute='_compute_report_subtotal', store=True)
     report_date = fields.Date('Report Date', readonly=False, compute='_compute_report_date', store=True)
     new_sub = fields.Boolean('New?', track_visibility='onchange', copy=False)
-    
-    #negative_reports_price_subtotal = fields.Float('Negative Report Subtotal', readonly=True, store=True)	
+
+    negative_reports_price_subtotal = fields.Float('Negative Report Subtotal', readonly=True, store=True)
 
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', compute='_compute_report_subtotal', readonly=True, store=True)
     
@@ -1275,7 +1282,7 @@ class SaleOrderLine(models.Model):
         upsell_report_price_subtotal = 0.0
         sub = self.env['sale.subscription.line'].search([('analytic_account_id.state','=','open'), ('sub_account_id.parent_id', '=', self.order_id.partner_id.id), ('sub_account_id', '=', self.sub_account_id.id), ('product_id', '=', self.product_id.id)], limit=1)
         for line in self:
-            if line.order_id.state == "done":
+            if line.order_id.state in ['sale','done']:
                 line.confirmed_reports_price_subtotal = line.reports_price_subtotal 
             else:
                 if line.report_nrc_mrc == "MRC":

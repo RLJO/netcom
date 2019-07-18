@@ -1,78 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-    
-    	<record id="website_hr_recruitment.thankyou" model="website.page">
-		    <field name="url">/job-thank-you</field>
-		    <field name="website_published">True</field>
-		    <field name="name">Thank you (Recruitment)</field>
-		    <field name="type">qweb</field>
-		    <field name="key">website_hr_recruitment.thankyou</field>
-		    <field name="arch" type="xml">
-		        <t name="Thank you (Recruitment)" t-name="website_hr_recruitment.thankyou">
-		            <t t-call="website.layout">
-		                <div id="wrap">
-		                    <div class="oe_structure">
-		                        <div class="container">
-		                            <div class="row">
-		                                <div class="col-md-12">
-		                                    <h1 class="text-center">Congratulations!</h1>
-		                                    <p class="text-center">
-		                                        Your application has been posted successfully.
-		                                    </p>
-		                                </div>
-		                                <t t-if="request.session.get('form_builder_model_model', '') == 'hr.applicant'">
-		                                    <t t-set="job" t-value="request.website._website_form_last_record().sudo().job_id"/>
-		                                    <t t-set="responsible" t-value="job and job.user_id.website_published and job.user_id "/>
-		                                </t>
-		                                <t t-if="responsible">
-		                                    <div class="col-md-12">
-		                                        <h3 class="mb32 text-center">Your application has been sent to:</h3>
-		                                    </div>
-		                                    <div class="col-md-1 col-md-offset-4">
-		                                        <p t-field="responsible.image_small" t-field-options="{'widget': 'image', 'class': 'img-circle center-block'}"/>
-		                                    </div>
-		                                    <div class="col-md-5 o_responsible_data">
-		                                        <h4 class="mt0" t-field="responsible.name"/>
-		                                        <p t-field="responsible.function"/>
-		                                        <t t-if='responsible.email'>
-		                                            <i class="fa fa-envelope"></i> <a t-attf-href="mailto:#{responsible.email}" t-esc="responsible.email"/>
-		                                        </t>
-		                                        <t t-if='responsible.phone'>
-		                                            <br/><i class="fa fa-phone"></i> <span t-field="responsible.phone"/>
-		                                        </t>
-		                                    </div>
-		                                    <div class="col-md-12 mt32 text-center">
-		                                        <span>
-		                                            We usually reply between one and three days.<br/>
-		                                            Feel free to contact him/her if you have further questions.
-		                                        </span>
-		                                    </div>
-		                                </t>
-		                            </div>
-		                            <div class="row" id="o_recruitment_thank_cta">
-		                                <div class="col-md-12 text-center mt32 mb32">
-		                                    In the meantime,
-		                                    <h3 class="mt8 mb32">Look around on our website:</h3>
-		                                    <a href="https://www.netcomafrica.com/" class="btn btn-primary btn-lg">Continue To Our Website</a>
-		                                </div>
-		                            </div>
-		                        </div>
-		                    </div>
-		                </div>
-		            </t>
-		        </t>
-		    </field>
-	</record>
-    	
+        
+        <record id="website_hr_recruitment.thankyou" model="website.page">
+            <field name="url">/job-thank-you</field>
+            <field name="website_published">True</field>
+            <field name="name">Thank you (Recruitment)</field>
+            <field name="type">qweb</field>
+            <field name="key">website_hr_recruitment.thankyou</field>
+            <field name="arch" type="xml">
+                <t name="Thank you (Recruitment)" t-name="website_hr_recruitment.thankyou">
+                    <t t-call="website.layout">
+                        <div id="wrap">
+                            <div class="oe_structure">
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h1 class="text-center">Congratulations!</h1>
+                                            <p class="text-center">
+                                                Your application has been posted successfully.
+                                            </p>
+                                        </div>
+                                        <t t-if="request.session.get('form_builder_model_model', '') == 'hr.applicant'">
+                                            <t t-set="job" t-value="request.website._website_form_last_record().sudo().job_id"/>
+                                            <t t-set="responsible" t-value="job and job.user_id.website_published and job.user_id "/>
+                                        </t>
+                                        <t t-if="responsible">
+                                            <div class="col-md-12">
+                                                <h3 class="mb32 text-center">Your application has been sent to:</h3>
+                                            </div>
+                                            <div class="col-md-1 col-md-offset-4">
+                                                <p t-field="responsible.image_small" t-field-options="{'widget': 'image', 'class': 'img-circle center-block'}"/>
+                                            </div>
+                                            <div class="col-md-5 o_responsible_data">
+                                                <h4 class="mt0" t-field="responsible.name"/>
+                                                <p t-field="responsible.function"/>
+                                                <t t-if='responsible.email'>
+                                                    <i class="fa fa-envelope"></i> <a t-attf-href="mailto:#{responsible.email}" t-esc="responsible.email"/>
+                                                </t>
+                                                <t t-if='responsible.phone'>
+                                                    <br/><i class="fa fa-phone"></i> <span t-field="responsible.phone"/>
+                                                </t>
+                                            </div>
+                                            <div class="col-md-12 mt32 text-center">
+                                                <span>
+                                                    We usually reply between one and three days.<br/>
+                                                    Feel free to contact him/her if you have further questions.
+                                                </span>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div class="row" id="o_recruitment_thank_cta">
+                                        <div class="col-md-12 text-center mt32 mb32">
+                                            In the meantime,
+                                            <h3 class="mt8 mb32">Look around on our website:</h3>
+                                            <a href="https://www.netcomafrica.com/" class="btn btn-primary btn-lg">Continue To Our Website</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </field>
+        </record>
+        
         <!-- job application Form -->
         <template id="netcom_report_header_custom" inherit_id="website_hr_recruitment.apply">
             <xpath expr="//h1" position="replace">
                 <h1 class="text-center">Recruitment Form</h1>
             </xpath>
-
+            
             <!-- <xpath expr="//div[@class='form-group form-field o_website_form_required_custom']" position="replace"> -->
             <xpath expr="//div[hasclass('form-group', 'form-field', 'o_website_form_required_custom')]" position="replace">
+                <P><strong>Personal Information</strong></P>
                 <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="applicant_image">Passport</label>
@@ -91,21 +92,18 @@
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="preferred_name">Preferred Name</label>
+                        <label class="control-label" for="email_from">Email Address</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="text" class="form-control o_website_form_input" name="preferred_name" required=""/>
+                        <input type="email" class="form-control o_website_form_input" name="email_from" required=""/>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_custom">
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="gender">Gender</label>
+                        <label class="control-label" for="partner_phone">Phone Number</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="gender" required="" widget="radio"> 
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                        </select>
+                        <input type="text" class="form-control o_website_form_input" name="partner_phone" required=""/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -116,18 +114,6 @@
                         <input type="date" class="form-control o_website_form_input" name="date_of_birth" required=""/>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_required">
-		              <div class="col-md-3 col-sm-4 text-right">
-		                  <label class="control-label" for="nationality">Nationality</label>
-		              </div>
-		              <div class="col-md-7 col-sm-8">
-		              	<select class="form-control" name="nationality">
-						     <t t-foreach="nationality" t-as="nationality">
-						          <option t-attf-value="#{nationality.id}"><t t-esc="nationality.name"/></option>
-						     </t>
-						 </select>
-		              </div>
-		        </div>
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="current_location">Current Location</label>
@@ -136,6 +122,61 @@
                         <input type="text" class="form-control o_website_form_input" name="current_location"/>
                     </div>
                 </div>
+                
+                <br/>
+                <P><strong>Pre-employment test scores</strong></P>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="intelligence_quotient">Intelligence Quotient:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="integer" class="form-control o_website_form_input" name="intelligence_quotient"/>
+                    </div>
+                </div>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="psychometric_test">Psychometric test:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="integer" class="form-control o_website_form_input" name="psychometric_test"/>
+                    </div>
+                </div>
+                
+                <!-- <div class="form-group form-field o_website_form_required_custom">
+                 <div class="col-md-3 col-sm-4 text-right">
+                 <label class="control-label" for="preferred_name">Preferred Name</label>
+                 </div>
+                 <div class="col-md-7 col-sm-8">
+                 <input type="text" class="form-control o_website_form_input" name="preferred_name" required=""/>
+                 </div>
+                 </div> -->
+                <br/>
+                <P><strong>Academic Qualification</strong></P>
+                <!-- <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="gender">Gender</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control o_website_form_input" name="gender" required="" widget="radio">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="nationality">Nationality</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control" name="nationality">
+                            <t t-foreach="nationality" t-as="nationality">
+                                <option t-attf-value="#{nationality.id}"><t t-esc="nationality.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="preferred_location">Preferred Location</label>
@@ -149,32 +190,106 @@
                         <label class="control-label" for="willingness_to_relocate">Willingness to Relocate</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="willingness_to_relocate"> 
+                        <select class="form-control o_website_form_input" name="willingness_to_relocate">
                             <option value="yes">Yes</option>
                             <option value="no">No</option>
                         </select>
                     </div>
-                </div>
-                <div class="form-group form-field o_website_form_custom">
+                </div> -->
+                
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="highest_level_edu">Highest Level of Education</label>
+                        <label class="control-label" for="academic_name_of_institution">Name of institution:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="highest_level_edu"> 
+                        <input type="text" class="form-control o_website_form_input" name="academic_name_of_institution"/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="date_of_birth">Date:</label>
+                    </div>
+                    <div class="col-md-3 col-sm-4">
+                        <input type="date" class="form-control o_website_form_input" name="academic_institution_date_from" required=""/><br/>
+                        <input type="date" class="form-control o_website_form_input" name="academic_institution_date_to" required=""/>
+                    </div>
+                </div>
+                
+                
+                <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="highest_level_edu">Qualification Obtained:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control o_website_form_input" name="highest_level_edu">
                             <option value="ond">OND</option>
                             <option value="hnd">HND</option>
-                            <option value="bsc">BSc</option>
-                            <option value="msc">MSc</option>
-                            <option value="above">Above</option>
+                            <option value="bsc">B.Sc</option>
+                            <option value="diploma">Diploma</option>
+                            <option value="pgd">PGD</option>
+                            <option value="mba">MBA</option>
+                            <option value="phd">PhD</option>
+                            <option value="other">Other</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- 
+                <xsl:if test="@highest_level_edu='other'">
+				  <div class="form-group form-field o_website_form_required_custom">
+	                    <div class="col-md-3 col-sm-4 text-right">
+	                        <label class="control-label" for="academic_institution_other">Others:</label>
+	                    </div>
+	                    <div class="col-md-7 col-sm-8">
+	                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
+	                    </div>
+	                </div>
+				</xsl:if>
+                 -->
+                
+	                <div class="form-group form-field o_website_form_required_custom">
+	                    <div class="col-md-3 col-sm-4 text-right">
+	                        <label class="control-label" for="academic_institution_other">Others:</label>
+	                    </div>
+	                    <div class="col-md-7 col-sm-8">
+	                        <input type="text" class="form-control o_website_form_input" name="academic_institution_other"/>
+	                    </div>
+	                </div>
+                
+                <br/>
+                <P><strong>Professional Qualification</strong></P>
+                <div class="form-group form-field">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="professional_cert_institution">Awarding institution:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="professional_cert_institution"/>
                     </div>
                 </div>
                 <div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="professional_cert">Professional Certification(s)/Affiliation(s)</label>
+                        <label class="control-label" for="professional_cert">Certification:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <textarea class="form-control o_website_form_input" name="professional_cert"></textarea>
+                        <input type="text" class="form-control o_website_form_input" name="professional_cert"/>
+                    </div>
+                </div>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="professional_cert_date_from">Date:</label>
+                    </div>
+                    <div class="col-md-3 col-sm-4">
+                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_from" required=""/><br/>
+                        <input type="date" class="form-control o_website_form_input" name="professional_cert_date_to" required=""/>
+                    </div>
+                </div>
+                <!--<div class="form-group form-field">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_other">And More:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="organization_other"/>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_custom">
@@ -182,10 +297,10 @@
                         <label class="control-label" for="family_status">Family Status</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="family_status" widget="radio"> 
+                        <select class="form-control o_website_form_input" name="family_status" widget="radio">
                             <option value="single">Single</option>
                             <option value="married">Married</option>
-                            <option value="divorced">Divorced</option> 
+                            <option value="divorced">Divorced</option>
                         </select>
                     </div>
                 </div>
@@ -194,23 +309,23 @@
                         <label class="control-label" for="longest_employed">Longest duration as an Employee</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="longest_employed" widget="radio"> 
+                        <select class="form-control o_website_form_input" name="longest_employed" widget="radio">
                             <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
-                            <option value="3">3</option> 
+                            <option value="3">3</option>
                             <option value="4">4</option>
                             <option value="5">5</option>
-                            <option value="6">6</option> 
+                            <option value="6">6</option>
                             <option value="7">7</option>
                             <option value="8">8</option>
-                            <option value="9">9</option> 
+                            <option value="9">9</option>
                             <option value="10">10</option>
                             <option value="11">11</option>
-                            <option value="12">12</option> 
+                            <option value="12">12</option>
                             <option value="13">13</option>
                             <option value="14">14</option>
-                            <option value="15_and_above">15 and Above</option> 
+                            <option value="15_and_above">15 and Above</option>
                         </select>
                     </div>
                 </div>
@@ -219,23 +334,23 @@
                         <label class="control-label" for="num_employment_10yrs">Number of jobs held in the last 10 years</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="num_employment_10yrs" widget="radio"> 
+                        <select class="form-control o_website_form_input" name="num_employment_10yrs" widget="radio">
                             <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
-                            <option value="3">3</option> 
+                            <option value="3">3</option>
                             <option value="4">4</option>
                             <option value="5">5</option>
-                            <option value="6">6</option> 
+                            <option value="6">6</option>
                             <option value="7">7</option>
                             <option value="8">8</option>
-                            <option value="9">9</option> 
+                            <option value="9">9</option>
                             <option value="10">10</option>
                             <option value="11">11</option>
-                            <option value="12">12</option> 
+                            <option value="12">12</option>
                             <option value="13">13</option>
                             <option value="14">14</option>
-                            <option value="15_and_above">15 and Above</option> 
+                            <option value="15_and_above">15 and Above</option>
                         </select>
                     </div>
                 </div>
@@ -260,38 +375,90 @@
                         <label class="control-label" for="employment_status">Employmnet Status</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="employment_status" required="" widget="radio"> 
+                        <select class="form-control o_website_form_input" name="employment_status" required="" widget="radio">
                             <option value="employed">Employed</option>
-                            <option value="unemployed">Unemployed</option> 
+                            <option value="unemployed">Unemployed</option>
                         </select>
                     </div>
-                </div>
-                <div class="form-group form-field o_website_form_custom">
+                </div>-->
+                
+                <br/>
+                <P><strong>Work Experience</strong></P>
+                
+                <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="commercial_exp">Total years commercial experience</label>
+                        <label class="control-label" for="name_of_organization">Name of Organization:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="commercial_exp" widget="radio"> 
+                        <input type="text" class="form-control o_website_form_input" name="name_of_organization"/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_position">Position:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="organization_position"/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="date_of_birth">Date:</label>
+                    </div>
+                    <div class="col-md-3 col-sm-4">
+                        <input type="date" class="form-control o_website_form_input" name="organization_date_from" required=""/><br/>
+                        <input type="date" class="form-control o_website_form_input" name="organization_date_to" required=""/>
+                    </div>
+                </div>
+                
+                <div class="form-group form-field">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_job_description">Job Description</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <textarea class="form-control o_website_form_input" name="organization_job_description"></textarea>
+                    </div>
+                </div>
+                
+                <!-- <div class="form-group form-field">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="organization_other">And More:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="organization_other"/>
+                    </div>
+                </div>-->
+                
+                <br/>
+                <P><strong>Other Details</strong></P>
+                <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="commercial_exp">Total years experience:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control o_website_form_input" name="commercial_exp" widget="radio">
                             <option value="none"></option>
                             <option value="1">1</option>
                             <option value="2">2</option>
-                            <option value="3">3</option> 
+                            <option value="3">3</option>
                             <option value="4">4</option>
                             <option value="5">5</option>
-                            <option value="6">6</option> 
+                            <option value="6">6</option>
                             <option value="7">7</option>
                             <option value="8">8</option>
-                            <option value="9">9</option> 
+                            <option value="9">9</option>
                             <option value="10">10</option>
                             <option value="11">11</option>
-                            <option value="12">12</option> 
+                            <option value="12">12</option>
                             <option value="13">13</option>
                             <option value="14">14</option>
-                            <option value="15_and_above">15 and Above</option> 
+                            <option value="15_and_above">15 and Above</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_custom">
+                <!--<div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="industry_exp">Key Industry/Sector Experience</label>
                     </div>
@@ -306,7 +473,7 @@
                     <div class="col-md-7 col-sm-8">
                         <input type="text" class="form-control o_website_form_input" name="country_exp"/>
                     </div>
-                </div>
+                </div>-->
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="current_salary">Current Salary</label>
@@ -331,7 +498,32 @@
                         <input type="text" class="form-control o_website_form_input" name="notice_period" required=""/>
                     </div>
                 </div>
-                <div class="form-group form-field o_website_form_custom">
+                
+                 <div class="form-group form-field o_website_form_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="hear_about_this_vacancy">How did you know about this vacancy?:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <select class="form-control o_website_form_input" name="hear_about_this_vacancy">
+                            <option value="linkedIn">LinkedIn</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="newsletter">Newsletter</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-field o_website_form_required_custom">
+                    <div class="col-md-3 col-sm-4 text-right">
+                        <label class="control-label" for="hear_about_this_vacancy_other">Other:</label>
+                    </div>
+                    <div class="col-md-7 col-sm-8">
+                        <input type="text" class="form-control o_website_form_input" name="hear_about_this_vacancy_other"/>
+                    </div>
+                </div>
+                
+                <!--<div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
                         <label class="control-label" for="skype_id">Skype ID</label>
                     </div>
@@ -346,46 +538,46 @@
                     <div class="col-md-7 col-sm-8">
                         <textarea class="form-control o_website_form_input" name="last_3_employers"></textarea>
                     </div>
-                </div>
+                </div>-->
             </xpath>
             <!-- <xpath expr="//div[hasclass('form-group', 'form-field', 'o_website_form_required_custom')]" position="before">
-                <div class="form-group form-field o_website_form_custom">
-                    <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="cover_letter">Cover Letter</label>
-                    </div>
-                    <div class="col-md-7 col-sm-8">
-                        <input type="file" class="form-control o_website_form_input" name="cover_letter"/>
-                    </div>
-                </div>
-                <div class="form-group form-field o_website_form_custom">
-                    <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="certificates">Certificate(s)</label>
-                    </div>
-                    <div class="col-md-7 col-sm-8">
-                        <input type="file" class="form-control o_website_form_input" name="certificates" multiple=""/>
-                    </div>
-                </div>
-                <div class="form-group form-field o_website_form_custom">
-                    <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="other_attachments">Other(s)</label>
-                    </div>
-                    <div class="col-md-7 col-sm-8">
-                        <input type="file" class="form-control o_website_form_input" name="other_attachments" multiple=""/>
-                    </div>
-                </div>
-            </xpath> -->
+             <div class="form-group form-field o_website_form_custom">
+             <div class="col-md-3 col-sm-4 text-right">
+             <label class="control-label" for="cover_letter">Cover Letter</label>
+             </div>
+             <div class="col-md-7 col-sm-8">
+             <input type="file" class="form-control o_website_form_input" name="cover_letter"/>
+             </div>
+             </div>
+             <div class="form-group form-field o_website_form_custom">
+             <div class="col-md-3 col-sm-4 text-right">
+             <label class="control-label" for="certificates">Certificate(s)</label>
+             </div>
+             <div class="col-md-7 col-sm-8">
+             <input type="file" class="form-control o_website_form_input" name="certificates" multiple=""/>
+             </div>
+             </div>
+             <div class="form-group form-field o_website_form_custom">
+             <div class="col-md-3 col-sm-4 text-right">
+             <label class="control-label" for="other_attachments">Other(s)</label>
+             </div>
+             <div class="col-md-7 col-sm-8">
+             <input type="file" class="form-control o_website_form_input" name="other_attachments" multiple=""/>
+             </div>
+             </div>
+             </xpath> -->
         </template>
-
+        
         <!-- parsing function -->
         <function model="ir.model.fields" name="formbuilder_whitelist">
             <value>hr.applicant</value>
             <value eval="[
-                'description',
-                'email_from',
-                'partner_name','preferred_name','gender','date_of_birth','nationality','family_status','longest_employed',
-                'num_employment_10yrs','reason_for_career_change','reason_for_leaving','applicant_image',
-                'employment_status','current_location','preferred_location','commercial_exp','industry_exp','country_exp','notice_period',
-                'current_salary','salary_expected','skype_id','last_3_employers','willingness_to_relocate','professional_cert','highest_level_edu'
+            'description',
+            'email_from',
+            'partner_name','academic_name_of_institution','academic_institution_date_from','date_of_birth','academic_institution_date_to','academic_institution_other','professional_cert_date_from',
+            'professional_cert_date_to','professional_cert_institution','name_of_organization','applicant_image','hear_about_this_vacancy_other','hear_about_this_vacancy','psychometric_test',
+            'organization_position','current_location','organization_date_from','commercial_exp','organization_date_to','country_exp','notice_period','intelligence_quotient',
+            'current_salary','salary_expected','organization_job_description','last_3_employers','organization_other','professional_cert','highest_level_edu'
             ]"/>
         </function>
     </data>

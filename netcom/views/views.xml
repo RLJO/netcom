@@ -357,30 +357,53 @@
                 <field name="applicant_image" widget="image" class="oe_avatar"/>
             </field>
             <field name="partner_id" position="after">
-                <field name="preferred_name"/>
-                <field name="gender" widget="radio"/>
+                <!--<field name="preferred_name"/>
+                <field name="gender" widget="radio"/>-->
                 <field name="date_of_birth"/>
-                <field name="nationality"/>
+                
+                <field name="intelligence_quotient"/>
+                <field name="psychometric_test"/>
+                
+                <field name="highest_level_edu"/>
+                <field name="academic_name_of_institution"/>
+                <field name="academic_institution_date_from"/>
+                <field name="academic_institution_date_to"/>
+                <field name="academic_institution_other"/>
+                
+                <field name="professional_cert"/>
+                <field name="professional_cert_date_from"/>
+                <field name="professional_cert_date_to"/>
+                <field name="professional_cert_institution"/>
+                
+                <!--<field name="nationality"/>
                 <field name="current_location"/>
                 <field name="preferred_location"/>
                 <field name="willingness_to_relocate"/>
 
                 <field name="commercial_exp"/>
-                <field name="industry_exp"/>
-                <field name="highest_level_edu"/>
-                <field name="professional_cert"/>
+                <field name="industry_exp"/>-->
 			</field>
             <field name="user_id" position="before">
-                <field name="family_status" widget="radio"/>
+                
+                <field name="name_of_organization"/>
+                <field name="organization_position"/>
+                <field name="organization_date_from"/>
+                <field name="organization_date_to"/>
+                <field name="organization_job_description"/>
+                <field name="organization_other"/>
+                
+                <!--<field name="family_status" widget="radio"/>
                 <field name="longest_employed"/>
                 <field name="num_employment_10yrs"/>
                 <field name="reason_for_career_change"/>
                 <field name="reason_for_leaving"/>
-                <field name="employment_status"/>
+                <field name="employment_status"/>-->
 
                 <field name="notice_period"/>
-                <field name="skype_id"/>
-                <field name="last_3_employers"/>
+                <field name="hear_about_this_vacancy"/>
+                <field name="hear_about_this_vacancy_other"/>
+                <!--<field name="skype_id"/>
+                <field name="last_3_employers"/>-->
                 <field name="current_salary"/>
 
                 <!-- <field name="cover_letter"/>
