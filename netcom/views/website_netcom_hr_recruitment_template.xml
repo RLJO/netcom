@@ -586,7 +586,7 @@
                 
                 <div class="form-group form-field">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="copy_paste_cv">Copy CV Here</label>
+                        <label class="control-label" for="copy_paste_cv">Copy and Paste CV Here</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
                         <textarea class="form-control o_website_form_input" name="copy_paste_cv"></textarea>
