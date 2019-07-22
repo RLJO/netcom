@@ -1453,8 +1453,8 @@ class Hrrecruitment(models.Model):
     nationality = fields.Many2one('res.country', string='Nationality')
     current_location = fields.Char(string='Current Location')
     preferred_location = fields.Char(string='Preferred Location')
-    current_salary = fields.Char(string='Current Salary')
-    salary_expected = fields.Char("Expected Salary", help="Salary Expected by Applicant")
+    current_salary = fields.Char(string='Current Salary', store=True)
+    salary_expected = fields.Char("Expected Salary", help="Salary Expected by Applicant", store=True)
 
     family_status = fields.Selection([('single', 'Single'), ('married', 'Married'), ('divorced','Divorced')], string='Family Status')
     
@@ -1499,6 +1499,11 @@ class Hrrecruitment(models.Model):
     
     intelligence_quotient = fields.Char(string='Intelligence Quotient:', store=True)
     psychometric_test = fields.Char(string='Psychometric test:', store=True)
+    
+    intelligence_quotient_store = fields.Char(store=True)
+    psychometric_test_store = fields.Char(store=True)
+    salary_expected_store = fields.Char(store=True)
+    current_salary_store = fields.Char(string='Current Salary', store=True)
 
     hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
     hear_about_this_vacancy_other = fields.Char(string='Other:')
