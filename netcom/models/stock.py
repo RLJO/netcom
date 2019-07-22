@@ -707,6 +707,21 @@ class PurchaseOrder(models.Model):
         return True
     
     @api.multi
+    def _check_po_employee_department(self):
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        print(current_employee)
+        if current_employee.id == 1446 and self.employee_id.department_id.id == 24:
+            self.write({'state': 'to approve'})
+            #raise UserError(_('You are currently not allowed to Confirm your departments purchase orders'))
+        
+        
+    @api.multi
+    def button_approve(self):
+        res = super(PurchaseOrder, self).button_approve()
+        self._check_po_employee_department()
+        return res
+    
+    @api.multi
     def button_confirm(self):
         for order in self:
             if order.state not in ['draft','submit', 'sent']:

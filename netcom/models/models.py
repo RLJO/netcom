@@ -1497,8 +1497,8 @@ class Hrrecruitment(models.Model):
     most_current_job = fields.Boolean(string='Most Current Job')
     copy_paste_cv = fields.Char(string='Copied CV')
     
-    intelligence_quotient = fields.Char(string='Intelligence Quotient:')
-    psychometric_test = fields.Char(string='Psychometric test:')
+    intelligence_quotient = fields.Float(string='Intelligence Quotient:', store=True)
+    psychometric_test = fields.Char(string='Psychometric test:', store=True)
 
     hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
     hear_about_this_vacancy_other = fields.Char(string='Other:')
