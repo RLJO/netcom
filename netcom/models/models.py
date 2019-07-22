@@ -9,7 +9,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date, timedelta
 
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, RedirectWarning
 from odoo.tools import format_date
 
 from odoo.addons import decimal_precision as dp
@@ -876,6 +876,19 @@ class ProductProduct(models.Model):
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
     
+    def _get_default_category_id(self):
+        if self._context.get('categ_id') or self._context.get('default_categ_id'):
+            return self._context.get('categ_id') or self._context.get('default_categ_id')
+        category = self.env.ref('product.product_category_all', raise_if_not_found=False)
+        if not category:
+            category = self.env['product.category'].search([], limit=1)
+        if category:
+            return category.id
+        else:
+            err_msg = _('You must define at least one product category in order to be able to create products.')
+            redir_msg = _('Go to Internal Categories')
+            raise RedirectWarning(err_msg, self.env.ref('product.product_category_action_form').id, redir_msg)
+    
     @api.depends('product_variant_ids', 'product_variant_ids.default_code', 'brand')
     def _compute_default_code(self):
         unique_variants = self.filtered(lambda template: len(template.product_variant_ids) == 1)
@@ -930,6 +943,19 @@ class ProductTemplate(models.Model):
         ('approve', 'Approved'),
         ('reject', 'Rejected'),
         ], string='Status', readonly=True, copy=False, track_visibility='onchange')
+    
+    categ_id = fields.Many2one(
+        'product.category', 'Internal Category',
+        change_default=True, default=_get_default_category_id,
+        required=True, help="Select category for the current product", track_visibility='onchange')
+    
+    standard_price = fields.Float(
+        'Cost', compute='_compute_standard_price',
+        inverse='_set_standard_price', search='_search_standard_price',
+        digits=dp.get_precision('Product Price'), groups="base.group_user",
+        help = "Cost used for stock valuation in standard price and as a first price to set in average/fifo. "
+               "Also used as a base price for pricelists. "
+               "Expressed in the default unit of measure of the product. ", track_visibility='onchange')
     
     @api.multi
     def button_approve(self):
@@ -1468,11 +1494,13 @@ class Hrrecruitment(models.Model):
     organization_date_to = fields.Char(string='Date To')
     organization_job_description = fields.Char(string='Previous Job Description')
     organization_other = fields.Char(string='And More...')
+    most_current_job = fields.Boolean(string='Most Current Job')
+    copy_paste_cv = fields.Char(string='Copied CV')
     
     intelligence_quotient = fields.Char(string='Intelligence Quotient:')
     psychometric_test = fields.Char(string='Psychometric test:')
 
-    hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
+    hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
     hear_about_this_vacancy_other = fields.Char(string='Other:')
     
 class NetcomPurchaseRequisition(models.Model):
