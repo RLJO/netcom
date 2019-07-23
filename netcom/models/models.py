@@ -1497,15 +1497,15 @@ class Hrrecruitment(models.Model):
     most_current_job = fields.Boolean(string='Most Current Job')
     copy_paste_cv = fields.Char(string='Copied CV')
     
-    intelligence_quotient = fields.Char(string='Intelligence Quotient:', store=True)
-    psychometric_test = fields.Char(string='Psychometric test:', store=True)
+    intelligence_quotient = fields.Float(string='Intelligence Quotient:', store=True)
+    psychometric_test = fields.Float(string='Psychometric test:', store=True)
     
     intelligence_quotient_store = fields.Char(store=True)
     psychometric_test_store = fields.Char(store=True)
     salary_expected_store = fields.Char(store=True)
     current_salary_store = fields.Char(string='Current Salary', store=True)
 
-    hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Highest Level of Education')
+    hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Hear about this vacancy')
     hear_about_this_vacancy_other = fields.Char(string='Other:')
     
 class NetcomPurchaseRequisition(models.Model):
