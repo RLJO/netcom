@@ -1453,8 +1453,8 @@ class Hrrecruitment(models.Model):
     nationality = fields.Many2one('res.country', string='Nationality')
     current_location = fields.Char(string='Current Location')
     preferred_location = fields.Char(string='Preferred Location')
-    current_salary = fields.Char(string='Current Salary', store=True)
-    salary_expected = fields.Char("Expected Salary", help="Salary Expected by Applicant", store=True)
+    current_salary = fields.Float(string='Current Salary', store=True)
+    salary_expected = fields.Float("Expected Salary", help="Salary Expected by Applicant", store=True)
 
     family_status = fields.Selection([('single', 'Single'), ('married', 'Married'), ('divorced','Divorced')], string='Family Status')
     
