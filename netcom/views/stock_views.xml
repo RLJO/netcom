@@ -317,10 +317,11 @@ if records:
             <field name="company_id" position="after">
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
+            	<field name="stock_source" readonly="1"/>
             	<field name="department_name" invisible="1"/>
             </field>
             <field name="incoterm_id" position="after">
-            	<field name="stock_source"/>
+            	<field name="stock_source" readonly="1"/>
             </field>
         </field>
     </record>
