@@ -454,10 +454,25 @@ class Picking(models.Model):
         if self.state in ['done']:
             subject = "Store request {} has been approved and validated".format(self.name)
             partner_ids = []
-            for partner in self.sheet_id.message_partner_ids:
+            for partner in self.message_partner_ids:
                 partner_ids.append(partner.id)
-            self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
+    
+    @api.multi
+    def send_store_request_products_recieved_message(self):
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if not current_employee == self.employee_id:
+            raise UserError(_("You can't confirm receipt of an item you didn't request."))
+        else:
+            if self.state in ['done']:
+                subject = "Store request Products for {} has been approved and recieved by Me {}".format(self.name, self.employee_id)
+                partner_ids = []
+                for partner in self.message_partner_ids:
+                    partner_ids.append(partner.id)
+                self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            else:
+                raise UserError(_("Store request hasn't been validated"))
     
     @api.multi
     def create_purchase_order(self):

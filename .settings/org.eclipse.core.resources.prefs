@@ -6,6 +6,7 @@ encoding//netcom/controllers/controllers.py=utf-8
 encoding//netcom/models/__init__.py=utf-8
 encoding//netcom/models/account_partner_ledger.py=utf-8
 encoding//netcom/models/models.py=utf-8
+encoding//netcom/models/report_account_aged_partner.py=utf-8
 encoding//netcom/models/stock.py=utf-8
 encoding//netcom_hr/__init__.py=utf-8
 encoding//netcom_hr/__manifest__.py=utf-8
