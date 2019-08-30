@@ -668,7 +668,7 @@ if records:
     </record>
 	
 	
-	<record id="netcom_hr_payslip_run_form" model="ir.ui.view">
+	<!-- <record id="netcom_hr_payslip_run_form" model="ir.ui.view">
         <field name="name">netcom.hr.payslip.run.form</field>
         <field name="model">hr.payslip.run</field>
         <field name="priority" eval="7" />
@@ -681,7 +681,7 @@ if records:
 				<button name="confirm_payslip" type="object" string="Confirm" states="draft" class="oe_highlight"/>
 		    </xpath>
         </field>
-    </record>
+    </record> -->
 	
     <!-- explicit list view definition -->
     <!--
