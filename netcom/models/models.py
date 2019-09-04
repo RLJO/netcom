@@ -674,7 +674,11 @@ class NextofKin(models.Model):
                     
 class Employee(models.Model):
     _inherit = 'hr.employee'
-
+    
+    job_id = fields.Many2one('hr.job', 'Job Position', track_visibility='onchange')
+    department_id = fields.Many2one('hr.department', 'Department', track_visibility='onchange')
+    parent_id = fields.Many2one('hr.employee', 'Manager', track_visibility='onchange')
+    
     pfa_id = fields.Char(string='PFA ID')
     pf_id = fields.Many2one('pen.type', string='Penson Fund Administrator', index=True)
     expiry_date = fields.Date(string='Passport Expiry Date', index=True)
