@@ -615,7 +615,7 @@ if records:
                         	<field name="is_locked" invisible="1"/>
                         	<field name="employee_id" invisible="1"/>
                         	<field name="man_confirm" readonly="1"/>
-                        	<field name="fixed_assets_movement" readonly="1"/>
+                        	<field name="fixed_assets_movement" readonly="1" invisible="1"/>
                             <field name="partner_id" attrs="{'invisible': [('picking_type_code', '=', 'internal')]}"/>
                             <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
