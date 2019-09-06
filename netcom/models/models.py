@@ -1651,6 +1651,8 @@ class NetcomContract(models.Model):
                                     mail.send()
                                 return True
         return
+
+    
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
