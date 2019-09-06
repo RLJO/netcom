@@ -545,6 +545,17 @@ if records:
             <field name="view_id" ref="stock_picking_rejection_view_form"/>
             <field name="target">new</field>
         </record>
+        
+    <record model="ir.ui.view" id="netcom_fam_stock_form_view">
+	    <field name="name">netcom.fam.stock.form</field>
+	    <field name="model">stock.picking</field>
+	    <field name="inherit_id" ref="netcom_stock_form_view"/>
+	    <field name="arch" type="xml">
+    		<xpath expr="//field[@name='move_lines']/tree/field[@name='product_id']" position="replace">
+            	<field name="product_id" required="1" attrs="{'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Fixed Assets', 'All / Radio (Netcom)', 'All / Network Equipment (Netcom)', 'All / Radio (Customer)', 'All / Network Equipment (Lease to Customer)'))]"/>
+           	</xpath>
+	    </field>
+	</record>
    
     <record id="netcom_stock_form_view" model="ir.ui.view">
             <field name="name">netcom.stock.form</field>
@@ -604,6 +615,7 @@ if records:
                         	<field name="is_locked" invisible="1"/>
                         	<field name="employee_id" invisible="1"/>
                         	<field name="man_confirm" readonly="1"/>
+                        	<field name="fixed_assets_movement" readonly="1" invisible="1"/>
                             <field name="partner_id" attrs="{'invisible': [('picking_type_code', '=', 'internal')]}"/>
                             <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
@@ -978,6 +990,14 @@ if records:
       <field name="context" eval='{"default_is_locked":False,"default_internal_transfer":True,"default_picking_type_id":ref("netcom.stock_picking_type_engineer")}'/>
     </record>
     
+    <record model="ir.actions.act_window" id="fam_transfer_action_window">
+      <field name="name">Fixed Asset Movement</field>
+      <field name="res_model">stock.picking</field>
+      <field name="view_mode">tree,form</field>
+      <field name="domain">[('fixed_assets_movement', '=', True)]</field>
+      <field name="context" eval='{"default_is_locked":False,"default_fixed_assets_movement":True,"default_picking_type_id":ref("netcom.stock_picking_type_fam")}'/>
+    </record>
+    
 	<record model="ir.actions.act_window" id="netcom_act_crossovered_budget_lines_view">
             <field name="name">Budgets</field>
             <field name="res_model">crossovered.budget.lines</field>
@@ -1020,6 +1040,20 @@ if records:
          <field name="view_mode">tree</field>
          <field name="view_id" ref="stock.vpicktree"/>
          <field name="act_window_id" ref="store_req_action1_window"/>
+     </record>
+     
+     <record id="fam_req_action_form" model="ir.actions.act_window.view">
+         <field eval="2" name="sequence"/>
+         <field name="view_mode">form</field>
+         <field name="view_id" ref="netcom_fam_stock_form_view"/>
+         <field name="act_window_id" ref="fam_transfer_action_window"/>
+     </record>
+     
+     <record id="fam_req_action_tree" model="ir.actions.act_window.view">
+         <field eval="1" name="sequence"/>
+         <field name="view_mode">tree</field>
+         <field name="view_id" ref="stock.vpicktree"/>
+         <field name="act_window_id" ref="fam_transfer_action_window"/>
      </record>
 
 	<menuitem name="Reporting" id="netcom_budget_report" parent="hr.menu_hr_root"/>
@@ -1079,6 +1113,9 @@ if records:
               
    	<menuitem name="Internal Transfer" id="internal_transfer" parent="stock.menu_stock_root"
               action="internal_transfer_action_window"/>
+              
+    <menuitem name="Fixed Assets Movement" id="fam_transfer" parent="stock.menu_stock_root"
+              action="fam_transfer_action_window"/>
               
     <menuitem
             id="netcom_hr_employee_tag_menu"

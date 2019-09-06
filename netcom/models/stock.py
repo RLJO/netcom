@@ -421,6 +421,8 @@ class Picking(models.Model):
     
     rejection_reason = fields.Many2one('stock.rejection.reason', string='Rejection Reason', index=True, track_visibility='onchange')
     
+    fixed_assets_movement = fields.Boolean('Fixed Assets Movement', track_visibility='onchange')
+    
     @api.multi
     def button_reset(self):
         self.mapped('move_lines')._action_cancel()
@@ -514,7 +516,6 @@ class Picking(models.Model):
         }
         
         return res
-    
     
 class StockRejectionReason(models.Model):
     _name = "stock.rejection.reason"
