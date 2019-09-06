@@ -1651,6 +1651,8 @@ class NetcomContract(models.Model):
                                     mail.send()
                                 return True
         return
+
+'''    
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
@@ -1748,6 +1750,7 @@ class HrPayslip(models.Model):
             slip.write({'move_id': move.id, 'date': date})
             move.post()
         return super(HrPayslip, self).action_payslip_done()
+'''
 
 
 class HrPayslipRun(models.Model):
