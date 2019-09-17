@@ -550,6 +550,7 @@ if records:
 	    <field name="name">netcom.fam.stock.form</field>
 	    <field name="model">stock.picking</field>
 	    <field name="inherit_id" ref="netcom_stock_form_view"/>
+	    <field name="mode">primary</field> 
 	    <field name="arch" type="xml">
     		<xpath expr="//field[@name='move_lines']/tree/field[@name='product_id']" position="replace">
             	<field name="product_id" required="1" attrs="{'readonly': ['|', '&amp;', ('state', '!=', 'draft'), ('additional', '=', False), ('has_move_lines', '=', True)]}" domain="[('categ_id','in',('All / Fixed Assets', 'All / Radio (Netcom)', 'All / Network Equipment (Netcom)', 'All / Radio (Customer)', 'All / Network Equipment (Lease to Customer)'))]"/>
