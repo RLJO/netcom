@@ -423,6 +423,12 @@ class Picking(models.Model):
     
     fixed_assets_movement = fields.Boolean('Fixed Assets Movement', track_visibility='onchange')
     
+    location_dest_id = fields.Many2one(
+        'stock.location', "Destination Location",
+        default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_dest_id,
+        readonly=True, required=True,
+        states={'draft': [('readonly', False)], 'confirmed': [('readonly', False)], 'assigned': [('readonly', False)]})
+    
     @api.multi
     def button_reset(self):
         self.mapped('move_lines')._action_cancel()
@@ -446,7 +452,7 @@ class Picking(models.Model):
                 user_ids.append(user.id)
                 partner_ids.append(user.partner_id.id)
             self.message_subscribe_users(user_ids=user_ids)
-            subject = "A new store request {} has been made".format(self.name)
+            subject = "A new {} , {} has been made".format(self.picking_type_id.name, self.name)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             return False
         return True
