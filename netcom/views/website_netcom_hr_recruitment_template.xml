@@ -495,26 +495,17 @@
                 <P><strong>Other Details</strong></P>
                 <div class="form-group form-field o_website_form_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="commercial_exp">Total years experience:</label>
+                        <label class="control-label" for="new_total_years_of_experience">Total years experience:</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <select class="form-control o_website_form_input" name="commercial_exp" widget="radio">
+                        <select class="form-control o_website_form_input" name="new_total_years_of_experience" widget="radio">
                             <option value="none"></option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                            <option value="11">11</option>
-                            <option value="12">12</option>
-                            <option value="13">13</option>
-                            <option value="14">14</option>
-                            <option value="15_and_above">15 and Above</option>
+                            <option value="0_2">0 – 2 years</option>
+                            <option value="3_5">3 – 5 years</option>
+                            <option value="5_7">5 – 7 years</option>
+                            <option value="7_10">7 – 10 years</option>
+                            <option value="10_15">10 – 15 years</option>
+                            <option value="15_20">15 – 20 years</option>
                         </select>
                     </div>
                 </div>
@@ -536,18 +527,34 @@
                 </div>-->
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="current_salary">Current Salary</label>
+                        <label class="control-label" for="new_current_salary">Current Salary</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="number" class="form-control o_website_form_input" name="current_salary" required=""/>
+                        <select class="form-control o_website_form_input" name="new_current_salary" widget="radio">
+                            <option value="none"></option>
+                            <option value="50_149">50,000 – 149,000</option>
+                            <option value="150_249">150,000 -249,000</option>
+                            <option value="250_349">250,000 -349,000</option>
+                            <option value="350_499">350,000 – 499,000</option>
+                            <option value="500_749">500,000 – 749,000</option>
+                            <option value="750_1000">750,000 – 1,000,000</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
                     <div class="col-md-3 col-sm-4 text-right">
-                        <label class="control-label" for="salary_expected">Expected Salary</label>
+                        <label class="control-label" for="new_expected_salary">Expected Salary</label>
                     </div>
                     <div class="col-md-7 col-sm-8">
-                        <input type="number" class="form-control o_website_form_input" name="salary_expected" required=""/>
+                        <select class="form-control o_website_form_input" name="new_expected_salary" widget="radio">
+                            <option value="none"></option>
+                            <option value="50_149">50,000 – 149,000</option>
+                            <option value="150_249">150,000 -249,000</option>
+                            <option value="250_349">250,000 -349,000</option>
+                            <option value="350_499">350,000 – 499,000</option>
+                            <option value="500_749">500,000 – 749,000</option>
+                            <option value="750_1000">750,000 – 1,000,000</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group form-field o_website_form_required_custom">
@@ -642,8 +649,8 @@
         <function model="ir.model.fields" name="formbuilder_whitelist">
             <value>hr.applicant</value>
             <value eval="[
-            'description',
-            'email_from','most_current_job','copy_paste_cv',
+            'description','new_expected_salary','new_current_salary',
+            'email_from','most_current_job','copy_paste_cv','new_total_years_of_experience',
             'partner_name','academic_name_of_institution','academic_institution_date_from','date_of_birth','academic_institution_date_to','academic_institution_other','professional_cert_date_from',
             'professional_cert_date_to','professional_cert_institution','name_of_organization','applicant_image','hear_about_this_vacancy_other','hear_about_this_vacancy','psychometric_test',
             'organization_position','current_location','organization_date_from','commercial_exp','organization_date_to','country_exp','notice_period','intelligence_quotient',

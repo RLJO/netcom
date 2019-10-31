@@ -586,12 +586,13 @@ if records:
                     <button name="manager_confirm" groups="netcom.group_hr_line_manager" class="btn-primary" string="Manager Confirmation" type="object"  attrs="{'invisible': ['|',('man_confirm','=',True),('state', 'not in', ['confirmed'])]}"/>
                     
                     <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager"/>
+                    <button name="create_purchase_order" class="btn-primary" string="Create Quotation" type="object" groups="stock.group_stock_manager"/>
                     
                     <button name="send_store_request_products_recieved_message" attrs="{'invisible': [('man_confirm', '=', False)]}" class="btn-primary" string="Received Items" type="object" groups="base.group_user"/>
                     
                     <button name="button_reset" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="reset" groups="stock.group_stock_manager" type="object"/>
                     <button name="button_scrap" type="object" string="Scrap" attrs="{'invisible': ['|', '|', '&amp;', ('picking_type_code', '!=', 'incoming'), ('state', 'in', ('draft', 'cancel', 'waiting')), '&amp;', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done'), ('is_locked', '=', False)]}"/>
-                    <button name="%(netcom.stock_rejection_action)d" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager" type="action"/>
+                    <button name="%(netcom.stock_rejection_action)d" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Reject" groups="netcom.group_hr_line_manager,stock.group_stock_manager" type="action"/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': ['|', ('state', 'in', ('draft','cancel')), ('is_locked', '=', False)]}" string="Unlock" groups="stock.group_stock_manager" type="object" help="If the picking is unlocked you can edit initial demand (for a draft picking) or done quantities (for a done picking)."/>
                     <button name="action_toggle_is_locked" attrs="{'invisible': [('is_locked', '=', True)]}" string="Lock" class="oe_highlight" groups="stock.group_stock_manager" type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,partially_available,assigned,done" />

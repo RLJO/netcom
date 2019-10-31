@@ -1513,6 +1513,10 @@ class Hrrecruitment(models.Model):
     hear_about_this_vacancy = fields.Selection([('linkedIn','LinkedIn'), ('company_website','Company Website'), ('facebook','Facebook'), ('twitter','Twitter'), ('instagram','Instagram'), ('newsletter','Newsletter'), ('other','Other')], string='Hear about this vacancy')
     hear_about_this_vacancy_other = fields.Char(string='Other:')
     
+    new_total_years_of_experience  = fields.Selection([('0_2','0 - 2 years'), ('3_5','3 - 5 years'), ('5_7','5 - 7 years'), ('7_10','7 - 10 years'), ('10_15','10 - 15 years'), ('15_20','15 - 20 years')], string='Total years of experience (new)')
+    new_current_salary  = fields.Selection([('50_149','50,000 – 149,000'), ('150_249','150,000 - 249,000'), ('250_349','250,000 - 349,000'), ('350_499','350,000 – 499,000'), ('500_749','500,000 – 749,000'), ('750_1000','750,000 – 1,000,000')], string='Current Salary (new)')
+    new_expected_salary  = fields.Selection([('50_149','50,000 – 149,000'), ('150_249','150,000 - 249,000'), ('250_349','250,000 - 349,000'), ('350_499','350,000 – 499,000'), ('500_749','500,000 – 749,000'), ('750_1000','750,000 – 1,000,000')], string='Expected Salary (new)')
+    
 class NetcomPurchaseRequisition(models.Model):
     _inherit = 'purchase.requisition'
     
