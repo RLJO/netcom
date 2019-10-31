@@ -409,14 +409,20 @@
                 <field name="hear_about_this_vacancy_other"/>
                 <!--<field name="skype_id"/>
                 <field name="last_3_employers"/>-->
-                <field name="current_salary"/>
+                <field name="current_salary" invisible="1"/>
+                
+                <field name="new_total_years_of_experience"/>
+                <field name="new_current_salary"/>
+                <field name="new_expected_salary"/>
+                <!-- <field name="new_current_salary"/>
+                <field name="new_expected_salary"/> -->
 
                 <!-- <field name="cover_letter"/>
                 <field name="certificates"/>
                 <field name="other_attachments"/> -->
 			</field>
             <!-- <field name="salary_expected" position="after">
-                <field name="current_salary"/>
+                <field name="new_expected_salary"/>
             </field> -->
 		</field>
 	</record>
