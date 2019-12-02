@@ -325,6 +325,18 @@ if records:
             </field>
         </field>
     </record>
+    
+    <record id="netcom_view_hr_expense_sheet_filter_search" model="ir.ui.view">
+            <field name="name">netcom.hr.expense.sheet.search</field>
+            <field name="model">hr.expense.sheet</field>
+            <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_filter"/>
+            <field name="arch" type="xml">
+               <xpath expr="//search" position="inside">
+                	<filter string="My Department(s)" name="departments" invisible="0" domain="['|',('employee_id.department_id.parent_id.member_ids.user_id', 'in', [uid]),('employee_id.department_id.parent_id.child_ids.member_ids.user_id', 'in', [uid])]"/>
+			    </xpath>
+            </field>
+    </record>
+    
     <record id="netcom_view_hr_expense_sheet_form" model="ir.ui.view">
             <field name="name">netcom.hr.expense.sheet.form</field>
             <field name="model">hr.expense.sheet</field>
@@ -777,7 +789,8 @@ if records:
                         <field name="currency_id" invisible="1"/>
                         <field name="payment_term_id" options="{'no_create': True}" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
                         <field name="remarks" />
-                        <field name="period" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
+                        <field name="period" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>                        
+                        <field name="crm_tag_ids" readonly="0" widget="many2many_tags"/>
                     </group>
                 </group>
                 <notebook>
