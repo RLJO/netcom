@@ -757,7 +757,7 @@ class PurchaseOrder(models.Model):
                 return {}
             self.approval_date = date.today()
             self.manager_approval = self._uid
-            order.cost_valuation_update()
+            #order.cost_valuation_update()
             order._add_supplier_to_product()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\

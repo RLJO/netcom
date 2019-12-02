@@ -870,7 +870,7 @@ class Employee(models.Model):
                                 mail.send()
                             return True
         return
-
+'''
 class ProductProduct(models.Model):
     _inherit = 'product.product'
     
@@ -881,7 +881,7 @@ class ProductProduct(models.Model):
         help = "Cost used for stock valuation in standard price and as a first price to set in average/fifo. "
                "Also used as a base price for pricelists. "
                "Expressed in the default unit of measure of the product." , track_visibility='onchange')
-                 
+''' 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
     
