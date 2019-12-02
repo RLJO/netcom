@@ -735,7 +735,11 @@ class PurchaseOrder(models.Model):
         if current_employee.id == 1446 and self.employee_id.department_id.id == 24:
             self.write({'state': 'to approve'})
             #raise UserError(_('You are currently not allowed to Confirm your departments purchase orders'))
-        
+    
+    @api.multi
+    def cost_valuation_update(self):
+        for line in self:
+            line.product_id.standard_price = line.price_unit
         
     @api.multi
     def button_approve(self):
@@ -752,6 +756,7 @@ class PurchaseOrder(models.Model):
                 return {}
             self.approval_date = date.today()
             self.manager_approval = self._uid
+            order.cost_valuation_update()
             order._add_supplier_to_product()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\
@@ -1291,6 +1296,7 @@ class SaleOrder(models.Model):
     report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     
+    crm_tag_ids = fields.Many2many('crm.lead.tag', 'crm_lead_tag_rel', 'lead_id', 'tag_id', string='Tags', help="Classify and analyze your lead/opportunity categories like: Training, Service")
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'

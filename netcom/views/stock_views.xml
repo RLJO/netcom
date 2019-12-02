@@ -777,7 +777,8 @@ if records:
                         <field name="currency_id" invisible="1"/>
                         <field name="payment_term_id" options="{'no_create': True}" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
                         <field name="remarks" />
-                        <field name="period" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>
+                        <field name="period" attrs="{'readonly': ['|',('state', 'in', ('done','cancel')),('bill_confirm','=',True)]}"/>                        
+                        <field name="crm_tag_ids" readonly="0" widget="many2many_tags"/>
                     </group>
                 </group>
                 <notebook>
