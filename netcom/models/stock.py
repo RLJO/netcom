@@ -738,7 +738,7 @@ class PurchaseOrder(models.Model):
     
     @api.multi
     def cost_valuation_update(self):
-        for line in self:
+        for line in self.order_line:
             line.product_id.standard_price = line.price_unit
         
     @api.multi
