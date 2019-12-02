@@ -740,6 +740,7 @@ class PurchaseOrder(models.Model):
     def cost_valuation_update(self):
         for line in self.order_line:
             line.product_id.standard_price = line.price_unit
+            line.product_id.currency_id = self.currency_id
         
     @api.multi
     def button_approve(self):
