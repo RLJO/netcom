@@ -1296,7 +1296,7 @@ class SaleOrder(models.Model):
     report_amount_mrc = fields.Monetary(string='Report Total MRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     
-    crm_tag_ids = fields.Many2many('crm.lead.tag', 'crm_lead_tag_rel', 'lead_id', 'tag_id', string='Tags', help="Classify and analyze your lead/opportunity categories like: Training, Service")
+    crm_tag_ids = fields.Many2many('crm.lead.tag', string='Tags', help="Classify and analyze your sales categories like: Training, Service")
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
