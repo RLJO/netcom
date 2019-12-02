@@ -332,7 +332,7 @@ if records:
             <field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_filter"/>
             <field name="arch" type="xml">
                <xpath expr="//search" position="inside">
-                	<filter string="My Department(s)" name="departments" invisible="0" domain="['|',('employee_id.department_id.member_ids.user_id', 'in', [uid]),('employee_id.department_id.child_ids.member_ids.user_id', 'in', [uid])]"/>
+                	<filter string="My Department(s)" name="departments" invisible="0" domain="['|',('employee_id.department_id.parent_id.member_ids.user_id', 'in', [uid]),('employee_id.department_id.parent_id.child_ids.member_ids.user_id', 'in', [uid])]"/>
 			    </xpath>
             </field>
     </record>
