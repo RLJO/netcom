@@ -95,7 +95,9 @@ class Lead(models.Model):
     
     risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', track_visibility='onchange', store=True)
     risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', track_visibility='onchange', store=True)
-      
+    
+    sale_order_id = fields.Many2one(comodel_name='sale.order', string='Sale Order')
+    
     @api.one
     @api.depends('nrc', 'stage_id')    
     def _compute_risk_adjusted_nrc(self):
@@ -1002,6 +1004,8 @@ class ExpenseRefSheet(models.Model):
     
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
     description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
+    
+    expense_due_date = fields.Date(string='Expense Due Date')
     
     @api.one
     def get_desc(self):
