@@ -95,7 +95,9 @@ class Lead(models.Model):
     
     risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', track_visibility='onchange', store=True)
     risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', track_visibility='onchange', store=True)
-      
+    
+    sale_order_id = fields.Many2one(comodel_name='sale.order', string='Sale Order')
+    
     @api.one
     @api.depends('nrc', 'stage_id')    
     def _compute_risk_adjusted_nrc(self):
@@ -1637,10 +1639,10 @@ class NetcomContract(models.Model):
         
         for self in employees:
             if self.trial_date_end:
-                
+                print('steve a')
                 current_dates = datetime.datetime.strptime(self.trial_date_end, "%Y-%m-%d")
-                current_datesz = current_dates - relativedelta(days=5)
-                
+                current_datesz = current_dates - relativedelta(months=1)
+                print(current_datesz,'steve a current - 5')
                 date_start_day = current_datesz.day
                 date_start_month = current_datesz.month
                 date_start_year = current_datesz.year
