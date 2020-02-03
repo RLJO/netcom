@@ -465,6 +465,15 @@ class Picking(models.Model):
             for partner in self.message_partner_ids:
                 partner_ids.append(partner.id)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
+            
+    @api.multi
+    def send_store_request_rejected_mail(self):
+        #if self.state in ['done']:
+        subject = "Store request {} has been Rejected because {} ".format(self.name, self.rejection_reason.name)
+        partner_ids = []
+        for partner in self.message_partner_ids:
+            partner_ids.append(partner.id)
+        self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
     
     @api.multi
@@ -541,6 +550,7 @@ class StockPickingRejection(models.TransientModel):
     def action_rejection_reason_apply(self):
         leads = self.env['stock.picking'].browse(self.env.context.get('active_ids'))
         leads.write({'rejection_reason': self.rejection_reason_id.id})
+        leads.send_store_request_rejected_mail()
         return leads.button_reset()
     
       

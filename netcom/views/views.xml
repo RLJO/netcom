@@ -44,6 +44,7 @@
        	</xpath> -->
 	    <field name="user_id" position="after">
 	    	<field name="acc_executive"/>
+	    	<field name="sale_order_id" widget="selection"/>
     		<field name="nrc"/>
     		<field name="mrc"/>
 		</field>
