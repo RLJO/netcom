@@ -987,7 +987,7 @@ class ExpenseRef(models.Model):
     
     name = fields.Char('Order Reference', readonly=True, required=True, index=True, copy=False, default='New')
     description = fields.Char(string='Expense Desciption') 
-
+       
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':
@@ -1005,7 +1005,20 @@ class ExpenseRefSheet(models.Model):
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
     description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
     
-    expense_due_date = fields.Date(string='Expense Due Date')
+    #expense_due_date = fields.Date(string='Expense Due Date')
+    
+    @api.model
+    def create(self, vals):
+        result = super(ExpenseRefSheet, self).create(vals)
+        result._check_operations_department()
+        return result
+    
+    @api.multi
+    def _check_operations_department(self):
+        if self.employee_id.department_id.parent_id.name == "Operations":
+            user_ids = 130
+            self.message_subscribe_users(user_ids=user_ids)
+            return False
     
     @api.one
     def get_desc(self):
@@ -1124,6 +1137,7 @@ class Holidays(models.Model):
     def create(self, vals):
         result = super(Holidays, self).create(vals)
         result.send_mail()
+        result._check_operations_department()
         return result
     
     @api.multi
@@ -1136,7 +1150,14 @@ class Holidays(models.Model):
                 mail = mail_obj.create(values)
                 if mail:
                     mail.send()
-                    
+    
+    @api.multi
+    def _check_operations_department(self):
+        if self.employee_id.department_id.parent_id.name == "Operations":
+            user_ids = 130
+            self.message_subscribe_users(user_ids=user_ids)
+            return False
+        
     @api.multi
     def send_manager_approved_mail(self):
         config = self.env['mail.template'].sudo().search([('name','=','Leave Manager Approval')], limit=1)
@@ -1641,10 +1662,10 @@ class NetcomContract(models.Model):
         
         for self in employees:
             if self.trial_date_end:
-                
+                print('steve a')
                 current_dates = datetime.datetime.strptime(self.trial_date_end, "%Y-%m-%d")
-                current_datesz = current_dates - relativedelta(days=5)
-                
+                current_datesz = current_dates - relativedelta(months=1)
+                print(current_datesz,'steve a current - 5')
                 date_start_day = current_datesz.day
                 date_start_month = current_datesz.month
                 date_start_year = current_datesz.year
