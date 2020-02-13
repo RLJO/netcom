@@ -116,7 +116,7 @@ class Lead(models.Model):
     @api.onchange('sale_order_id')
     def product_change(self):
         self.nrc = self.sale_order_id.amount_nrc
-        self.nrc = self.sale_order_id.amount_mrc
+        self.mrc = self.sale_order_id.amount_mrc
     
     @api.multi    
     def write(self, vals):
