@@ -61,6 +61,7 @@
 	    <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
 	    <field name="arch" type="xml">
 	    <field name="planned_revenue" position="before">
+	    	<field name="sale_order_id" widget="selection"/>
     		<field name="nrc"/>
     		<field name="mrc"/>
     		<field name="risk_adjusted_nrc"/>
