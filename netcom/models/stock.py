@@ -135,6 +135,7 @@ class HrExpense(models.Model):
                 partner_ids.append(partner.id)
             self.sheet_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
     
+    '''
     @api.multi
     def _check_operations_department(self):
         if self.employee_id.department_id.parent_id.name == "Administration":
@@ -148,10 +149,11 @@ class HrExpense(models.Model):
             subject = "Leave Request for {} is Ready for Second Approval".format(self.display_name)
             self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             return False
+    '''
     
     @api.multi
     def submit_expenses(self):
-        self._check_operations_department()
+        #self._check_operations_department()
         if any(expense.state != 'draft' for expense in self):
             raise UserError(_("You cannot report twice the same line!"))
         if len(self.mapped('employee_id')) != 1:
