@@ -96,7 +96,7 @@ class Lead(models.Model):
     risk_adjusted_nrc = fields.Float('Risk Adjusted NRC',compute='_compute_risk_adjusted_nrc', track_visibility='onchange', store=True)
     risk_adjusted_mrc = fields.Float('Risk Adjusted MRC',compute='_compute_risk_adjusted_mrc', track_visibility='onchange', store=True)
     
-    sale_order_id = fields.Many2one(comodel_name='sale.order', string='Sale Order')
+    sale_order_id = fields.Many2one(comodel_name='sale.order', string='Sales Order', track_visibility='onchange')
     
     @api.one
     @api.depends('nrc', 'stage_id')    
@@ -112,6 +112,11 @@ class Lead(models.Model):
     @api.depends('nrc','mrc')    
     def _compute_planned_revenue(self):
         self.planned_revenue = self.nrc + self.mrc
+    
+    @api.onchange('sale_order_id')
+    def product_change(self):
+        self.nrc = self.sale_order_id.amount_nrc
+        self.nrc = self.sale_order_id.amount_mrc
     
     @api.multi    
     def write(self, vals):
