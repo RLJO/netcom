@@ -1005,7 +1005,7 @@ class ExpenseRefSheet(models.Model):
     name = fields.Char(string='Expense Report Summary', readonly=True, required=True)
     description = fields.Char(string='Expense Desciption', readonly=True, compute='get_desc')
     
-    expense_due_date = fields.Date(string='Expense Due Date')
+    #expense_due_date = fields.Date(string='Expense Due Date')
     
     @api.model
     def create(self, vals):
