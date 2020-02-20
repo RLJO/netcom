@@ -776,7 +776,6 @@ class Employee(models.Model):
     def send_birthday_mail(self):
         test = False
         employees = self.env['hr.employee'].search([])
-        
         for self in employees:
             if self.active == True:
                 if self.birthday:
@@ -793,15 +792,19 @@ class Employee(models.Model):
                     
                     if birthday_month == birthday_month_today:
                         if birthday_day == birthday_day_today:
-                            config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
-                            mail_obj = self.env['mail.mail']
-                            if config:
-                                values = config.generate_email(self.id)
-                                mail = mail_obj.create(values)
-                                if mail:
-                                    mail.send()
-                                return True
+                            self.send_the_birthday_mail()
         return
+    
+    @api.multi
+    def send_the_birthday_mail(self):
+        config = self.env['mail.template'].sudo().search([('name','=','Birthday Reminder')], limit=1)
+        mail_obj = self.env['mail.mail']
+        if config:
+            values = config.generate_email(self.id)
+            mail = mail_obj.create(values)
+            if mail:
+                mail.send()
+            return True
     
     @api.multi
     def send_serpac_renewal_mail(self):
@@ -1610,15 +1613,19 @@ class NetcomContract(models.Model):
                     
                     if date_start_month == date_start_month_today:
                         if date_start_day == date_start_day_today:
-                            config = self.env['mail.template'].sudo().search([('name','=','Work Anniversary')], limit=1)
-                            mail_obj = self.env['mail.mail']
-                            if config:
-                                values = config.generate_email(self.id)
-                                mail = mail_obj.create(values)
-                                if mail:
-                                    mail.send()
-                                return True
+                            self.send_the_anniversary_mail()
         return
+    
+    @api.multi
+    def send_the_anniversary_mail(self):
+        config = self.env['mail.template'].sudo().search([('name','=','Work Anniversary')], limit=1)
+        mail_obj = self.env['mail.mail']
+        if config:
+            values = config.generate_email(self.id)
+            mail = mail_obj.create(values)
+            if mail:
+                mail.send()
+            return True
     
     @api.multi
     def send_contract_renewal_mail(self):
@@ -1686,16 +1693,19 @@ class NetcomContract(models.Model):
                 if date_start_month == date_start_month_today:
                     if date_start_day == date_start_day_today:
                         if date_start_year == date_start_year_today:
-                            config = self.env['mail.template'].sudo().search([('name','=','Confirmation')], limit=1)
-                            mail_obj = self.env['mail.mail']
-                            if config:
-                                values = config.generate_email(self.id)
-                                mail = mail_obj.create(values)
-                                if mail:
-                                    mail.send()
-                                return True
+                            self.send_the_employee_confirmation_mail()
         return
-
+    
+    @api.multi
+    def send_the_employee_confirmation_mail(self):
+        config = self.env['mail.template'].sudo().search([('name','=','Confirmation')], limit=1)
+        mail_obj = self.env['mail.mail']
+        if config:
+            values = config.generate_email(self.id)
+            mail = mail_obj.create(values)
+            if mail:
+                mail.send()
+            return True
     
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
