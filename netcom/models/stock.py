@@ -313,7 +313,7 @@ class HrExpenseSheet(models.Model):
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     expense_line_ids = fields.One2many('hr.expense', 'sheet_id', string='Expense Lines', states={'done': [('readonly', True)], 'post': [('readonly', True)]}, copy=False)
-    exp_amount_due = fields.Float(string='Amount Due', store=True, readonly=True, compute='_compute_amount')
+    exp_amount_due = fields.Float(string='Amount Due', store=True, readonly=False, compute='_compute_amount')
     
     state = fields.Selection([('submit', 'Submitted'),
                               ('approve', 'Approved'),
@@ -321,7 +321,7 @@ class HrExpenseSheet(models.Model):
                               ('open', 'Open'),
                               ('done', 'Paid'),
                               ('cancel', 'Refused')
-                              ], string='Status', index=True, readonly=True, track_visibility='onchange', copy=False, default='submit', required=True,
+                              ], string='Status', index=True, readonly=False, track_visibility='onchange', copy=False, default='submit', required=True,
     help='Expense Report State')
     
     @api.multi
