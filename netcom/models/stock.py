@@ -1216,6 +1216,12 @@ class StockMove(models.Model):
     internal_transfer = fields.Boolean('Internal Transfer?', related='picking_id.internal_transfer', readonly=1, track_visibility='onchange')
 
 
+class SalesPersons(models.Model):
+    _name = 'sales.persons'
+    
+    user_id = fields.Many2one('res.users', string='Sales Person')
+    percentage = fields.Float(string='Percentage (%)')
+    
 class SaleOrder(models.Model):
     _name = "sale.order"
     _inherit = ['sale.order']
@@ -1326,6 +1332,9 @@ class SaleOrder(models.Model):
     report_amount_nrc = fields.Monetary(string='Report Total NRC', store=False, readonly=True, compute='_amount_all', track_visibility='onchange')
     
     crm_tag_ids = fields.Many2many('crm.lead.tag', string='Tags', help="Classify and analyze your sales categories like: Training, Service")
+    
+    sales_persons_ids = fields.Many2many('sales.persons', string='Sales Persons')
+    
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
