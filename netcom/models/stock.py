@@ -1347,6 +1347,17 @@ class SaleOrderLine(models.Model):
     
     price_review_date = fields.Date(string='Price Review Date', readonly=True, related='sub_account_id.price_review_date', store=True)
     
+    account_id = fields.Many2one('account.account', string='Account',
+        required=False, states={'draft': [('readonly', False)]},
+        domain=[('deprecated', '=', False)], help="The account used for this sale.")
+    
+    @api.onchange('product_id')
+    def default_account_id(self):
+        if self.product_id.property_account_income_id:
+            self.account_id = self.product_id.property_account_income_id
+        elif self.product_id.categ_id.property_account_income_categ_id:
+            self.account_id = self.product_id.categ_id.property_account_income_categ_id
+    
     @api.one
     @api.depends('report_nrc_mrc')
     def _compute_report_subtotal(self):
