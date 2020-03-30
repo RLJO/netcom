@@ -873,6 +873,7 @@ if records:
                                    />
                                 <field name="layout_category_id" groups="sale.group_sale_layout"/>
                                 <field name="name"/>
+                                <field name="account_id"/>
                                 <field name="nrc_mrc"/>
 	            				<field name="report_nrc_mrc"/>
                                 <field name="product_uom_qty"
