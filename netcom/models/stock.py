@@ -1221,6 +1221,9 @@ class SalesPersons(models.Model):
     
     user_id = fields.Many2one('res.users', string='Sales Person')
     percentage = fields.Float(string='Percentage (%)')
+    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
+    #amount = fields.Float(string='Amount', compute='_compute_amount')
+          
     
 class SaleOrder(models.Model):
     _name = "sale.order"
@@ -1283,6 +1286,7 @@ class SaleOrder(models.Model):
     def action_cancel(self):
         for line in self.order_line:
             line.confirmed_reports_price_subtotal = 0
+            self._unlink_report_lines()
         return self.write({'state': 'cancel','bill_confirm':False})
     
     @api.multi
@@ -1309,6 +1313,7 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
         self.check_report_mrc()
+        self._prepare_report_lines()
         return res
     
     @api.multi
@@ -1333,8 +1338,36 @@ class SaleOrder(models.Model):
     
     crm_tag_ids = fields.Many2many('crm.lead.tag', string='Tags', help="Classify and analyze your sales categories like: Training, Service")
     
-    sales_persons_ids = fields.Many2many('sales.persons', string='Sales Persons')
+    sales_persons_ids = fields.One2many('sales.persons', 'order_id', string='Sales Persons')
     
+    report_sale_order_line_ids = fields.One2many('report.sale.order.line', 'order_id', string='Report Sale Order Line')
+    
+    @api.one
+    def _prepare_report_lines(self):
+        self.ensure_one()
+        for person in self.sales_persons_ids:
+            for line in self.order_line:
+                self.report_sale_order_line_ids.create({
+                     'type': line.type,
+                     'order_id': self.id,
+                     'type': line.type,
+                     'nrc_mrc': line.nrc_mrc,
+                     'name': line.name,
+                     'sub_account_id': line.sub_account_id.id,
+                     'product_id': line.product_id.id,
+                     'account_id': line.account_id.id,
+                     #'price_subtotal': self.order_line.price_subtotal * person.percentage/100,
+                     'product_uom_qty': line.product_uom_qty * person.percentage/100,
+                     #'product_uom': line.product_uom,
+                     'price_unit': line.price_unit,
+                     #'tax_id': line.tax_id.id,
+                     'discount': line.discount,
+                })
+    
+    @api.multi
+    def _unlink_report_lines(self):
+        for lines in self.report_sale_order_line_ids:
+            lines.unlink()
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1577,7 +1610,14 @@ class SaleOrderLine(models.Model):
                     self.price_unit = lease_price
             else:
                 self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
-
+                
+class ReportSaleOrderLine(models.Model):
+    _name = 'report.sale.order.line'
+    _description = 'Report Sales Order Line'
+    _inherit = ['sale.order.line']
+    
+    
+    
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
     _inherit = "account.reconcile.model"
