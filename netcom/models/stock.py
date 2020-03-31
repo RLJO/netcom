@@ -1366,7 +1366,7 @@ class SaleOrder(models.Model):
                      'tax_id': [(6, 0, line.tax_id.ids)],
                      'discount': line.discount,
                      'sales_person_id': person.user_id.id,
-                     'reports_price_subtotal': line.reports_price_subtotal,
+                     'report_price_subtotal': line.reports_price_subtotal * person.percentage/100,
                      'new_sub': line.new_sub,
                      'report_nrc_mrc': line.report_nrc_mrc,
                 })
@@ -1627,7 +1627,7 @@ class ReportSaleOrderLine(models.Model):
     _inherit = ['sale.order.line']
     
     sales_person_id = fields.Many2one('res.users', string='Sales Person')
-    reports_price_subtotal = fields.Float('Report Subtotal', store=True)
+    report_price_subtotal = fields.Float('Report Subtotal')
     
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
     
@@ -1869,6 +1869,7 @@ class BDDSalesPersonReport(models.Model):
     confirmation_date = fields.Datetime('Confirmation Date', readonly=True)
     product_id = fields.Many2one('product.product', 'Product', readonly=True)
     sub_account_id = fields.Many2one('sub.account', 'Sub Account', readonly=True)
+    account_id = fields.Many2one('account.account', 'Account', readonly=True)
     product_uom = fields.Many2one('product.uom', 'Unit of Measure', readonly=True)
     product_uom_qty = fields.Float('Qty Ordered', readonly=True)
     qty_delivered = fields.Float('Qty Delivered', readonly=True)
@@ -1901,7 +1902,7 @@ class BDDSalesPersonReport(models.Model):
     volume = fields.Float('Volume', readonly=True)
     
     report_nrc_mrc = fields.Char('Report MRC/NRC', readonly=True)
-    reports_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
+    report_price_subtotal = fields.Float('Report Subtotal (SALE)', readonly=True)    
     report_date = fields.Date('Report Date', readonly=True)
     sales_target = fields.Float(string='Salesperson Target', readonly=True)
     confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True)
@@ -1915,6 +1916,7 @@ class BDDSalesPersonReport(models.Model):
              SELECT min(l.id) as id,
                     l.product_id as product_id,
                     l.sub_account_id as sub_account_id,
+                    l.account_id as account_id,
                     l.price_review_date as price_review_date,
                     l.report_nrc_mrc as report_nrc_mrc,
                     l.report_date as report_date,
@@ -1925,7 +1927,7 @@ class BDDSalesPersonReport(models.Model):
                     sum(l.qty_to_invoice / u.factor * u2.factor) as qty_to_invoice,
                     sum(l.price_total / COALESCE(cr.rate, 1.0)) as price_total,
                     sum(l.price_subtotal / COALESCE(cr.rate, 1.0)) as price_subtotal,
-                    sum(l.reports_price_subtotal / COALESCE(cr.rate, 1.0)) as reports_price_subtotal,
+                    sum(l.report_price_subtotal / COALESCE(cr.rate, 1.0)) as report_price_subtotal,
                     sum(l.confirmed_reports_price_subtotal / COALESCE(cr.rate, 1.0)) as confirmed_reports_price_subtotal,
                     sum(l.amt_to_invoice / COALESCE(cr.rate, 1.0)) as amt_to_invoice,
                     sum(l.amt_invoiced / COALESCE(cr.rate, 1.0)) as amt_invoiced,
@@ -1974,6 +1976,7 @@ class BDDSalesPersonReport(models.Model):
             GROUP BY l.product_id,
                     l.order_id,
                     l.sub_account_id,
+                    l.account_id,
                     t.uom_id,
                     t.categ_id,
                     s.name,
