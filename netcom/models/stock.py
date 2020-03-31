@@ -1370,9 +1370,9 @@ class SaleOrder(models.Model):
                      'new_sub': line.new_sub,
                      'report_nrc_mrc': line.report_nrc_mrc,
                 })
-                for person in self.sales_persons_ids:
-                    for none in self.report_sale_order_line_ids:
-                        none.reports_price_subtotal = line.reports_price_subtotal * person.percentage/100
+                #for person in self.sales_persons_ids:
+                    #for none in self.report_sale_order_line_ids:
+                        #none.reports_price_subtotal = line.reports_price_subtotal * person.percentage/100
     
     @api.multi
     def _unlink_report_lines(self):
@@ -1876,7 +1876,7 @@ class BDDSalesPersonReport(models.Model):
     qty_invoiced = fields.Float('Qty Invoiced', readonly=True)
     partner_id = fields.Many2one('res.partner', 'Partner', readonly=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True)
-    #user_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
+    user_id = fields.Many2one('res.users', '', readonly=True)
     sales_person_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
     price_total = fields.Float('Total', readonly=True)
     price_subtotal = fields.Float('Untaxed Total', readonly=True)
