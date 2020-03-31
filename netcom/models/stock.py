@@ -1370,6 +1370,9 @@ class SaleOrder(models.Model):
                      'new_sub': line.new_sub,
                      'report_nrc_mrc': line.report_nrc_mrc,
                 })
+                for person in self.sales_persons_ids:
+                    for none in self.report_sale_order_line_ids:
+                        none.reports_price_subtotal = line.reports_price_subtotal * person.percentage/100
     
     @api.multi
     def _unlink_report_lines(self):
@@ -1624,7 +1627,9 @@ class ReportSaleOrderLine(models.Model):
     _inherit = ['sale.order.line']
     
     sales_person_id = fields.Many2one('res.users', string='Sales Person')
-    reports_price_subtotal = fields.Float('Report Subtotal')
+    reports_price_subtotal = fields.Float('Report Subtotal', store=True)
+    
+    confirmed_reports_price_subtotal = fields.Float('Confirmed Report Subtotal', readonly=True, store=True)
     
     qty_delivered_updateable = fields.Boolean(compute='_compute_qty_delivered_updateable', string='Can Edit Delivered', readonly=True, default=True)
     

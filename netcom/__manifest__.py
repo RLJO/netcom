@@ -16,7 +16,7 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'Netcom',
-    'version': '0.129999999999999999999999999999996',
+    'version': '0.12999999999999999999999999999999',
     # any module necessary for this one to work correctly
     'depends': ['base','account_budget','crm','sale_crm','hr_expense', 'hr_recruitment','mrp',
     'hr','purchase','sale_subscription','product','stock','sale','mail','hr_holidays',
