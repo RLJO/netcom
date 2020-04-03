@@ -1224,15 +1224,35 @@ class SalesPersons(models.Model):
         return self.env['res.users'].search([('id','=',self.env.uid)])
     
     user_id = fields.Many2one('res.users', string='Sales Person', default=_default_user_id)
-    percentage = fields.Float(string='Percentage (%)', default=100)
+    percentage = fields.Float(string='Percentage (%)', compute='_check_percentage', readonly=False)
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
+    main_salesperson = fields.Boolean(string='Main')
     #amount = fields.Float(string='Amount', compute='_compute_amount')
-          
+    
+    @api.depends('percentage')
+    def _check_percentage(self):
+        percent = self.percentage
+        for line in self:
+            percent +=  line.percentage
+            #percent += line.percentage
+            print('percentage', percent)
+            line.percentage = 100 - percent
+            if percent > 100:
+                raise UserError(_('Above 100% .'))
+            else:
+                continue
+         
     
 class SaleOrder(models.Model):
     _name = "sale.order"
     _inherit = ['sale.order']
     _description = "Quotation"
+    
+    @api.model
+    def create(self, vals):
+        result = super(SaleOrder, self).create(vals)
+        result._create_default_salespersons()
+        return result
     
     def _prepare_subscription_data(self, template):
         """Prepare a dictionnary of values to create a subscription from a template."""
@@ -1378,6 +1398,18 @@ class SaleOrder(models.Model):
     def _unlink_report_lines(self):
         for lines in self.report_sale_order_line_ids:
             lines.unlink()
+    
+    @api.one
+    def _create_default_salespersons(self):
+        self.ensure_one()
+        if not self.sales_persons_ids:
+            for line in self:
+                line.sales_persons_ids.create({
+                     'user_id': self.env.uid,
+                     'order_id': self.id,
+                     'main_salesperson': True,
+                     'percentage': 100,
+                })
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'

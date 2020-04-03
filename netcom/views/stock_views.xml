@@ -1122,6 +1122,7 @@ if records:
 		                                <tree editable="bottom">
 		                                	<field name="user_id"/>
 		                                	<field name="percentage"/>
+		                                	<field name="main_salesperson"/>
 		                                </tree>
 	                                </field>
                                 <field name="team_id" options="{'no_create': True}"/>
