@@ -1224,23 +1224,21 @@ class SalesPersons(models.Model):
         return self.env['res.users'].search([('id','=',self.env.uid)])
     
     user_id = fields.Many2one('res.users', string='Sales Person', default=_default_user_id)
-    percentage = fields.Float(string='Percentage (%)', compute='_check_percentage', readonly=False)
+    percentage = fields.Float(string='Percentage (%)', readonly=False)
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
     main_salesperson = fields.Boolean(string='Main')
     #amount = fields.Float(string='Amount', compute='_compute_amount')
     
-    @api.depends('percentage')
+    @api.onchange('main_salesperson')
+    def main_salesperson_change(self):
+        if not self.main_salesperson == True:
+            self.order_id.user_id = self.user_id
+    
+    @api.one
+    @api.depends('order_id.sales_percentage','percentage')
     def _check_percentage(self):
-        percent = self.percentage
-        for line in self:
-            percent +=  line.percentage
-            #percent += line.percentage
-            print('percentage', percent)
-            line.percentage = 100 - percent
-            if percent > 100:
-                raise UserError(_('Above 100% .'))
-            else:
-                continue
+        for self in self:
+            self.percentage = 100 - self.order_id.sales_percentage
          
     
 class SaleOrder(models.Model):
@@ -1251,7 +1249,7 @@ class SaleOrder(models.Model):
     @api.model
     def create(self, vals):
         result = super(SaleOrder, self).create(vals)
-        result._create_default_salespersons()
+        result._create_default_salesperson()
         return result
     
     def _prepare_subscription_data(self, template):
@@ -1366,6 +1364,8 @@ class SaleOrder(models.Model):
     
     report_sale_order_line_ids = fields.One2many('report.sale.order.line', 'order_id', string='Report Sale Order Line')
     
+    sales_percentage = fields.Float(string='Percentage', store=False, readonly=True, compute='_compute_salepersons_percentages', track_visibility='onchange')
+    
     @api.one
     def _prepare_report_lines(self):
         self.ensure_one()
@@ -1400,7 +1400,7 @@ class SaleOrder(models.Model):
             lines.unlink()
     
     @api.one
-    def _create_default_salespersons(self):
+    def _create_default_salesperson(self):
         self.ensure_one()
         if not self.sales_persons_ids:
             for line in self:
@@ -1410,6 +1410,23 @@ class SaleOrder(models.Model):
                      'main_salesperson': True,
                      'percentage': 100,
                 })
+    
+    @api.one
+    @api.depends('sales_persons_ids.percentage')
+    def _compute_salepersons_percentages(self):
+        self.ensure_one()
+        for line in self.sales_persons_ids:
+            self.sales_percentage += line.percentage
+        if self.sales_percentage > 100:
+            raise UserError(_('This is Above 100% .'))
+    
+    @api.one
+    @api.onchange('sales_persons_ids.main_salesperson')
+    def main_salesperson_change(self):
+        self.ensure_one()
+        for line in self.sales_persons_ids:
+            if not line.main_salesperson == True:
+                self.user_id = line.user_id
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
