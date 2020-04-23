@@ -160,7 +160,7 @@
                 <filter name="Quotations" string="Quotations" domain="[('state','in', ('draft', 'sent'))]"/>
                 <filter name="Sales" string="Sales" domain="[('state','not in',('draft', 'cancel', 'sent'))]"/>
                 <separator/>
-                <filter name="Report_date" string="Report Active Date" domain="[('report_date','&gt;=',time.strftime('2019-04-01'))]"/>
+                <filter name="Report_date" string="Report Active Date" domain="[('report_date','&gt;=',time.strftime('2020-04-01'))]"/>
                 <separator/>
                 <field name="partner_id"/>
                 <field name="product_id"/>
@@ -1122,7 +1122,8 @@ if records:
 		                                <tree editable="bottom">
 		                                	<field name="user_id"/>
 		                                	<field name="percentage"/>
-		                                	<field name="main_salesperson"/>
+		                                	<field name="main_salesperson" invisible="1"/>
+		                                	<field name="amount" readonly="0" invisible="1"/>
 		                                </tree>
 	                                </field>
 	                            <field name="sales_percentage"/>
