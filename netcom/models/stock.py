@@ -1221,25 +1221,25 @@ class SalesPersons(models.Model):
     _description = "Sales Persons"
     _order = "percentage DESC"
     
-    @api.model
-    def _get_default_order_id(self):
-        ctx = self._context
-        if ctx.get('active_model') == 'sale.order':
-            return self.env['sale.order'].browse(ctx.get('active_ids')[0]).id
+    #@api.model
+    #def _get_default_order_id(self):
+    #    ctx = self._context
+    #    if ctx.get('active_model') == 'sale.order':
+    #        return self.env['sale.order'].browse(ctx.get('active_ids')[0]).id
+    
+    #def _default_percent(self):
+    #    ctx = self._context
+    #    if ctx.get('model') == 'sale.order':
+    #        num = self.env['sale.order'].browse(ctx.get('sales_percentage')[0])
+    #        print('sales per', num)
     
     def _default_user_id(self): # this method is to search the hr.employee and return the user id of the person clicking the form atm
         self.env['res.users'].search([('id','=',self.env.uid)])
         return self.env['res.users'].search([('id','=',self.env.uid)])
     
-    def _default_percent(self):
-        ctx = self._context
-        if ctx.get('model') == 'sale.order':
-            num = self.env['sale.order'].browse(ctx.get('sales_percentage')[0])
-            print('sales per', num)
-    
     user_id = fields.Many2one('res.users', string='Sales Person', default=_default_user_id)
-    percentage = fields.Float(string='Percentage (%)', default=_default_percent)
-    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False, default=_get_default_order_id)
+    percentage = fields.Float(string='Percentage (%)')
+    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
     main_salesperson = fields.Boolean(string='Main')
     amount = fields.Float(string='Amount', compute='_compute_amount', readonly=False, store=True)
     
