@@ -1343,6 +1343,7 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
         self.check_report_mrc()
+        self._create_default_salesperson()
         self._prepare_report_lines()
         return res
     
