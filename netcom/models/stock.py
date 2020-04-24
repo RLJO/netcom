@@ -1431,7 +1431,12 @@ class SaleOrder(models.Model):
     @api.onchange('partner_id')
     def _partner_id(self):
         self.user_id = self.partner_id.user_id
-      
+    
+    @api.multi
+    def create_report_lines(self):
+        self._create_default_salesperson()
+        self._prepare_report_lines()
+    
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
     _description = 'Sales Order Line'
