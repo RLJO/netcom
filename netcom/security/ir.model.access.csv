@@ -12,3 +12,6 @@ access_equipment_type_emp,equipment.type,model_equipment_type,stock.group_stock_
 access_account_budget_post_emp,account.budget.post,model_account_budget_post,netcom.group_budget_report,1,0,0,0
 access_netcom_sale_report,netcom.sale.report,model_netcom_sale_report,base.group_user,1,1,1,0
 access_stock_rejection_reason,stock.rejection.reason,model_stock_rejection_reason,base.group_user,1,1,1,0
+access_report_sale_order_line_emp,report.sale.order.line,model_report_sale_order_line,base.group_user,1,1,1,0
+access_netcom_sales_person_report_emp,netcom.sales.person.report,model_netcom_sales_person_report,base.group_user,1,1,1,0
+access_sales_persons_emp,sales.persons,model_sales_persons,base.group_user,1,1,1,0
