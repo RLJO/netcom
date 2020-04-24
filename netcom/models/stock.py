@@ -1218,6 +1218,7 @@ class StockMove(models.Model):
 
 class SalesPersons(models.Model):
     _name = 'sales.persons'
+<<<<<<< HEAD
     _description = "Sales Persons"
     _order = "percentage DESC"
     
@@ -1232,12 +1233,15 @@ class SalesPersons(models.Model):
     #    if ctx.get('model') == 'sale.order':
     #        num = self.env['sale.order'].browse(ctx.get('sales_percentage')[0])
     #        print('sales per', num)
+=======
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
     
     def _default_user_id(self): # this method is to search the hr.employee and return the user id of the person clicking the form atm
         self.env['res.users'].search([('id','=',self.env.uid)])
         return self.env['res.users'].search([('id','=',self.env.uid)])
     
     user_id = fields.Many2one('res.users', string='Sales Person', default=_default_user_id)
+<<<<<<< HEAD
     percentage = fields.Float(string='Percentage (%)')
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
     main_salesperson = fields.Boolean(string='Main')
@@ -1249,6 +1253,25 @@ class SalesPersons(models.Model):
         for line in self:
             line.amount = 100 - self.order_id.sales_percentage
 
+=======
+    percentage = fields.Float(string='Percentage (%)', readonly=False)
+    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
+    main_salesperson = fields.Boolean(string='Main')
+    #amount = fields.Float(string='Amount', compute='_compute_amount')
+    
+    @api.onchange('main_salesperson')
+    def main_salesperson_change(self):
+        if not self.main_salesperson == True:
+            self.order_id.user_id = self.user_id
+    
+    @api.one
+    @api.depends('order_id.sales_percentage','percentage')
+    def _check_percentage(self):
+        for self in self:
+            self.percentage = 100 - self.order_id.sales_percentage
+         
+    
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
 class SaleOrder(models.Model):
     _name = "sale.order"
     _inherit = ['sale.order']
@@ -1343,7 +1366,10 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
         self.check_report_mrc()
+<<<<<<< HEAD
         self._create_default_salesperson()
+=======
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
         self._prepare_report_lines()
         return res
     
@@ -1399,7 +1425,13 @@ class SaleOrder(models.Model):
                      'new_sub': line.new_sub,
                      'report_nrc_mrc': line.report_nrc_mrc,
                 })
+<<<<<<< HEAD
 
+=======
+                #for person in self.sales_persons_ids:
+                    #for none in self.report_sale_order_line_ids:
+                        #none.reports_price_subtotal = line.reports_price_subtotal * person.percentage/100
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
     
     @api.multi
     def _unlink_report_lines(self):
@@ -1412,8 +1444,12 @@ class SaleOrder(models.Model):
         if not self.sales_persons_ids:
             for line in self:
                 line.sales_persons_ids.create({
+<<<<<<< HEAD
                      #'user_id': self.env.uid,
                      'user_id': self.user_id.id,
+=======
+                     'user_id': self.env.uid,
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
                      'order_id': self.id,
                      'main_salesperson': True,
                      'percentage': 100,
@@ -1428,6 +1464,7 @@ class SaleOrder(models.Model):
         if self.sales_percentage > 100:
             raise UserError(_('This is Above 100% .'))
     
+<<<<<<< HEAD
     @api.onchange('partner_id')
     def _partner_id(self):
         self.user_id = self.partner_id.user_id
@@ -1436,6 +1473,15 @@ class SaleOrder(models.Model):
     def create_report_lines(self):
         self._create_default_salesperson()
         self._prepare_report_lines()
+=======
+    @api.one
+    @api.onchange('sales_persons_ids.main_salesperson')
+    def main_salesperson_change(self):
+        self.ensure_one()
+        for line in self.sales_persons_ids:
+            if not line.main_salesperson == True:
+                self.user_id = line.user_id
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1935,7 +1981,11 @@ class BDDSalesPersonReport(models.Model):
     qty_invoiced = fields.Float('Qty Invoiced', readonly=True)
     partner_id = fields.Many2one('res.partner', 'Partner', readonly=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True)
+<<<<<<< HEAD
     user_id = fields.Many2one('res.users', 'Main Salesperson', readonly=True)
+=======
+    user_id = fields.Many2one('res.users', '', readonly=True)
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
     sales_person_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
     price_total = fields.Float('Total', readonly=True)
     price_subtotal = fields.Float('Untaxed Total', readonly=True)
@@ -1995,7 +2045,10 @@ class BDDSalesPersonReport(models.Model):
                     s.confirmation_date as confirmation_date,
                     s.state as state,
                     s.partner_id as partner_id,
+<<<<<<< HEAD
                     s.user_id as user_id,
+=======
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
                     l.sales_person_id as sales_person_id,
                     s.company_id as company_id,
                     extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
@@ -2042,7 +2095,10 @@ class BDDSalesPersonReport(models.Model):
                     s.date_order,
                     s.confirmation_date,
                     s.partner_id,
+<<<<<<< HEAD
                     s.user_id,
+=======
+>>>>>>> bb1944d4db1d5c74a25b7b7c9783c703ceb10292
                     l.sales_person_id,
                     s.state,
                     l.report_nrc_mrc,
