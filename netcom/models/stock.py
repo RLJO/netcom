@@ -1435,6 +1435,15 @@ class SaleOrder(models.Model):
     def create_report_lines(self):
         self._create_default_salesperson()
         self._prepare_report_lines()
+        
+    @api.multi
+    def get_account_lines(self):
+        for line in self.order_line:
+            if not line.account_id:
+                line.default_account_id()
+        for report_line in self.report_sale_order_line_ids:
+            if not line.account_id:
+                report_line.default_account_id()
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
