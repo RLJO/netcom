@@ -1449,7 +1449,7 @@ class SaleOrder(models.Model):
     def get_report_account_lines(self):
         for line in self.report_sale_order_line_ids:
             if not line.account_id:
-                line.account_id = self.order_line.account_id
+                line.account_id = line.order_id.order_line.account_id
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
