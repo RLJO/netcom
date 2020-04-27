@@ -1441,15 +1441,12 @@ class SaleOrder(models.Model):
         for line in self.order_line:
             if not line.account_id:
                 line.default_account_id()
-        for report_line in self.report_sale_order_line_ids:
-            if not line.account_id:
-                report_line.default_account_id()
     
     @api.multi
     def get_report_account_lines(self):
         for line in self.report_sale_order_line_ids:
             if not line.account_id:
-                line.account_id = line.order_id.order_line.account_id
+                line.default_account_id()
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1709,6 +1706,13 @@ class ReportSaleOrderLine(models.Model):
     def _compute_qty_delivered_updateable(self):
         for line in self:
             line.qty_delivered_updateable = (line.order_id.state == 'sale') and (line.product_id.service_type == 'manual') and (line.product_id.expense_policy == 'no')
+    
+    @api.onchange('product_id')
+    def default_account_id(self):
+        if self.product_id.property_account_income_id:
+            self.account_id = self.product_id.property_account_income_id
+        elif self.product_id.categ_id.property_account_income_categ_id:
+            self.account_id = self.product_id.categ_id.property_account_income_categ_id
     
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
