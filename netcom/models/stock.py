@@ -1314,6 +1314,7 @@ class SaleOrder(models.Model):
                    
     @api.multi
     def action_cancel(self):
+        self.write({'state': 'cancel','bill_confirm':False})
         for line in self.order_line:
             line.confirmed_reports_price_subtotal = 0
             self._unlink_report_lines()
@@ -1713,6 +1714,12 @@ class ReportSaleOrderLine(models.Model):
             self.account_id = self.product_id.property_account_income_id
         elif self.product_id.categ_id.property_account_income_categ_id:
             self.account_id = self.product_id.categ_id.property_account_income_categ_id
+    
+    @api.multi
+    def unlink(self):
+        if self.filtered(lambda x: x.state in ('sale', 'done')):
+            print('hello')
+        return super(ReportSaleOrderLine, self).unlink()
     
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
