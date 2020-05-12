@@ -1715,12 +1715,6 @@ class ReportSaleOrderLine(models.Model):
         elif self.product_id.categ_id.property_account_income_categ_id:
             self.account_id = self.product_id.categ_id.property_account_income_categ_id
     
-    @api.multi
-    def unlink(self):
-        if self.filtered(lambda x: x.state in ('sale', 'done')):
-            print('hello')
-        return super(ReportSaleOrderLine, self).unlink()
-    
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
     _inherit = "account.reconcile.model"
