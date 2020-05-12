@@ -1314,6 +1314,7 @@ class SaleOrder(models.Model):
                    
     @api.multi
     def action_cancel(self):
+        self.write({'state': 'cancel','bill_confirm':False})
         for line in self.order_line:
             line.confirmed_reports_price_subtotal = 0
             self._unlink_report_lines()
@@ -1399,7 +1400,6 @@ class SaleOrder(models.Model):
                      'new_sub': line.new_sub,
                      'report_nrc_mrc': line.report_nrc_mrc,
                 })
-
     
     @api.multi
     def _unlink_report_lines(self):
@@ -1436,6 +1436,18 @@ class SaleOrder(models.Model):
     def create_report_lines(self):
         self._create_default_salesperson()
         self._prepare_report_lines()
+        
+    @api.multi
+    def get_account_lines(self):
+        for line in self.order_line:
+            if not line.account_id:
+                line.default_account_id()
+    
+    @api.multi
+    def get_report_account_lines(self):
+        for line in self.report_sale_order_line_ids:
+            if not line.account_id:
+                line.default_account_id()
     
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
@@ -1695,6 +1707,13 @@ class ReportSaleOrderLine(models.Model):
     def _compute_qty_delivered_updateable(self):
         for line in self:
             line.qty_delivered_updateable = (line.order_id.state == 'sale') and (line.product_id.service_type == 'manual') and (line.product_id.expense_policy == 'no')
+    
+    @api.onchange('product_id')
+    def default_account_id(self):
+        if self.product_id.property_account_income_id:
+            self.account_id = self.product_id.property_account_income_id
+        elif self.product_id.categ_id.property_account_income_categ_id:
+            self.account_id = self.product_id.categ_id.property_account_income_categ_id
     
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
