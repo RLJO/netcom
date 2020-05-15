@@ -717,6 +717,7 @@ class PurchaseOrder(models.Model):
         ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     
     stock_source = fields.Char(string='Source document')
+    active = fields.Boolean('Active', default=True)
     
     @api.multi
     def button_submit(self):
