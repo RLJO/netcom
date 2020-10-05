@@ -1443,6 +1443,7 @@ class SaleOrder(models.Model):
         for line in self.order_line:
             if not line.account_id:
                 line.default_account_id()
+        self.get_report_account_lines()
     
     @api.multi
     def get_report_account_lines(self):
