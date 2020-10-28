@@ -1421,12 +1421,12 @@ class SaleOrder(models.Model):
                 })
     
     @api.one
-    @api.depends('sales_persons_ids.percentage')
+    @api.depends('sales_persons_ids.percentage', 'sales_percentage')
     def _compute_salepersons_percentages(self):
         self.ensure_one()
         for line in self.sales_persons_ids:
             self.sales_percentage += line.percentage
-        if self.sales_percentage > 100:
+        if self.sales_percentage > 100.00:
             raise UserError(_('This is Above 100% .'))
     
     @api.onchange('partner_id')
