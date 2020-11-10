@@ -1426,12 +1426,15 @@ class SaleOrder(models.Model):
         self.ensure_one()
         for line in self.sales_persons_ids:
             self.sales_percentage += line.percentage
-            if self.sales_percentage > 100.00:
-                raise UserError(_('This is Above 100% .'))
     
     @api.onchange('partner_id')
     def _partner_id(self):
         self.user_id = self.partner_id.user_id
+    
+    @api.onchange('sales_percentage')
+    def _onchange_precentage(self):
+        if self.sales_percentage > 100.00:
+            raise UserError(_('This is Above 100% .'))
     
     @api.multi
     def create_report_lines(self):
