@@ -861,7 +861,12 @@ class PurchaseOrderLine(models.Model):
             for partner in self.order_id.message_partner_ids:
                 partner_ids.append(partner.id)
             self.order_id.message_post(subject=subject,body=subject,partner_ids=partner_ids)
-            
+
+class AccountAccount(models.Model):
+    _inherit = ['account.account']
+
+    active = fields.Boolean('Active', default=True)
+
 class AccountInvoiceReport(models.Model):
     _inherit = ['account.invoice.report']
     
