@@ -117,11 +117,12 @@ class HrExpense(models.Model):
     _name = "hr.expense"
     _inherit = 'hr.expense'
     
-    #def _default_analytic(self):
+    def _default_analytic(self):
     #    return self.env['account.analytic.account'].search([('name','=','Netcom')])
+         return self.env['ir.property'].get('property_analytic_account_id', 'hr.expense')
     
-    #analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
-    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=lambda self: self.env['ir.property'].get('property_analytic_account_id', 'hr.expense'), states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
+    analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
+    #analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=lambda self: self.env['ir.property'].get('property_analytic_account_id', 'hr.expense'), states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
     vendor_id = fields.Many2one('res.partner', string="Vendor", domain=[('supplier', '=', True)], readonly=True, states={'draft': [('readonly', False)], 'refused': [('readonly', False)]})
     need_override = fields.Boolean ('Need Budget Override', track_visibility="onchange")
     override_budget = fields.Boolean ('Override Budget', track_visibility="onchange")
