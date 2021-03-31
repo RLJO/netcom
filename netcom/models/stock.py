@@ -118,8 +118,8 @@ class HrExpense(models.Model):
     _inherit = 'hr.expense'
     
     def _default_analytic(self):
-    #    return self.env['account.analytic.account'].search([('name','=','Netcom')])
-         return self.env['ir.property'].get('property_analytic_account_id', 'hr.expense')
+        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+    #     return self.env['ir.property'].get('property_analytic_account_id', 'hr.expense')
     
     analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
     #analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=lambda self: self.env['ir.property'].get('property_analytic_account_id', 'hr.expense'), states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
