@@ -20,6 +20,8 @@ limit = 200000
 #attachments = mymodels.execute_kw(db, uid, password, 'ir.attachment', 'search', [[['res_model', '=', 'purchase.order']]], {'limit': 500})
 #attachments_data = mymodels.execute_kw(db, uid, password, 'ir.attachment', 'read', [attachments], {'fields': ['id', 'datas', 'name', 'type', 'website_url']})
 
+#to be used only once
+
 class AssetDepreciationLine(models.Model):
     _inherit = 'account.asset.depreciation.line'
     
@@ -49,7 +51,7 @@ class AssetDepreciationLine(models.Model):
             model2_obj= self.env['account.asset.depreciation.line']
             model2_obj.create(vals)
 
-            
+
         
                 
                 
