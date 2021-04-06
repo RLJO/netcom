@@ -1237,6 +1237,15 @@ class MrpBom(models.Model):
     def create_netfinity_boms(self):
         boms = self.env['mrp.bom'].search([('company_id', '=', 3)])
         for bom in boms:
+
+            order_lines = []
+            for line in bom.bom_line_ids:
+                order_lines.append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'product_qty': line.product_qty,
+                    'product_uom_id':line.product_uom_id.id,
+                }))
+
             vals= {
                 'product_tmpl_id': bom.product_tmpl_id.id,
                 'company_id': 6,
@@ -1246,7 +1255,7 @@ class MrpBom(models.Model):
                 'type': bom.type,
                 'ready_to_produce': bom.ready_to_produce,
                 'sequence': bom.sequence,
-                'bom_line_ids': bom.bom_line_ids,
+                'bom_line_ids': order_lines,
                 'product_uom_id':bom.product_uom_id.id,
                 }
             model2_obj= self.env['mrp.bom']
