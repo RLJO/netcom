@@ -1231,6 +1231,26 @@ class StockMove(models.Model):
     account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
     internal_transfer = fields.Boolean('Internal Transfer?', related='picking_id.internal_transfer', readonly=1, track_visibility='onchange')
 
+class MrpBom(models.Model):
+    _inherit = "mrp.bom"
+
+    def create_netfinity_boms(self):
+        boms = self.env['mrp.bom'].search([('company_id', '=', 3)])
+        for bom in boms:
+            vals= {
+                'product_tmpl_id': bom.product_tmpl_id.id,
+                'company_id': 6,
+                'product_id': bom.product_id.id,
+                'product_qty': bom.product_qty,
+                'code': bom.code,
+                'type': bom.type,
+                'ready_to_produce': bom.ready_to_produce,
+                'sequence': sequence,
+                'bom_line_ids': bom.bom_line_ids,
+                'product_uom_id':bom.product_uom_id,
+                }
+            model2_obj= self.env['mrp.bom']
+            model2_obj.create(vals)
 
 class SalesPersons(models.Model):
     _name = 'sales.persons'
