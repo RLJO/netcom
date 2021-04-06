@@ -1565,8 +1565,8 @@ class Hrrecruitment(models.Model):
     most_current_job = fields.Boolean(string='Most Current Job')
     copy_paste_cv = fields.Char(string='Copied CV')
     
-    intelligence_quotient = fields.Float(string='Intelligence Quotient:', store=True)
-    psychometric_test = fields.Float(string='Psychometric test:', store=True)
+    intelligence_quotient = fields.Float(string='Intelligence Quotient:', store=True, track_visibility='onchange')
+    psychometric_test = fields.Float(string='Psychometric test:', store=True, track_visibility='onchange')
     
     intelligence_quotient_store = fields.Char(store=True)
     psychometric_test_store = fields.Char(store=True)
