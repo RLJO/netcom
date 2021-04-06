@@ -1237,7 +1237,6 @@ class MrpBom(models.Model):
     def create_netfinity_boms(self):
         boms = self.env['mrp.bom'].search([('company_id', '=', 3)])
         for bom in boms:
-
             order_lines = []
             for line in bom.bom_line_ids:
                 order_lines.append((0, 0, {
