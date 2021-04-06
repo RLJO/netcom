@@ -1245,7 +1245,7 @@ class MrpBom(models.Model):
                 'code': bom.code,
                 'type': bom.type,
                 'ready_to_produce': bom.ready_to_produce,
-                'sequence': sequence,
+                'sequence': bom.sequence,
                 'bom_line_ids': bom.bom_line_ids,
                 'product_uom_id':bom.product_uom_id,
                 }
