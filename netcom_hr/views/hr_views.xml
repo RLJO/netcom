@@ -113,7 +113,37 @@
              <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
         </record>
 
-        
+        <record id="hr_recruitment.view_crm_case_jobs_filter" model= "ir.ui.view">
+            <field name="name">hr.applicant.view.search</field>
+            <field name="model">hr.applicant</field>
+            <field name="arch" type="xml">
+            <field name="inherit_id" ref="hr_recruitment.view_crm_case_jobs_filter"/>
+            <field name= "arch" type= "xml">
+                <xpath expr="//search" position="inside">
+                    <filter string="intelligence quotient" name="intelligence_quotient_set" domain="[('intelligence_quotient','!=',False)]"/>
+                </xpath>
+            </field>
+        </record>
+
+    <record model="ir.actions.act_window" id="hr_recruitment.crm_case_categ0_act_job">
+        <field name="name">Applications</field>
+        <field name="res_model">hr.applicant</field>
+        <field name="view_mode">kanban,tree,form,pivot,graph,calendar</field>
+        <field name="view_id" eval="False"/>
+        <field name="search_view_id" ref="hr_recruitment.view_crm_case_jobs_filter"/>
+        <field name="context">{'search_default_intelligence_quotient_set':1,}</field>
+        <field name="help" type="html">
+          <p>
+            Odoo helps you track applicants in the recruitment
+            process and follow up all operations: meetings, interviews, etc.
+          </p><p>
+            Applicants and their attached CV are created automatically when an email is sent.
+            If you install the document management modules, all resumes are indexed automatically,
+            so that you can easily search through their content.
+          </p>
+        </field>
+    </record>
+
         <menuitem
             id="hr.menu_open_view_employee_list_my"
             name="Employees"
