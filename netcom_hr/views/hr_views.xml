@@ -113,7 +113,7 @@
              <field name="act_window_id" ref="netcom_open_view_employee_profile"/>
         </record>
 
-        <record id="hr_recruitment.view_crm_case_jobs_filter" model= "ir.ui.view">
+        <record id="netcom_view_crm_case_jobs_filter" model= "ir.ui.view">
             <field name="name">hr.applicant.view.search</field>
             <field name="model">hr.applicant</field>
             <field name="inherit_id" ref="hr_recruitment.view_crm_case_jobs_filter"/>
