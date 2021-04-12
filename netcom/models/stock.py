@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
+import time
 
 from datetime import date, timedelta
 from odoo import models, fields, api, _
@@ -1502,6 +1503,8 @@ class SaleOrderLine(models.Model):
     _description = 'Sales Order Line'
     _inherit = ['sale.order.line']
     
+    percent_off_date = time.strftime('2021-04-01')
+
     type = fields.Selection([('sale', 'Sale'), ('lease', 'Lease')], string='Type', required=True,default='sale')
     nrc_mrc = fields.Char('MRC/NRC', compute='_compute_mrc_nrc', readonly=True, store=True)
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade', store=True)
@@ -1552,8 +1555,9 @@ class SaleOrderLine(models.Model):
                 else:
                     if sub:
                         if line.report_nrc_mrc == "NRC":
-                            report_price_subtotal = line.price_subtotal/100 * 20
-                            line.reports_price_subtotal = report_price_subtotal
+                            if line.report_date < line.percent_off_date:
+                                report_price_subtotal = line.price_subtotal/100 * 20
+                                line.reports_price_subtotal = report_price_subtotal
                         else:
                             line.reports_price_subtotal = line.price_subtotal
                     else:
