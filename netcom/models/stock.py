@@ -1555,7 +1555,7 @@ class SaleOrderLine(models.Model):
                 else:
                     if sub:
                         if line.report_nrc_mrc == "NRC":
-                            if line.report_date < line.percent_off_date:
+                            if line.report_date < '2021-04-01':
                                 report_price_subtotal = line.price_subtotal/100 * 20
                                 line.reports_price_subtotal = report_price_subtotal
                         else:
@@ -1563,7 +1563,7 @@ class SaleOrderLine(models.Model):
                     else:
                         line.write({'new_sub': True})
                         if line.report_nrc_mrc == "NRC":
-                            if line.report_date < line.percent_off_date:
+                            if line.report_date < '2021-04-01':
                                 report_price_subtotal = line.price_subtotal/100 * 20
                                 line.reports_price_subtotal = report_price_subtotal
                         else:
