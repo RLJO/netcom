@@ -1391,6 +1391,7 @@ class SaleOrder(models.Model):
         self.check_report_mrc()
         self._create_default_salesperson()
         self._prepare_report_lines()
+        self.order_line._report_date_change()
         return res
     
     @api.multi
@@ -1498,6 +1499,11 @@ class SaleOrder(models.Model):
             if not line.account_id:
                 line.default_account_id()
     
+    def print_dates(self):
+        for line in self.order_line:
+            if line.percent_off_date < line.report_date:
+                line.reports_price_subtotal = line.price_subtotal
+    
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
     _description = 'Sales Order Line'
@@ -1555,17 +1561,15 @@ class SaleOrderLine(models.Model):
                 else:
                     if sub:
                         if line.report_nrc_mrc == "NRC":
-                            if line.report_date < '2021-04-01':
-                                report_price_subtotal = line.price_subtotal/100 * 20
-                                line.reports_price_subtotal = report_price_subtotal
+                            report_price_subtotal = line.price_subtotal/100 * 20
+                            line.reports_price_subtotal = report_price_subtotal
                         else:
                             line.reports_price_subtotal = line.price_subtotal
                     else:
                         line.write({'new_sub': True})
                         if line.report_nrc_mrc == "NRC":
-                            if line.report_date < '2021-04-01':
-                                report_price_subtotal = line.price_subtotal/100 * 20
-                                line.reports_price_subtotal = report_price_subtotal
+                            report_price_subtotal = line.price_subtotal/100 * 20
+                            line.reports_price_subtotal = report_price_subtotal
                         else:
                             line.reports_price_subtotal = line.price_subtotal
     
@@ -1583,6 +1587,13 @@ class SaleOrderLine(models.Model):
                     else:
                         line.report_date = line.sub_account_id.perm_up_date
     
+    def _report_date_change(self):
+        for line in self:
+            if line.report_nrc_mrc == "NRC":
+                if line.percent_off_date < line.report_date:
+                    line.reports_price_subtotal = line.price_subtotal
+
+
     @api.multi
     def _prepare_invoice_line(self, qty):
         """
