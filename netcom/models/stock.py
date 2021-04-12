@@ -1592,6 +1592,7 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 if line.percent_off_date < line.report_date:
                     line.reports_price_subtotal = line.price_subtotal
+                    line.order_id.report_sale_order_line_ids.report_price_subtotal = line.price_subtotal
 
 
     @api.multi
