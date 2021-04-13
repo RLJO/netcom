@@ -1586,8 +1586,9 @@ class SaleOrderLine(models.Model):
                         line.report_date = line.sub_account_id.activation_date
                     else:
                         line.report_date = line.sub_account_id.perm_up_date
-    @api.multi
+    @api.one
     def report_date_change(self):
+        self.ensure_one()
         rec = self.env['sale.order.line'].search([])
         for sub in rec:
             if sub.report_nrc_mrc == "NRC":
