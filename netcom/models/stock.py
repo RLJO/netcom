@@ -1594,9 +1594,9 @@ class SaleOrderLine(models.Model):
             if sub.report_nrc_mrc == "NRC":
                 if sub.report_date:
                     print(sub.percent_off_date)
-                    if sub.percent_off_date < sub.report_date:
+                    if sub.report_date >= sub.percent_off_date:
                         sub.reports_price_subtotal = sub.price_subtotal
-                        #sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
+                        sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
 
     def _report_date_change(self):
         for line in self:
