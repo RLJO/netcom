@@ -1504,17 +1504,28 @@ class SaleOrder(models.Model):
             if line.report_date >= line.percent_off_date:
                 line.reports_price_subtotal = line.price_subtotal
     
+    @api.multi
+    def change_percent_rules(self):
+        self._report_change_all_dates_for_sales()
+        self._report_change_all_dates_for_report()
+
     @api.one
-    def report_date_change(self):
+    def _report_change_all_dates_for_sales(self):
         rec = self.env['sale.order.line'].search([])
-        print(rec)
         for sub in rec:
             if sub.report_nrc_mrc == "NRC":
                 if sub.report_date:
-                    print(sub.percent_off_date)
                     if sub.report_date >= sub.percent_off_date:
                         sub.reports_price_subtotal = sub.price_subtotal
-                        #sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
+
+    @api.one
+    def _report_change_all_dates_for_report(self):
+        rec = self.env['report.sale.order.line'].search([])
+        for sub in rec:
+            if sub.report_nrc_mrc == "NRC":
+                if sub.report_date:
+                    if sub.report_date >= sub.percent_off_date:
+                        sub.report_price_subtotal = sub.price_subtotal
 
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
