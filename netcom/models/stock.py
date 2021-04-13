@@ -1514,7 +1514,7 @@ class SaleOrder(models.Model):
                     print(sub.percent_off_date)
                     if sub.report_date >= sub.percent_off_date:
                         sub.reports_price_subtotal = sub.price_subtotal
-                        sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
+                        #sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
 
 class SaleOrderLine(models.Model):
     _name = 'sale.order.line'
