@@ -17,7 +17,7 @@
         </record>   
         
        <record id="stock_picking_type_emp" model="stock.picking.type">
-            <field name="name">Staff Store Requests</field>
+            <field name="name">Store Requests</field>
             <field name="code">internal</field>
             <field name="use_create_lots">0</field>
             <field name="use_existing_lots">1</field>
