@@ -1591,7 +1591,7 @@ class SaleOrderLine(models.Model):
         rec = self.env['sale.order.line'].search([])
         for sub in rec:
             if sub.report_nrc_mrc == "NRC":
-                if sub.percent_off_date < sub.report_date:
+                if sub.percent_off_date < str(sub.report_date):
                     sub.reports_price_subtotal = sub.price_subtotal
                     sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
 
