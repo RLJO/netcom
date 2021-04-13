@@ -686,6 +686,12 @@ class PurchaseOrder(models.Model):
     _name = "purchase.order"
     _inherit = ['purchase.order']
     
+    PURCHASE_READONLY_STATES = {
+        'purchase': [('readonly', True)],
+        'done': [('readonly', True)],
+        'cancel': [('readonly', True)],
+    }
+
     def _default_employee(self):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
@@ -701,10 +707,10 @@ class PurchaseOrder(models.Model):
                     
     need_override = fields.Boolean ('Need Budget Override', compute= "_check_override", track_visibility="onchange")
     employee_id = fields.Many2one('hr.employee', 'Employee',
-        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee)
+        states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_employee, copy=False)
     sub_account_id = fields.Many2one('sub.account', string='Sub Account', index=True, ondelete='cascade')
-    approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange')
-    manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange')
+    approval_date = fields.Date(string='Manager Approval Date', readonly=True, track_visibility='onchange', copy=False)
+    manager_approval = fields.Many2one('res.users','Manager Approval Name', readonly=True, track_visibility='onchange', copy=False)
     client_id = fields.Many2one('res.partner','Client', track_visibility='onchange')
     
     department_name = fields.Char(string="Department", related="employee_id.department_id.name", readonly=True)
@@ -722,6 +728,14 @@ class PurchaseOrder(models.Model):
     stock_source = fields.Char(string='Source document')
     active = fields.Boolean('Active', default=True)
     
+    picking_type_id = fields.Many2one('stock.picking.type', 'Deliver To', states=PURCHASE_READONLY_STATES, required=True,\
+        help="This will determine operation type of incoming shipment")
+    
+    sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
+    sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
+
+    date_approve = fields.Date('Order Approval Date', readonly=1, index=True, copy=False)
+
     @api.multi
     def button_submit(self):
         self.write({'state': 'submit'})
@@ -1626,7 +1640,6 @@ class SaleOrderLine(models.Model):
             if line.report_nrc_mrc == "NRC":
                 if line.percent_off_date < line.report_date:
                     line.reports_price_subtotal = line.price_subtotal
-                    line.order_id.report_sale_order_line_ids.report_price_subtotal = line.price_subtotal
 
 
     @api.multi
@@ -2186,3 +2199,141 @@ class BDDSalesPersonReport(models.Model):
             FROM ( %s )
             %s
             )""" % (self._table, self._select(), self._from(), self._group_by()))
+
+class PurchaseReport(models.Model):
+    _name = "purchase.report"
+    _description = "Purchases Orders"
+    _auto = False
+    _order = 'date_order desc, price_total desc'
+
+    date_order = fields.Datetime('Order Date', readonly=True, help="Date on which this document has been created", oldname='date')
+    state = fields.Selection([
+        ('draft', 'Draft RFQ'),
+        ('sent', 'RFQ Sent'),
+        ('to approve', 'To Approve'),
+        ('purchase', 'Purchase Order'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')
+        ], 'Order Status', readonly=True)
+    product_id = fields.Many2one('product.product', 'Product', readonly=True)
+    picking_type_id = fields.Many2one('stock.warehouse', 'Warehouse', readonly=True)
+    partner_id = fields.Many2one('res.partner', 'Vendor', readonly=True)
+    date_approve = fields.Date('Order Approval Date', readonly=True)
+    product_uom = fields.Many2one('product.uom', 'Reference Unit of Measure', required=True)
+    company_id = fields.Many2one('res.company', 'Company', readonly=True)
+    currency_id = fields.Many2one('res.currency', 'Currency', readonly=True)
+    delay = fields.Float('Days to Validate', digits=(16, 2), readonly=True)
+    delay_pass = fields.Float('Days to Deliver', digits=(16, 2), readonly=True)
+    unit_quantity = fields.Float('Product Quantity', readonly=True, oldname='quantity')
+    price_total = fields.Float('Total Price', readonly=True)
+    price_average = fields.Float('Average Price', readonly=True, group_operator="avg")
+    negociation = fields.Float('Purchase-Standard Price', readonly=True, group_operator="avg")
+    price_standard = fields.Float('Products Value', readonly=True, group_operator="sum")
+    nbr_lines = fields.Integer('# of Lines', readonly=True, oldname='nbr')
+    category_id = fields.Many2one('product.category', 'Product Category', readonly=True)
+    product_tmpl_id = fields.Many2one('product.template', 'Product Template', readonly=True)
+    country_id = fields.Many2one('res.country', 'Partner Country', readonly=True)
+    fiscal_position_id = fields.Many2one('account.fiscal.position', string='Fiscal Position', oldname='fiscal_position', readonly=True)
+    account_analytic_id = fields.Many2one('account.analytic.account', 'Analytic Account', readonly=True)
+    commercial_partner_id = fields.Many2one('res.partner', 'Commercial Entity', readonly=True)
+    weight = fields.Float('Gross Weight', readonly=True)
+    volume = fields.Float('Volume', readonly=True)
+
+    user_id = fields.Many2one('res.users', 'Created by', readonly=True)
+    employee_id = fields.Many2one('hr.employee', 'Order requested by', readonly=True)
+    create_date = fields.Datetime('Created on', readonly=True)
+    approval_date = fields.Date(string='Manager Approval Date', readonly=True)
+    manager_approval = fields.Many2one('res.users','Manager Approval By', readonly=True)
+    stock_source = fields.Char(string='Source document')
+
+    @api.model_cr
+    def init(self):
+        tools.drop_view_if_exists(self._cr, 'purchase_report')
+        self._cr.execute("""
+            create view purchase_report as (
+                WITH currency_rate as (%s)
+                select
+                    min(l.id) as id,
+                    s.date_order as date_order,
+                    s.state,
+                    s.date_approve,
+                    s.dest_address_id,
+                    spt.warehouse_id as picking_type_id,
+                    s.partner_id as partner_id,
+                    s.create_uid as user_id,
+                    s.company_id as company_id,
+
+                    s.employee_id as employee_id,
+                    s.create_date,
+                    s.approval_date as approval_date,
+                    s.manager_approval as manager_approval,
+                    s.stock_source as stock_source,
+
+                    s.fiscal_position_id as fiscal_position_id,
+                    l.product_id,
+                    p.product_tmpl_id,
+                    t.categ_id as category_id,
+                    s.currency_id,
+                    t.uom_id as product_uom,
+                    sum(l.product_qty/u.factor*u2.factor) as unit_quantity,
+                    extract(epoch from age(s.date_approve,s.date_order))/(24*60*60)::decimal(16,2) as delay,
+                    extract(epoch from age(l.date_planned,s.date_order))/(24*60*60)::decimal(16,2) as delay_pass,
+                    count(*) as nbr_lines,
+                    sum(l.price_unit / COALESCE(NULLIF(cr.rate, 0), 1.0) * l.product_qty)::decimal(16,2) as price_total,
+                    avg(100.0 * (l.price_unit / COALESCE(NULLIF(cr.rate, 0),1.0) * l.product_qty) / NULLIF(ip.value_float*l.product_qty/u.factor*u2.factor, 0.0))::decimal(16,2) as negociation,
+                    sum(ip.value_float*l.product_qty/u.factor*u2.factor)::decimal(16,2) as price_standard,
+                    (sum(l.product_qty * l.price_unit / COALESCE(NULLIF(cr.rate, 0), 1.0))/NULLIF(sum(l.product_qty/u.factor*u2.factor),0.0))::decimal(16,2) as price_average,
+                    partner.country_id as country_id,
+                    partner.commercial_partner_id as commercial_partner_id,
+                    analytic_account.id as account_analytic_id,
+                    sum(p.weight * l.product_qty/u.factor*u2.factor) as weight,
+                    sum(p.volume * l.product_qty/u.factor*u2.factor) as volume
+                from purchase_order_line l
+                    join purchase_order s on (l.order_id=s.id)
+                    join res_partner partner on s.partner_id = partner.id
+                        left join product_product p on (l.product_id=p.id)
+                            left join product_template t on (p.product_tmpl_id=t.id)
+                            LEFT JOIN ir_property ip ON (ip.name='standard_price' AND ip.res_id=CONCAT('product.product,',p.id) AND ip.company_id=s.company_id)
+                    left join product_uom u on (u.id=l.product_uom)
+                    left join product_uom u2 on (u2.id=t.uom_id)
+                    left join stock_picking_type spt on (spt.id=s.picking_type_id)
+                    left join account_analytic_account analytic_account on (l.account_analytic_id = analytic_account.id)
+                    left join currency_rate cr on (cr.currency_id = s.currency_id and
+                        cr.company_id = s.company_id and
+                        cr.date_start <= coalesce(s.date_order, now()) and
+                        (cr.date_end is null or cr.date_end > coalesce(s.date_order, now())))
+                group by
+                    s.company_id,
+                    s.create_uid,
+
+                    s.employee_id,
+                    s.manager_approval,
+                    s.create_date,
+                    s.approval_date,
+                    s.stock_source,
+
+                    s.partner_id,
+                    u.factor,
+                    s.currency_id,
+                    l.price_unit,
+                    s.date_approve,
+                    l.date_planned,
+                    l.product_uom,
+                    s.dest_address_id,
+                    s.fiscal_position_id,
+                    l.product_id,
+                    p.product_tmpl_id,
+                    t.categ_id,
+                    s.date_order,
+                    s.state,
+                    spt.warehouse_id,
+                    u.uom_type,
+                    u.category_id,
+                    t.uom_id,
+                    u.id,
+                    u2.factor,
+                    partner.country_id,
+                    partner.commercial_partner_id,
+                    analytic_account.id
+            )
+        """ % self.env['res.currency']._select_companies_rates())

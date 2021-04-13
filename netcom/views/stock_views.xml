@@ -421,6 +421,8 @@ if records:
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="stock_source" readonly="1"/>
+                <field name="sale_order_id" required="1"/>
+                <field name="sar_ticket_number" required="1"/>
             	<field name="department_name" invisible="1"/>
             </field>
             <field name="incoterm_id" position="after">
@@ -587,8 +589,8 @@ if records:
     </record>
 	
     
-    <record id="purchase_rfq" model="ir.actions.act_window">
-        <field name="name">Requests for Quotation</field>
+    <record id="purchase.purchase_rfq" model="ir.actions.act_window">
+        <field name="name">Purchase Requisition</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">purchase.order</field>
         <field name="context">{'search_default_todo':1, 'show_purchase': False}</field>
@@ -1288,6 +1290,10 @@ if records:
               action="hr_expense.action_hr_expense_sheet_all_all"/>
 	 -->
 	
+    <menuitem action="purchase.purchase_rfq" id="purchase.menu_purchase_rfq"
+            parent="purchase.menu_procurement_management" name="Purchase Requisition"
+            sequence="0"/>
+
     <menuitem name="Store Request" id="store_request" parent="stock.menu_stock_root"
               action="store_req_action1_window"/>
               
