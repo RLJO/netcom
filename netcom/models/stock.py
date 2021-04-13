@@ -1586,7 +1586,15 @@ class SaleOrderLine(models.Model):
                         line.report_date = line.sub_account_id.activation_date
                     else:
                         line.report_date = line.sub_account_id.perm_up_date
-    
+    @api.multi
+    def report_date_change(self):
+        rec = self.env['sale.order.line'].search([])
+        for sub in rec:
+            if sub.report_nrc_mrc == "NRC":
+                if sub.percent_off_date < sub.report_date:
+                    sub.reports_price_subtotal = sub.price_subtotal
+                    sub.order_id.report_sale_order_line_ids.report_price_subtotal = sub.price_subtotal
+
     def _report_date_change(self):
         for line in self:
             if line.report_nrc_mrc == "NRC":
