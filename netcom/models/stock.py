@@ -118,8 +118,18 @@ class HrExpense(models.Model):
     _name = "hr.expense"
     _inherit = 'hr.expense'
     
+    #@api.multi
+    #def _default_analytic(self):
+    #    return self.env['account.analytic.account'].search([('company_id', '=', self.env.user.company_id.id)], limit=1).id
+
     def _default_analytic(self):
-        return self.env['account.analytic.account'].search([('name','=','Netcom')])
+        company_id = self.env.user.company_id.id
+        if company_id == 3:
+            analytic_account_id = self.env['account.analytic.account'].search([('name','=','Netcom')])
+        else:
+             if company_id == 6:
+                 analytic_account_id = self.env['account.analytic.account'].search([('name','=','Netfinity')])
+        return analytic_account_id
     #     return self.env['ir.property'].get('property_analytic_account_id', 'hr.expense')
     
     analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, states={'post': [('readonly', True)], 'done': [('readonly', True)]}, oldname='analytic_account')
