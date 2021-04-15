@@ -421,7 +421,7 @@ if records:
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="stock_source" readonly="1"/>
-                <field name="sale_order_id" required="1"/>
+                <field name="sale_order_id" required="1" widget="selection"/>
                 <field name="sar_ticket_number" required="1"/>
             	<field name="department_name" invisible="1"/>
             </field>
@@ -740,6 +740,8 @@ if records:
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                             <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>
                             <field name="x_studio_field_KZL4m" required="1"/>
+                            <field name="sale_order_id" required="1" widget="selection"/>
+                            <field name="sar_ticket_number" required="1"/>
                         </group>
                         <group>
                             <field name="scheduled_date" attrs="{'readonly': [('id', '=', False)], 'required': [('id', '!=', False)]}"/>
