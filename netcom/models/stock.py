@@ -434,6 +434,15 @@ class Picking(models.Model):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
     
+    def _check_store_request_picking_type_id(self):
+        company_id = self.env.user.company_id.id
+        if company_id == 3:
+            picking_type_id = 25
+        else:
+             if company_id == 6:
+                 picking_type_id = 25
+        return picking_type_id
+
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
         help="Default Owner")
@@ -460,6 +469,8 @@ class Picking(models.Model):
     
     sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
     sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
+
+    store_picking_type_id = fields.Integer(compute='_check_store_request_picking_type_id')
 
     @api.multi
     def button_reset(self):
@@ -522,7 +533,7 @@ class Picking(models.Model):
                 self.message_post(subject=subject,body=subject,partner_ids=partner_ids)
             else:
                 raise UserError(_("Store request hasn't been validated"))
-    
+
     @api.multi
     def create_purchase_order(self):
         """
