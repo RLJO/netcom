@@ -421,7 +421,7 @@ if records:
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="stock_source" readonly="1"/>
-                <field name="sale_order_id" required="1" widget="selection"/>
+                <field name="sale_order_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'required': [('company_id', '=', 3)]}"/>
                 <field name="sar_ticket_number" required="1"/>
             	<field name="department_name" invisible="1"/>
             </field>
@@ -740,7 +740,7 @@ if records:
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                             <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>
                             <field name="x_studio_field_KZL4m" required="1"/>
-                            <field name="sale_order_id" required="1" widget="selection"/>
+                            <field name="sale_order_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'required': [('company_id', '=', 3)]}"/>
                             <field name="sar_ticket_number" required="1"/>
                         </group>
                         <group>
@@ -1164,7 +1164,8 @@ if records:
       <field name="name">Store Request</field>
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
-      <field name="context" eval='{"default_is_locked":False,"default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/>
+      <field name="context" eval='{"default_is_locked":False, "default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/>
+      <!--<field name="context">{'default_is_locked':False)}</field>-->
     </record>
     
     <record model="ir.actions.act_window" id="internal_transfer_action_window">
