@@ -458,6 +458,9 @@ class Picking(models.Model):
         readonly=True, required=True,
         states={'draft': [('readonly', False)], 'confirmed': [('readonly', False)], 'assigned': [('readonly', False)]})
     
+    sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
+    sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
+
     @api.multi
     def button_reset(self):
         self.mapped('move_lines')._action_cancel()
