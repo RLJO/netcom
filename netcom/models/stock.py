@@ -433,15 +433,6 @@ class Picking(models.Model):
     def _default_employee(self):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
-    
-    def _check_store_request_picking_type_id(self):
-        company_id = self.env.user.company_id.id
-        if company_id == 3:
-            picking_type_id = 25
-        else:
-             if company_id == 6:
-                 picking_type_id = 25
-        return picking_type_id
 
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
@@ -1430,6 +1421,7 @@ class SaleOrder(models.Model):
         self._create_default_salesperson()
         self._prepare_report_lines()
         self.order_line._report_date_change()
+        self.report_sale_order_line_ids._report_date_change()
         return res
     
     @api.multi
@@ -1850,6 +1842,12 @@ class ReportSaleOrderLine(models.Model):
             self.account_id = self.product_id.property_account_income_id
         elif self.product_id.categ_id.property_account_income_categ_id:
             self.account_id = self.product_id.categ_id.property_account_income_categ_id
+
+    def _report_date_change(self):
+        for line in self:
+            if line.report_nrc_mrc == "NRC":
+                if line.percent_off_date < line.report_date:
+                    line.report_price_subtotal = line.price_subtotal
     
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"
