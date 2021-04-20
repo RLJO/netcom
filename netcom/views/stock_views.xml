@@ -734,6 +734,7 @@ if records:
                         	<field name="is_locked" invisible="1"/>
                         	<field name="employee_id" invisible="1"/>
                         	<field name="man_confirm" readonly="1"/>
+                            <field name="store_request" invisible="0"/>
                         	<field name="fixed_assets_movement" readonly="1" invisible="1"/>
                             <field name="partner_id" attrs="{'invisible': [('picking_type_code', '=', 'internal')]}"/>
                             <field name="location_id" groups="stock.group_stock_user"  attrs="{'invisible': [('picking_type_code', '=', 'outgoing')]}"/>
@@ -1164,7 +1165,9 @@ if records:
       <field name="name">Store Request</field>
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
-      <field name="context" eval='{"default_is_locked":False, "default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/>
+      <field name="domain">[('store_request', '=', True)]</field>
+      <!-- <field name="context" eval='{"default_is_locked":False, "default_picking_type_id":ref("netcom.stock_picking_type_emp")}'/> -->
+      <field name="context" eval='{"default_is_locked":False, "default_store_request":True}'/>
     </record>
     
     <record model="ir.actions.act_window" id="internal_transfer_action_window">

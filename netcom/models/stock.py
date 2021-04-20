@@ -415,8 +415,6 @@ class HrExpenseSheet(models.Model):
             return False
         return True
 
-    
-
 class Picking(models.Model):
     _name = "stock.picking"
     _inherit = 'stock.picking'
@@ -459,9 +457,8 @@ class Picking(models.Model):
         states={'draft': [('readonly', False)], 'confirmed': [('readonly', False)], 'assigned': [('readonly', False)]})
     
     sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
+    store_request = fields.Boolean('is Store Request?', track_visibility='onchange', default=False)
     sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
-
-    store_picking_type_id = fields.Integer(compute='_check_store_request_picking_type_id')
 
     @api.multi
     def button_reset(self):
@@ -565,6 +562,11 @@ class Picking(models.Model):
         }
         
         return res
+
+    @api.onchange('store_request')
+    def store_default_picking_type_id(self):
+        if self.store_request == True:
+            self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Store Requests'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
     
 class StockRejectionReason(models.Model):
     _name = "stock.rejection.reason"
