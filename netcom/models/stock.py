@@ -440,7 +440,7 @@ class Picking(models.Model):
             picking_type_id = 25
         else:
              if company_id == 6:
-                 picking_type_id = 25
+                 picking_type_id = 29
         return picking_type_id
 
     owner_id = fields.Many2one('res.partner', 'Owner',
@@ -1430,6 +1430,7 @@ class SaleOrder(models.Model):
         self._create_default_salesperson()
         self._prepare_report_lines()
         self.order_line._report_date_change()
+        self.report_sale_order_line_ids._report_date_change()
         return res
     
     @api.multi
@@ -1850,6 +1851,12 @@ class ReportSaleOrderLine(models.Model):
             self.account_id = self.product_id.property_account_income_id
         elif self.product_id.categ_id.property_account_income_categ_id:
             self.account_id = self.product_id.categ_id.property_account_income_categ_id
+
+    def _report_date_change(self):
+        for line in self:
+            if line.report_nrc_mrc == "NRC":
+                if line.percent_off_date < line.report_date:
+                    line.report_price_subtotal = line.price_subtotal
     
 class AccountReconcileModel(models.Model):
     _name = "account.reconcile.model"

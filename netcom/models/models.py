@@ -697,6 +697,8 @@ class Employee(models.Model):
     serpac = fields.Date(string='SERPAC Renewal Date')
     next_ofkin = fields.One2many('kin.type', 'phone_id', string='Next of Kin')
     
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id, track_visibility='onchange')
+
     @api.multi    
     def write(self, vals):
         self.pension_details_alert()
@@ -1610,6 +1612,9 @@ class NetcomContract(models.Model):
     _name = 'hr.contract'
     _inherit = 'hr.contract'
     
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.user.company_id, track_visibility='onchange')
+    struct_id = fields.Many2one('hr.payroll.structure', string='Salary Structure', track_visibility='onchange')
+
     @api.multi
     def send_anniversary_mail(self):
         
