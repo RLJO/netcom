@@ -1929,7 +1929,13 @@ class HrPayslip(models.Model):
         return
 
     
-    
+class HrPayslipRun(models.Model):
+    _inherit = 'hr.payslip.run'
+
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.user.company_id, track_visibility='onchange')
+
+
+
 class HrPayslipRun(models.Model):
     _inherit = 'hr.payslip.run'
     
