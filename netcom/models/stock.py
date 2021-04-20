@@ -433,15 +433,6 @@ class Picking(models.Model):
     def _default_employee(self):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
-    
-    def _check_store_request_picking_type_id(self):
-        company_id = self.env.user.company_id.id
-        if company_id == 3:
-            picking_type_id = 25
-        else:
-             if company_id == 6:
-                 picking_type_id = 29
-        return picking_type_id
 
     owner_id = fields.Many2one('res.partner', 'Owner',
         states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}, default=_default_owner,
