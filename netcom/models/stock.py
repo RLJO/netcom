@@ -443,12 +443,12 @@ class Picking(models.Model):
     sub_account_id = fields.Many2one('sub.account', string='Child Account', index=True, ondelete='cascade')
     man_confirm = fields.Boolean('Manager Confirmation', track_visibility='onchange')
     net_lot_id = fields.Many2one(string="Serial Number", related="move_line_ids.lot_id", readonly=True)
-    internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange')
+    internal_transfer = fields.Boolean('Internal Transfer?', track_visibility='onchange', default=False)
     x_studio_field_KZL4m = fields.Many2one('res.partner', string='Client', index=True, ondelete='cascade', required=False)
     
     rejection_reason = fields.Many2one('stock.rejection.reason', string='Rejection Reason', index=True, track_visibility='onchange')
     
-    fixed_assets_movement = fields.Boolean('Fixed Assets Movement', track_visibility='onchange')
+    fixed_assets_movement = fields.Boolean('Fixed Assets Movement', track_visibility='onchange', default=False)
     
     location_dest_id = fields.Many2one(
         'stock.location', "Destination Location",
@@ -567,7 +567,17 @@ class Picking(models.Model):
     def store_default_picking_type_id(self):
         if self.store_request == True:
             self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Store Requests'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
+
+    @api.onchange('fixed_assets_movement')
+    def fixed_assets_default_picking_type_id(self):
+        if self.fixed_assets_movement == True:
+            self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Fixed Assets Movement'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
     
+    @api.onchange('internal_transfer')
+    def internal_default_picking_type_id(self):
+        if self.internal_transfer == True:
+            self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Internal Transfer'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
+
 class StockRejectionReason(models.Model):
     _name = "stock.rejection.reason"
     _description = 'Reason for Rejecting Requests'
@@ -746,7 +756,7 @@ class PurchaseOrder(models.Model):
     active = fields.Boolean('Active', default=True)
     
     picking_type_id = fields.Many2one('stock.picking.type', 'Deliver To', states=PURCHASE_READONLY_STATES, required=True,\
-        help="This will determine operation type of incoming shipment", compute=False)
+        help="This will determine operation type of incoming shipment", default=False)
     
     sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
     sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
@@ -1543,7 +1553,7 @@ class SaleOrder(models.Model):
 
     @api.one
     def _report_change_all_dates_for_sales(self):
-        rec = self.env['sale.order.line'].search([])
+        rec = self.env['sale.order.line'].searcxh([])
         for sub in rec:
             if sub.report_nrc_mrc == "NRC":
                 if sub.report_date:
