@@ -166,7 +166,7 @@
                 <field name="job_location"/>
             </field>
             <xpath expr="//header" position="inside">
-					<button name="get_job_location" string="Get Default Location" type="object" class="btn btn-primary"/>
+					<button name="get_job_location" string="Get Default Location" type="object" class="btn btn-primary" invisible="1" />
 		    </xpath>
 	    </field>
 	</record>
