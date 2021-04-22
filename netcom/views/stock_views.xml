@@ -1174,7 +1174,9 @@ if records:
       <field name="name">Internal Transfer</field>
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
-      <field name="context" eval='{"default_is_locked":False,"default_internal_transfer":True,"default_picking_type_id":ref("netcom.stock_picking_type_engineer")}'/>
+      <field name="domain">[('internal_transfer', '=', True)]</field>
+      <!-- <field name="context" eval='{"default_is_locked":False,"default_internal_transfer":True,"default_picking_type_id":ref("netcom.stock_picking_type_engineer")}'/> -->
+      <field name="context" eval='{"default_is_locked":False, "default_internal_transfer":True}'/>
     </record>
     
     <record model="ir.actions.act_window" id="fam_transfer_action_window">
@@ -1182,7 +1184,8 @@ if records:
       <field name="res_model">stock.picking</field>
       <field name="view_mode">tree,form</field>
       <field name="domain">[('fixed_assets_movement', '=', True)]</field>
-      <field name="context" eval='{"default_is_locked":False,"default_fixed_assets_movement":True,"default_picking_type_id":ref("netcom.stock_picking_type_fam")}'/>
+      <!-- <field name="context" eval='{"default_is_locked":False,"default_fixed_assets_movement":True,"default_picking_type_id":ref("netcom.stock_picking_type_fam")}'/> -->
+      <field name="context" eval='{"default_is_locked":False, "default_fixed_assets_movement":True}'/>
     </record>
     
 	<record model="ir.actions.act_window" id="netcom_act_crossovered_budget_lines_view">
@@ -1228,6 +1231,7 @@ if records:
          <field name="view_id" ref="stock.vpicktree"/>
          <field name="act_window_id" ref="store_req_action1_window"/>
      </record>
+     
      
      <record id="fam_req_action_form" model="ir.actions.act_window.view">
          <field eval="2" name="sequence"/>
