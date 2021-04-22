@@ -156,6 +156,20 @@
             </field>
         </field>
     </record>
+
+    <record id="netcom_view_hr_job_form" model="ir.ui.view">
+	    <field name="name">netcom.hr.job.form</field>
+	    <field name="model">hr.job</field>
+	    <field name="inherit_id" ref="hr_recruitment.hr_job_survey"/>
+	    <field name="arch" type="xml">
+            <field name="hr_responsible_id" position="after">
+                <field name="job_location"/>
+            </field>
+            <xpath expr="//header" position="inside">
+					<button name="get_job_location" string="Get Default Location" type="object" class="btn btn-primary"/>
+		    </xpath>
+	    </field>
+	</record>
     
       <record id="netcom_hr_expense_refsheet_form" model="ir.ui.view">
         <field name="name">netcom.hr.expenserefsheetform</field>

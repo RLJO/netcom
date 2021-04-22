@@ -681,7 +681,16 @@ class NextofKin(models.Model):
     telphone = fields.Char(string='Telephone Number 1',required=True)
     phone_id = fields.Char(string='Telephone Number 2')  
     
-                    
+class HrJob(models.Model):
+    _inherit = 'hr.job'
+
+    job_location = fields.Char(string='Job Location')
+
+    @api.multi
+    def get_job_location(self):
+        if self.address_id:
+            self.job_location = self.address_id.city + ', ' + self.address_id.country_id.name
+
 class Employee(models.Model):
     _inherit = 'hr.employee'
     

@@ -741,8 +741,8 @@ if records:
                             <field name="location_dest_id" groups="stock.group_stock_user" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                             <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>
                             <field name="x_studio_field_KZL4m" required="1"/>
-                            <field name="sale_order_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'required': [('company_id', '=', 3)]}"/>
-                            <field name="sar_ticket_number" required="1"/>
+                            <field name="sale_order_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'required': [('store_request', '=', True)], 'invisible': [('store_request', '!=', True)]}"/>
+                            <field name="sar_ticket_number" attrs="{'required': [('store_request', '=', True)], 'invisible': [('store_request', '!=', True)]}" />
                         </group>
                         <group>
                             <field name="scheduled_date" attrs="{'readonly': [('id', '=', False)], 'required': [('id', '!=', False)]}"/>
