@@ -415,6 +415,12 @@ class HrExpenseSheet(models.Model):
             return False
         return True
 
+class StockLocation(models.Model):
+    _inherit = "stock.location"
+
+    warehouse = fields.Boolean('Warehouse', track_visibility='onchange', default=False)
+    base_station = fields.Boolean('Base Station', track_visibility='onchange', default=False)
+
 class Picking(models.Model):
     _name = "stock.picking"
     _inherit = 'stock.picking'
