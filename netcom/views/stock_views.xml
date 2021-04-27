@@ -421,7 +421,7 @@ if records:
             	<field name="client_id" domain="[('customer','=',True)]" required="1"/>
             	<field name="sub_account_id" domain="[('state','in',('approve','activate'))]"/>
             	<field name="stock_source" readonly="1"/>
-                <field name="sale_order_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'required': [('company_id', '=', 3)]}"/>
+                <field name="sale_order_id" required="1" options="{'no_create': True, 'no_create_edit':True}" />
                 <field name="sar_ticket_number" required="1"/>
             	<field name="department_name" invisible="1"/>
             </field>
@@ -674,7 +674,22 @@ if records:
            	</xpath>
 	    </field>
 	</record>
-   
+    
+    <record model="ir.ui.view" id="netcom_view_location_form">
+	    <field name="name">netcom.stock.location.form</field>
+	    <field name="model">stock.location</field>
+	    <field name="inherit_id" ref="stock.view_location_form"/>
+	    <field name="arch" type="xml">
+        	<xpath expr="//group[4]" position="after">
+            	<group string="Warehouse &amp; BaseStation" groups="stock.group_adv_location">
+                    <field name="warehouse"/>
+                    <field name="base_station"/>
+                </group>
+            </xpath>	    
+	    </field>
+	</record>
+
+
     <record id="netcom_stock_form_view" model="ir.ui.view">
             <field name="name">netcom.stock.form</field>
             <field name="model">stock.picking</field>
