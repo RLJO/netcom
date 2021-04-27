@@ -428,6 +428,9 @@ if records:
             <field name="incoterm_id" position="after">
             	<field name="stock_source" readonly="1"/>
             </field>
+            <!-- <xpath expr="//field[@name='picking_type_id']" position="attributes">
+                <attribute name="attrs">{'required': [('state', '=', 'to approve')]}</attribute>
+            </xpath> -->
         </field>
     </record>
     

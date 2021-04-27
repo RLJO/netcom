@@ -762,7 +762,7 @@ class PurchaseOrder(models.Model):
     active = fields.Boolean('Active', default=True)
     
     picking_type_id = fields.Many2one('stock.picking.type', 'Deliver To', states=PURCHASE_READONLY_STATES, required=True,\
-        help="This will determine operation type of incoming shipment", default=False)
+        help="This will determine operation type of incoming shipment")
     
     sale_order_id = fields.Many2one('sale.order','Sales Order Number', track_visibility='onchange')
     sar_ticket_number = fields.Char(string='SAR Ticket number', track_visibility='onchange')
