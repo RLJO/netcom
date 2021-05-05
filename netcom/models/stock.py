@@ -584,6 +584,9 @@ class Picking(models.Model):
         if self.internal_transfer == True:
             self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Internal Transfer'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
 
+    def set_lots_visible_true(self):
+        self.move_line_ids.lots_visible = True
+
 class StockRejectionReason(models.Model):
     _name = "stock.rejection.reason"
     _description = 'Reason for Rejecting Requests'
