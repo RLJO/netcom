@@ -584,6 +584,10 @@ class Picking(models.Model):
         if self.internal_transfer == True:
             self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Internal Transfer'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
 
+    def set_lots_visible_true(self):
+        for rec in self.move_line_ids:
+            rec.lots_visible = True
+
 class StockRejectionReason(models.Model):
     _name = "stock.rejection.reason"
     _description = 'Reason for Rejecting Requests'
@@ -1876,6 +1880,16 @@ class AccountReconcileModel(models.Model):
     
     analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, ondelete='set null')  
 
+class AccountAssetAsset(models.Model):
+    _inherit = 'account.asset.asset'
+
+    def default_moves(self):
+        asset = self.env['account.asset.asset'].search([('state','=','open')])
+        for rec in asset:
+            moves = self.env['account.asset.depreciation.line'].search([('asset_id', '=', rec.id), ('move_check', '=', False)])
+            if not moves:
+                rec.state = 'close'
+                
 class BudgetDept(models.Model):
     _name = 'account.budget.post'
     _inherit = 'account.budget.post'
