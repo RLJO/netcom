@@ -1880,6 +1880,16 @@ class AccountReconcileModel(models.Model):
     
     analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', default=_default_analytic, ondelete='set null')  
 
+class AccountAssetAsset(models.Model):
+    _inherit = 'account.asset.asset'
+
+    def default_moves(self):
+        asset = self.env['account.asset.asset'].search([('state','=','open')])
+        for rec in asset:
+            moves = self.env['account.asset.depreciation.line'].search([('asset_id', '=', rec.id), ('move_check', '=', False)])
+            if not moves:
+                rec.state = 'close'
+                
 class BudgetDept(models.Model):
     _name = 'account.budget.post'
     _inherit = 'account.budget.post'
