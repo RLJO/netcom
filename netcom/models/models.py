@@ -1584,7 +1584,7 @@ class Hrrecruitment(models.Model):
     copy_paste_cv = fields.Char(string='Copied CV')
     
     intelligence_quotient = fields.Float(string='Intelligence Quotient:', store=True, track_visibility='onchange')
-    psychometric_test = fields.Float(string='Psychometric test:', store=True, track_visibility='onchange')
+    psychometric_test = fields.Float(string='Emotional Quotient test:', store=True, track_visibility='onchange')
     
     intelligence_quotient_store = fields.Char(store=True)
     psychometric_test_store = fields.Char(store=True)

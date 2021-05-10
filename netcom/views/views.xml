@@ -470,6 +470,12 @@
       <field name="view_mode">tree,form</field>
     </record>
     
+    <record model="ir.actions.act_window" id="account_financial_html_report_line_action_window">
+      <field name="name">Finance Report Lines</field>
+      <field name="res_model">account.financial.html.report.line</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
     <record model="ir.actions.act_window" id="SubAccount_action_window">
       <field name="name">Sub Account</field>
       <field name="res_model">sub.account</field>
@@ -522,6 +528,9 @@ if records:
 	<menuitem id="netcom_menu_hr_expense_sheet_all_to_pay" name="Approved Expense Reports To Pay" sequence="3" parent="hr_expense.menu_hr_expense_accountant"
             action="netcom_action_hr_expense_sheet_all_to_pay" groups="netcom.group_expense_payment"/>
 	
+    <menuitem name="Report Lines" id="menu_account_financial_html_report_line_action_window" parent="sale.sale_order_menu"
+              action="account_financial_html_report_line_action_window" groups="base.group_system"/>
+
     <record id="customer_request_form" model="ir.ui.view">
     <field name="name">customer.request.form</field>
     <field name="model">customer.request</field>
