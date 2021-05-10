@@ -1278,7 +1278,10 @@ class StockMove(models.Model):
 #         else:
 #             acc_dest = accounts_data['stock_output'].id
 #         return acc_dest
-        
+    
+    def create_account(self):
+        self._account_entry_move()
+        return True
     
     account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
     internal_transfer = fields.Boolean('Internal Transfer?', related='picking_id.internal_transfer', readonly=1, track_visibility='onchange')

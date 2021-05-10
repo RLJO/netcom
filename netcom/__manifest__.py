@@ -27,6 +27,7 @@
         'security/netcom_security.xml',
         'security/ir.model.access.csv',
         'data/data.xml',
+        'wizard/subaccount_date_wizard_views.xml',
         'views/views.xml',
         'views/stock_views.xml',
         'views/templates.xml',

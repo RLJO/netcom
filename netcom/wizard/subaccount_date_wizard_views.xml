@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="netcom_sub_account_date" model="ir.ui.view">
+            <field name="name">Sub Account Date</field>
+            <field name="model">sub.account.date</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <notebook colspan="4">
+                            <page string="Date">
+                                <group colspan="4" col="4">
+                                
+                                    <separator string="Type" colspan="4"/>
+                                    <field name="activate" string="Activation"/>
+                                    <field name="perm_up" string="Permanent Activation"/>
+
+                                </group>
+
+                                <group col="4">
+
+                                    <separator string="Dates" cols="4" colspan="4"/>
+                                    <field name="activation_date" attrs="{'invisible' : [('activate', '!=',True)], 'required' : [('activate', '=',True)]}"/>
+                                    <field name="perm_up_date" attrs="{'invisible' : [('perm_up', '!=',True)], 'required' : [('perm_up', '=',True)]}"/>
+                                
+                                </group>
+
+                            </page>
+                            <!-- <page string="Project">
+                                <group colspan="2" >
+                                    <field name="schedule_id" nolabel="0"/>
+                                    <field name="project_id" nolabel="0"/>
+                                    <field name="employee_id" nolabel="o"/>
+                                </group>
+                            </page> -->
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="action_modify_date" string="Modify Date" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="netcom_sub_account_date_wizard_action" model="ir.actions.act_window">
+            <field name="name">Sub Account Date</field>
+            <field name="res_model">sub.account.date</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>
