@@ -15,3 +15,4 @@ access_stock_rejection_reason,stock.rejection.reason,model_stock_rejection_reaso
 access_report_sale_order_line_emp,report.sale.order.line,model_report_sale_order_line,base.group_user,1,1,1,0
 access_netcom_sales_person_report_emp,netcom.sales.person.report,model_netcom_sales_person_report,base.group_user,1,1,1,0
 access_sales_persons_emp,sales.persons,model_sales_persons,base.group_user,1,1,1,0
+access_nrc_purchase_report,nrc.purchase.report,model_nrc_purchase_report,base.group_user,1,1,1,0
