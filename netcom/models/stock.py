@@ -1284,7 +1284,8 @@ class StockMove(models.Model):
         return True
     
     def get_unit_price(self):
-        self.price_unit = self.purchase_line_id.price_unit
+        # self.price_unit = self.purchase_line_id.price_unit
+        self.price_unit = self.product_id.standard_price
         if self.value == 0.00:
             self.value = self.price_unit * self.product_uom_qty
 
