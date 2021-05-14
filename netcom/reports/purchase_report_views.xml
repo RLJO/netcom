@@ -22,7 +22,7 @@
                 <graph string="Purchase Orders Statistics">
                     <field name="partner_id" type="row"/>
                     <field name="date_order" interval="month" type="col"/>
-                    <field name="price_average" type="measure"/>
+                    <!-- <field name="price_average" type="measure"/> -->
                 </graph>
             </field>
         </record>
@@ -32,22 +32,22 @@
             <field name="name">Monthly Purchases</field>
             <field name="model_id">nrc.purchase.report</field>
             <field name="domain">[('state','!=','cancel')]</field>
-            <field name="user_id" eval="False"/>
-            <field name="context">{'group_by': ['category_id'], 'col_group_by': ['date_order:month'], 'measures': ['unit_quantity']}</field>
+            <field name="context">{'col_group_by': ['date_order:month'], 'measures': ['unit_quantity']}</field>
+            <!-- <field name="context">{'group_by': ['category_id'], 'col_group_by': ['date_order:month'], 'measures': ['unit_quantity']}</field> -->
         </record>
         <record id="netcom_filter_purchase_order_price_per_supplier" model="ir.filters">
             <field name="name">Price Per Vendor</field>
             <field name="model_id">nrc.purchase.report</field>
             <field name="domain">[('state','!=','draft'),('state','!=','cancel')]</field>
-            <field name="user_id" eval="False"/>
-            <field name="context">{'group_by': ['partner_id'], 'col_group_by': ['product_id'], 'measures': ['price_average']}</field>
+            <field name="context">{'group_by': ['partner_id'], 'col_group_by': ['product_id']}</field>
+            <!-- <field name="context">{'group_by': ['partner_id'], 'col_group_by': ['product_id'], 'measures': ['price_average']}</field> -->
         </record>
         <record id="netcom_filter_purchase_order_average_delivery_time" model="ir.filters">
             <field name="name">Average Delivery Time</field>
             <field name="model_id">nrc.purchase.report</field>
             <field name="domain">[('state','!=','draft'),('state','!=','cancel')]</field>
-            <field name="user_id" eval="False"/>
-            <field name="context">{'group_by': ['partner_id'], 'measures': ['delay_pass']}</field>
+            <field name="context">{'group_by': ['partner_id']}</field>
+            <!-- <field name="context">{'group_by': ['partner_id'], 'measures': ['delay_pass']}</field> -->
         </record>
 
 
@@ -64,18 +64,12 @@
                 <field name="partner_id"/>
                 <field name="product_id"/>
                 <group expand="0" string="Extended Filters">
-                    <field name="user_id"/>
-                    <field name="picking_type_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="date_order"/>
-                    <field name="date_approve"/>
-                    <field name="category_id" filter_domain="[('category_id', 'child_of', self)]"/>
                 </group>
                 <group expand="1" string="Group By">
                     <filter string="Vendor" name="group_partner_id" context="{'group_by':'partner_id'}"/>
                     <filter string="Partner's Country" name="country_id" context="{'group_by':'country_id'}"/>
-                    <filter string="Responsible" name="Responsible" context="{'group_by':'user_id'}"/>
-                    <filter string="Product Category" name="group_category_id" context="{'group_by':'category_id'}"/>
                     <filter string="Status" context="{'group_by':'state'}"/>
                     <filter string="Company" context="{'group_by':'company_id'}" groups="base.group_multi_company"/>
                     <separator/>
