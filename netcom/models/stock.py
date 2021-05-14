@@ -1285,9 +1285,9 @@ class StockMove(models.Model):
     
     def get_unit_price(self):
         # self.price_unit = self.purchase_line_id.price_unit
-        self.price_unit = self.product_id.standard_price
+        self.price_unit = -(self.product_id.standard_price)
         if self.value == 0.00:
-            self.value = self.price_unit * self.product_uom_qty
+            self.value = -(self.price_unit * self.product_uom_qty)
 
     account_id = fields.Many2one('account.account', string='Account', index=True, ondelete='cascade')
     internal_transfer = fields.Boolean('Internal Transfer?', related='picking_id.internal_transfer', readonly=1, track_visibility='onchange')
