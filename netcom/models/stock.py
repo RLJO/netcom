@@ -584,6 +584,15 @@ class Picking(models.Model):
         if self.internal_transfer == True:
             self.picking_type_id = self.env['stock.picking.type'].search([('name','=','Internal Transfer'), ('warehouse_id.company_id','=', self.env.user.company_id.id)], limit=1).id
 
+    @api.onchange('picking_type_id')
+    def onchange_picking_type_id(self):
+        if self.picking_type_id.name == 'Store Requests':
+            self.store_request = True
+        if self.picking_type_id.name == 'Fixed Assets Movement':
+            self.fixed_assets_movement = True
+        if self.picking_type_id.name == 'Internal Transfer':
+            self.internal_transfer = True
+    
     def set_lots_visible_true(self):
         for rec in self.move_line_ids:
             rec.lots_visible = True
