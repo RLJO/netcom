@@ -103,5 +103,10 @@
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
+    <record id="group_billing_approve_expense" model="res.groups">
+        <field name="name">Billing Approve Expenses</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
 </data>
 </odoo>
