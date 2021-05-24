@@ -361,7 +361,7 @@ class HrExpenseSheet(models.Model):
     @api.multi
     def approve_expense_sheets(self):
         current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
-        if not self.user_has_groups('netcom.group_hr_line_manager') or self.user_has_groups('netcom.group_billing_approve_expense'):
+        if not self.user_has_groups('netcom.group_hr_line_manager,netcom.group_billing_approve_expense'):
             raise UserError(_("Only Line Managers can approve expenses"))
         if current_employee == self.employee_id:
             raise UserError(_('Only your line manager can approve your Expenses'))
