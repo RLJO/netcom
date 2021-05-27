@@ -12,7 +12,7 @@ class SubAccountDate(models.TransientModel):
     
     activate = fields.Boolean(string='Activation Date', default=True)
     perm_up = fields.Boolean(string='Permanent Activation Date')
-    price_review = fields.Date(string='Price Review Date')
+    price_review = fields.Boolean(string='Price Review Date')
 
     subaccount_id = fields.Many2one(comodel_name='sub.account', default=lambda self: self.env.context.get('active_id', None), required=True)
 
