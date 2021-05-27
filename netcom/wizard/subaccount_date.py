@@ -8,9 +8,11 @@ class SubAccountDate(models.TransientModel):
 
     activation_date = fields.Date(string='Activation Date')
     perm_up_date = fields.Date(string='Permanent Activation Date')
+    price_review_date = fields.Date(string='Price Review Date')
     
     activate = fields.Boolean(string='Activation Date', default=True)
     perm_up = fields.Boolean(string='Permanent Activation Date')
+    price_review = fields.Date(string='Price Review Date')
 
     subaccount_id = fields.Many2one(comodel_name='sub.account', default=lambda self: self.env.context.get('active_id', None), required=True)
 
@@ -20,6 +22,9 @@ class SubAccountDate(models.TransientModel):
         
         if self.perm_up:
             self.subaccount_id.sudo().write({'perm_up_date': self.perm_up_date})
+        
+        if self.price_review:
+            self.subaccount_id.sudo().write({'price_review_date': self.price_review_date})
 
         return {
             'type': 'ir.actions.act_window',

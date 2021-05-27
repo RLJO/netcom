@@ -14,6 +14,7 @@
                                     <separator string="Type" colspan="4"/>
                                     <field name="activate" string="Activation"/>
                                     <field name="perm_up" string="Permanent Activation"/>
+                                    <field name="price_review" string="Price Review Date"/>
 
                                 </group>
 
@@ -22,6 +23,7 @@
                                     <separator string="Dates" cols="4" colspan="4"/>
                                     <field name="activation_date" attrs="{'invisible' : [('activate', '!=',True)], 'required' : [('activate', '=',True)]}"/>
                                     <field name="perm_up_date" attrs="{'invisible' : [('perm_up', '!=',True)], 'required' : [('perm_up', '=',True)]}"/>
+                                    <field name="price_review_date" attrs="{'invisible' : [('price_review', '!=',True)], 'required' : [('price_review', '=',True)]}"/>
                                 
                                 </group>
 
