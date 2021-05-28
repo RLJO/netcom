@@ -100,7 +100,7 @@ class ReportPartnerLedger(models.AbstractModel):
                         'action': 'view_too_many',
                         'action_id': 'partner,%s' % (partner.id,),
                         'name': _('There are more than 80 items in this list, click here to see all of them'),
-                        'colspan': 8,
+                        'colspan': 4,
                         'columns': [{}],
                     })
                 lines += domain_lines
