@@ -742,6 +742,15 @@ class PurchaseOrder(models.Model):
         self.env['hr.employee'].search([('user_id','=',self.env.uid)])
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
     
+    def po_create_or_update_picking(self):
+        self._create_or_update_picking()
+    
+    def po_action_confirm(self):
+        self._action_confirm()
+    
+    def po_create_picking(self):
+        self._create_picking()
+
     @api.multi
     def _check_override(self):
         for self in self:
