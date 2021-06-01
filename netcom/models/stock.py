@@ -743,7 +743,7 @@ class PurchaseOrder(models.Model):
         return self.env['hr.employee'].search([('user_id','=',self.env.uid)])
     
     def po_create_or_update_picking(self):
-        self._create_or_update_picking()
+        self.order_line._create_or_update_picking()
     
     def po_action_confirm(self):
         self._action_confirm()
