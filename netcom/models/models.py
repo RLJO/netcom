@@ -592,6 +592,8 @@ class SubAccount(models.Model):
         ('reject', 'Rejected'),
         ], string='Status', index=True, copy=False, default='new', track_visibility='onchange')
 
+    active = fields.Boolean('Active', default='True')
+    
     @api.model
     def create(self, vals):
         partner_ids = self.search([('parent_id','=',vals['parent_id'])],order="child_account desc")
