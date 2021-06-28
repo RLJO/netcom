@@ -1240,7 +1240,12 @@ class AccountInvoiceLine(models.Model):
                 for taxes in records.product_id.taxes_id:
                     if taxes.company_id == records.invoice_id.company_id:
                         records.invoice_line_tax_ids = taxes.ids
+
+class ProductCategory(models.Model):
+    _inherit = "product.category"
     
+    active = fields.Boolean('Active', default=True)
+
 class StockMove(models.Model):
     _inherit = "stock.move"
     
