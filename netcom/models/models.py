@@ -79,6 +79,19 @@ class Partner(models.Model):
             res.append((partner.id, result))
         return res
 
+    # NOT A REAL PROPERTY !!!!
+    property_product_pricelist = fields.Many2one(
+        'product.pricelist', 'Sale Pricelist', compute='_compute_product_pricelist',
+        inverse="_inverse_product_pricelist", company_dependent=False,
+        help="This pricelist will be used, instead of the default one, for sales to the current partner", store=True)
+
+    @api.multi
+    @api.depends('country_id')
+    def _compute_product_pricelist(self):
+        res = self.env['product.pricelist']._get_partner_pricelist_multi(self.ids)
+        for p in self:
+            p.property_product_pricelist = res.get(p.id)
+
 class Users(models.Model):
     _name = "res.users"
     _inherit = "res.users"
