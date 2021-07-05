@@ -791,6 +791,8 @@ class PurchaseOrder(models.Model):
 
     date_approve = fields.Date('Order Approval Date', readonly=1, index=True, copy=False)
 
+    bill_gen_date = fields.Datetime('Bill Generation Date', related='invoice_ids.create_date', readonly=1, track_visibility='onchange')
+
     @api.multi
     def button_submit(self):
         self.write({'state': 'submit'})
