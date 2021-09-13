@@ -1243,6 +1243,15 @@ class AccountInvoiceLine(models.Model):
                     if taxes.company_id == records.invoice_id.company_id:
                         records.invoice_line_tax_ids = taxes.ids
 
+class account_payment(models.Model):
+    _inherit = "account.payment"
+    
+    active = fields.Boolean('Active', default=True)
+    move_name = fields.Char(string='Journal Entry Name', readonly=False,
+        default=False, copy=False,
+        help="Technical field holding the number given to the journal entry, automatically set when the statement line is reconciled then stored to set the same number again if the line is cancelled, set to draft and re-processed again.")
+
+
 class ProductCategory(models.Model):
     _inherit = "product.category"
     
